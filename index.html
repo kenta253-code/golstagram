@@ -39,13 +39,13 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            -webkit-tap-highlight-color: transparent; /* タップ時のグレー枠を消去 */
+            -webkit-tap-highlight-color: transparent;
         }
         
         html, body {
             width: 100%;
-            overflow-x: hidden; /* 画面全体の横揺れを完全に防ぐ */
-            touch-action: pan-y; /* 縦スクロールのみ許可し、横ズレ・ピンチを防ぐ */
+            overflow-x: hidden;
+            touch-action: pan-y;
         }
 
         body {
@@ -338,7 +338,7 @@
             padding: 8px 12px;
             border: 1px solid var(--border);
             border-radius: 20px;
-            font-size: 16px; /* iPhoneで自動拡大しないよう16pxに最適化 */
+            font-size: 16px;
             background: #faf7f0;
             color: var(--text-main);
             outline: none;
@@ -370,7 +370,7 @@
             padding: 11px 13px;
             border: 1px solid var(--border);
             border-radius: 8px;
-            font-size: 16px; /* フォーカス時の勝手なズームイン防止 */
+            font-size: 16px;
             background: #faf7f0;
             color: var(--text-main);
             outline: none;
@@ -425,6 +425,12 @@
             transition: 0.2s;
         }
         .btn-sub:hover { background: var(--gold-light); }
+        .btn-sub:disabled {
+            background: #e8e4d8;
+            color: #a39c8e;
+            border-color: #d1cab8;
+            cursor: not-allowed;
+        }
         .btn-edit {
             background: #faf7f0;
             color: var(--primary);
@@ -453,11 +459,11 @@
             gap: 4px;
         }
 
-        /* スコア表（横スクロールのみ許可） */
+        /* スコア表 */
         .score-editor-wrapper {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            touch-action: pan-x; /* スコア表内部のみ横スクロールを許可 */
+            touch-action: pan-x;
             margin: 10px 0 18px;
             border: 1px solid var(--gold-border);
             border-radius: 8px;
@@ -491,9 +497,10 @@
             background: #f5eedf;
             z-index: 2;
             border-right: 2px solid var(--gold-border);
-            min-width: 140px;
+            min-width: 155px;
+            max-width: 170px;
             text-align: left;
-            padding: 6px;
+            padding: 5px;
         }
         .scorecard-table thead th.player-name-cell {
             position: sticky;
@@ -516,7 +523,7 @@
             text-align: center;
             border: 1px solid #cfc4b0;
             border-radius: 4px;
-            font-size: 16px; /* 自動ズーム防止 */
+            font-size: 16px;
             font-weight: 700;
             font-family: 'Cinzel', serif;
             background: #fff;
@@ -524,15 +531,34 @@
             outline: none;
         }
         .score-input:focus { border-color: var(--gold); }
-        .name-select {
+        
+        /* プレイヤー名編集用UI（直接入力 ＋ 選択プルダウン） */
+        .player-name-input-box {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .name-text-input {
             width: 100%;
-            padding: 6px 4px;
+            padding: 5px 6px;
             font-size: 13px;
             font-weight: 700;
             border: 1px solid #cfc4b0;
             border-radius: 4px;
-            background: #faf7f0;
+            background: #ffffff;
             color: var(--text-main);
+            outline: none;
+        }
+        .name-text-input:focus { border-color: var(--gold); }
+        .name-select-quick {
+            width: 100%;
+            padding: 2px 4px;
+            font-size: 10px;
+            color: var(--text-sub);
+            border: 1px dashed #cfc4b0;
+            border-radius: 4px;
+            background: #faf7f0;
+            cursor: pointer;
         }
 
         .half-toggle-bar { display: flex; gap: 6px; margin-bottom: 8px; }
@@ -794,7 +820,7 @@
 
                     <div style="margin: 18px 0 8px; display:flex; justify-content:space-between; align-items:center;">
                         <h4 style="color: var(--primary);">📊 スコアカード確認・編集</h4>
-                        <button class="btn-sub" onclick="addNewPlayerRow()">＋ プレイヤー追加</button>
+                        <button class="btn-sub" id="btnAddPlayer" onclick="addNewPlayerRow()">＋ プレイヤー追加 (<span id="playerCountLabel">1</span>/4)</button>
                     </div>
 
                     <div class="half-toggle-bar">
@@ -1291,7 +1317,7 @@
                 let base642 = file2 ? (await compressImageFile(file2, 1024, 0.8)).split(',')[1] : null;
 
                 const promptText = `提供されたスコアカード（またはカート画面）の画像を解析し、ゴルフ場名・プレー日・各ホールのPAR・各プレイヤー打数（1〜18H、OUT計、IN計、TOTAL）を抽出してください。
-2枚ある場合はOUTとINを統合してください。
+2枚ある場合はOUTとINを統合してください。プレイヤー数は最大4名までとします。
 必ず以下のJSON形式のみを出力してください。挨拶やMarkdown等の装飾は不要です。
 {
   "course_name": "ゴルフ場名",
@@ -1358,7 +1384,7 @@
                 }
 
                 if (parsedJSON) {
-                    tempPlayersData = parsedJSON.players || [];
+                    tempPlayersData = (parsedJSON.players || []).slice(0, 4); // 最大4名に制限
                     const allRegistered = [myProfile, ...members];
                     tempPlayersData.forEach(p => {
                         const matched = allRegistered.find(m => m.alias === p.cart_name || m.name === p.cart_name || p.cart_name.includes(m.name));
@@ -1395,12 +1421,16 @@
             renderScorecardEditor();
         }
 
+        // プレイヤー追加（最大4名制限）
         function addNewPlayerRow() {
+            if (tempPlayersData.length >= 4) {
+                alert('プレイヤーは最大4名まで登録できます。');
+                return;
+            }
             isEditingRound = true;
-            const allMembers = [myProfile, ...members];
-            const defaultName = allMembers.length > tempPlayersData.length ? allMembers[tempPlayersData.length].name : `プレイヤー${tempPlayersData.length + 1}`;
+            const newIndex = tempPlayersData.length + 1;
             tempPlayersData.push({
-                cart_name: defaultName,
+                cart_name: `プレイヤー${newIndex}`,
                 out_scores: Array(9).fill(4),
                 in_scores: Array(9).fill(4),
                 out_total: 36,
@@ -1419,12 +1449,34 @@
             renderScorecardEditor();
         }
 
+        // プレイヤー名の手動上書き変更
+        function updatePlayerNameDirect(playerIndex, newName) {
+            isEditingRound = true;
+            tempPlayersData[playerIndex].cart_name = newName.trim() || `プレイヤー${playerIndex + 1}`;
+        }
+
+        // プルダウンからのクイック名変更
+        function applyQuickMemberName(playerIndex, selectEl) {
+            if (!selectEl.value) return;
+            isEditingRound = true;
+            tempPlayersData[playerIndex].cart_name = selectEl.value;
+            renderScorecardEditor();
+        }
+
         function renderScorecardEditor() {
             const table = document.getElementById('scoreEditorTable');
             const showOut = (scoreViewMode === 'out' || scoreViewMode === 'all');
             const showIn = (scoreViewMode === 'in' || scoreViewMode === 'all');
 
-            let headerHoles = '<th class="player-name-cell">PLAYER</th>';
+            // プレイヤー追加ボタンの状態更新
+            const btnAdd = document.getElementById('btnAddPlayer');
+            const countLabel = document.getElementById('playerCountLabel');
+            if (countLabel) countLabel.innerText = tempPlayersData.length;
+            if (btnAdd) {
+                btnAdd.disabled = (tempPlayersData.length >= 4);
+            }
+
+            let headerHoles = '<th class="player-name-cell">PLAYER (名前編集)</th>';
             let parRow = '<td class="player-name-cell"><strong>PAR</strong></td>';
 
             let outParTotal = tempParData.out.reduce((a,b)=>a+b, 0);
@@ -1448,22 +1500,27 @@
                 parRow += `<td><strong>${inParTotal}</strong></td>`;
             }
 
-            headerHoles += `<th>TOTAL</th><th>操作</th>`;
+            headerHoles += `<th>TOTAL</th><th>削除</th>`;
             parRow += `<td><strong>${outParTotal + inParTotal}</strong></td><td>-</td>`;
 
             const allRegistered = [myProfile, ...members];
 
             let playersRows = tempPlayersData.map((p, pIdx) => {
                 let memberOptions = allRegistered.map(m => `
-                    <option value="${m.name}" ${m.name === p.cart_name ? 'selected' : ''}>${m.name}</option>
+                    <option value="${m.name}">${m.name}</option>
                 `).join('');
-                let customSelected = !allRegistered.some(m => m.name === p.cart_name) ? `<option value="${p.cart_name}" selected>${p.cart_name} (直接入力)</option>` : '';
 
+                // 直接テキスト入力 ＋ メンバーからの選択プルダウン
                 let row = `<td class="player-name-cell">
-                    <select class="name-select" onchange="tempPlayersData[${pIdx}].cart_name = this.value">
-                        ${memberOptions}
-                        ${customSelected}
-                    </select>
+                    <div class="player-name-input-box">
+                        <input type="text" class="name-text-input" value="${p.cart_name}" placeholder="プレイヤー名"
+                            onchange="updatePlayerNameDirect(${pIdx}, this.value)"
+                            oninput="tempPlayersData[${pIdx}].cart_name = this.value">
+                        <select class="name-select-quick" onchange="applyQuickMemberName(${pIdx}, this)">
+                            <option value="">▼ 登録仲間から呼出</option>
+                            ${memberOptions}
+                        </select>
+                    </div>
                 </td>`;
 
                 if (showOut) {
@@ -1487,7 +1544,7 @@
                 }
 
                 row += `<td class="total-cell" id="grand-total-${pIdx}">${p.total_score}</td>`;
-                row += `<td><button onclick="removePlayerRow(${pIdx})" style="border:none; background:none; color:var(--danger); font-weight:700; cursor:pointer;">✕</button></td>`;
+                row += `<td><button onclick="removePlayerRow(${pIdx})" style="border:none; background:none; color:var(--danger); font-weight:700; cursor:pointer; padding:6px;">✕</button></td>`;
                 return `<tr>${row}</tr>`;
             }).join('');
 
@@ -1793,8 +1850,9 @@
                             <img src="${rd.photo}" class="drilldown-thumb">
                             <div style="flex:1;">
                                 <div style="font-weight:700; color:var(--primary);">⛳ ${course}</div>
-                                <div style="color:var(--text-sub); font-size:11px;">訪問回数: <strong>${data.count}回</strong> ｜ ベスト: <strong>${best}</strong></div>
+                                <div style="color:var(--text-sub); font-size:11px;">同伴者数: ${rd.playersCount}名</div>
                             </div>
+                            <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:15px;">スコア: ${rd.score || '-'}</div>
                         </div>
                     `).join('');
 
