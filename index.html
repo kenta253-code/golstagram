@@ -2,7 +2,15 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 画面の拡大縮小・ズレを完全に固定するViewport設定 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- ホーム画面追加時のネイティブアプリ化（フルスクリーン）設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Golstagram">
+    <meta name="mobile-web-app-capable" content="yes">
+    
     <title>Golstagram - ゴルフ想い出＆スコア共有</title>
     <!-- Google Fonts: ロゴ・Golsta用フォント ＆ 筆記体フォント ＆ 和欧文フォント -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,16 +35,28 @@
             --shadow-lg: 0 12px 32px rgba(60, 48, 36, 0.12);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent; /* タップ時のグレー枠を消去 */
+        }
+        
+        html, body {
+            width: 100%;
+            overflow-x: hidden; /* 画面全体の横揺れを完全に防ぐ */
+            touch-action: pan-y; /* 縦スクロールのみ許可し、横ズレ・ピンチを防ぐ */
+        }
+
         body {
             background-color: var(--bg);
             color: var(--text-main);
             font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
-            padding-bottom: 80px;
+            padding-bottom: 85px;
             letter-spacing: 0.02em;
         }
 
-        /* Golsta 専用フォントスタイル（Golstagramと同フォント） */
+        /* Golsta 専用フォントスタイル */
         .font-golsta {
             font-family: 'Outfit', 'Comfortaa', sans-serif;
             font-weight: 800;
@@ -94,7 +114,7 @@
             color: #ffffff;
             letter-spacing: 0.04em;
             font-weight: 600;
-            margin-left: auto; /* 一番右端に寄せる */
+            margin-left: auto;
             line-height: 1;
             opacity: 0.85;
             white-space: nowrap;
@@ -156,7 +176,7 @@
         }
         .tab-btn svg { width: 22px; height: 22px; fill: var(--text-sub); transition: 0.2s; }
 
-        .container { max-width: 600px; margin: 0 auto; padding: 18px 16px; }
+        .container { max-width: 600px; margin: 0 auto; padding: 18px 16px; width: 100%; }
         .screen { display: none; }
         .screen.active { display: block; animation: fadeIn 0.25s ease-out; }
 
@@ -318,7 +338,7 @@
             padding: 8px 12px;
             border: 1px solid var(--border);
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 16px; /* iPhoneで自動拡大しないよう16pxに最適化 */
             background: #faf7f0;
             color: var(--text-main);
             outline: none;
@@ -350,7 +370,7 @@
             padding: 11px 13px;
             border: 1px solid var(--border);
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 16px; /* フォーカス時の勝手なズームイン防止 */
             background: #faf7f0;
             color: var(--text-main);
             outline: none;
@@ -433,10 +453,11 @@
             gap: 4px;
         }
 
-        /* スコア表 */
+        /* スコア表（横スクロールのみ許可） */
         .score-editor-wrapper {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
+            touch-action: pan-x; /* スコア表内部のみ横スクロールを許可 */
             margin: 10px 0 18px;
             border: 1px solid var(--gold-border);
             border-radius: 8px;
@@ -490,12 +511,12 @@
             min-width: 46px;
         }
         .score-input {
-            width: 32px;
-            height: 28px;
+            width: 34px;
+            height: 30px;
             text-align: center;
             border: 1px solid #cfc4b0;
             border-radius: 4px;
-            font-size: 13px;
+            font-size: 16px; /* 自動ズーム防止 */
             font-weight: 700;
             font-family: 'Cinzel', serif;
             background: #fff;
@@ -505,8 +526,8 @@
         .score-input:focus { border-color: var(--gold); }
         .name-select {
             width: 100%;
-            padding: 5px;
-            font-size: 12px;
+            padding: 6px 4px;
+            font-size: 13px;
             font-weight: 700;
             border: 1px solid #cfc4b0;
             border-radius: 4px;
@@ -622,7 +643,6 @@
             box-shadow: var(--shadow-sm);
             transition: transform 0.2s;
         }
-        .gallery-card:hover { transform: translateY(-2px); }
         .gallery-card img { width: 100%; height: 140px; object-fit: cover; display: block; }
         .gallery-card-info { padding: 10px; font-size: 11px; }
         .gallery-card-title {
@@ -713,7 +733,7 @@
 </head>
 <body>
 
-    <!-- Golstagram ヘッダー（ブランド＆商標クレジット配置） -->
+    <!-- Golstagram ヘッダー -->
     <header>
         <div class="logo-container">
             <span class="golstagram-logo">Golstagram<span class="gold-dot">.</span></span>
