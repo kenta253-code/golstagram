@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golstagram - ゴルフ想い出＆スコア共有</title>
+    <!-- Google Fonts: ロゴ・Golsta用フォント ＆ 筆記体フォント ＆ 和欧文フォント -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@500;700&family=Comfortaa:wght@700&family=Noto+Sans+JP:wght@400;500;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #23382b;        /* 深みのあるダークセピアグリーン */
+            --primary-light: #e4dcce;  /* セピアハイライト */
+            --primary-hover: #17261d;
+            --gold: #b38743;           /* アンティーク・ゴールド */
+            --gold-light: #ece3d0;     /* ウォームアンバー */
+            --gold-border: #d5c7ab;    /* セピアゴールド枠線 */
+            --bg: #efe8db;             /* クラシックセピア・パーチメント背景 */
+            --card: #faf7f0;           /* エクリュ・カード背景 */
+            --text-main: #332b24;      /* セピアダークブラウン文字 */
+            --text-sub: #7a7064;       /* セピアグレー文字 */
+            --border: #ddd4c1;         /* セピア枠線 */
+            --danger: #b84343;
+            --shadow-sm: 0 2px 8px rgba(60, 48, 36, 0.05);
+            --shadow-md: 0 8px 24px rgba(60, 48, 36, 0.08);
+            --shadow-lg: 0 12px 32px rgba(60, 48, 36, 0.12);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+            padding-bottom: 80px;
+            letter-spacing: 0.02em;
+        }
+
+        /* Golsta 専用フォントスタイル（Golstagramと同フォント） */
+        .font-golsta {
+            font-family: 'Outfit', 'Comfortaa', sans-serif;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        /* Golstagram ヘッダー */
+        header {
+            background: linear-gradient(135deg, #253328 0%, #1a241c 100%);
+            color: #f7f4ee;
+            padding: 14px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 12px rgba(45,36,28,0.25);
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid var(--gold);
+        }
+        .logo-container {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            width: 100%;
+        }
+        .golstagram-logo {
+            font-family: 'Outfit', 'Comfortaa', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: #fbf9f4;
+            display: inline-flex;
+            align-items: center;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            line-height: 1;
+        }
+        .golstagram-logo span.gold-dot {
+            color: var(--gold);
+            font-size: 30px;
+            line-height: 0;
+            margin-left: 1px;
+        }
+        .header-tagline {
+            font-family: 'Alex Brush', cursive;
+            font-size: 16px;
+            color: #ffffff;
+            letter-spacing: 0.03em;
+            font-weight: 400;
+            line-height: 1;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .header-trademark {
+            font-family: 'Outfit', sans-serif;
+            font-size: 10px;
+            color: #ffffff;
+            letter-spacing: 0.04em;
+            font-weight: 600;
+            margin-left: auto; /* 一番右端に寄せる */
+            line-height: 1;
+            opacity: 0.85;
+            white-space: nowrap;
+        }
+
+        /* 画面上部のセクションタイトル */
+        .section-header-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .section-header-desc {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-bottom: 16px;
+        }
+
+        /* 下部タブバー */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: rgba(250, 247, 240, 0.96);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+            box-shadow: 0 -4px 16px rgba(45,36,28,0.06);
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            font-size: 11px;
+            color: var(--text-sub);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+        .tab-btn.active {
+            color: var(--primary);
+            font-weight: 700;
+        }
+        .tab-btn.active svg {
+            fill: var(--primary);
+            filter: drop-shadow(0 2px 4px rgba(35, 56, 43, 0.25));
+        }
+        .tab-btn svg { width: 22px; height: 22px; fill: var(--text-sub); transition: 0.2s; }
+
+        .container { max-width: 600px; margin: 0 auto; padding: 18px 16px; }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.25s ease-out; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* フローティング「Golsta 登録」ボタン */
+        .fab {
+            position: fixed;
+            right: 20px;
+            bottom: 80px;
+            background: linear-gradient(135deg, #23382b 0%, #344d3d 100%);
+            color: #ffffff;
+            border: 1px solid var(--gold);
+            border-radius: 30px;
+            padding: 14px 22px;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: var(--shadow-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 90;
+            transition: all 0.2s ease;
+        }
+        .fab:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* カードデザイン */
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card-header-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #fbf9f4;
+            border-bottom: 1px solid #eee7d7;
+        }
+        .avatar-img {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--gold-border);
+            background: #e6dfd1;
+            flex-shrink: 0;
+        }
+        .avatar-img-sm {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--gold-border);
+            flex-shrink: 0;
+        }
+        .user-name-text {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        
+        .card-img {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+            background: #ded5c2;
+            display: block;
+        }
+        .card-body { padding: 16px; }
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+        .card-date {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .score-highlight {
+            font-family: 'Cinzel', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            background: var(--gold-light);
+            border: 1px solid var(--gold-border);
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .btn-card-delete {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(45, 36, 28, 0.6);
+            backdrop-filter: blur(4px);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 11px;
+            cursor: pointer;
+            z-index: 5;
+            transition: 0.2s;
+        }
+        .btn-card-delete:hover { background: var(--danger); }
+
+        /* コメントエリア */
+        .comment-section {
+            background: #f4eee2;
+            border-top: 1px solid #e7dfcc;
+            padding: 12px 16px;
+        }
+        .comment-list {
+            margin-bottom: 10px;
+            font-size: 12px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        .comment-bubble {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #faf7f0;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 10px;
+            margin-bottom: 6px;
+            box-shadow: 0 1px 2px rgba(45,36,28,0.03);
+        }
+        .comment-author {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 12px;
+        }
+        .comment-form { display: flex; gap: 8px; }
+        .comment-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 12px;
+            background: #faf7f0;
+            color: var(--text-main);
+            outline: none;
+        }
+        .comment-input:focus { border-color: var(--gold); }
+        .btn-comment-send {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        /* フォームコントロール */
+        .form-group { margin-bottom: 18px; }
+        .form-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 6px;
+            display: block;
+        }
+        .form-control {
+            width: 100%;
+            padding: 11px 13px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: #faf7f0;
+            color: var(--text-main);
+            outline: none;
+            transition: 0.2s;
+        }
+        .form-control:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(179, 135, 67, 0.15);
+        }
+
+        /* ボタン群 */
+        .btn-main {
+            width: 100%;
+            background: linear-gradient(135deg, #23382b 0%, #344d3d 100%);
+            color: white;
+            border: 1px solid var(--gold);
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: 0.2s;
+        }
+        .btn-main:hover {
+            opacity: 0.95;
+            box-shadow: var(--shadow-md);
+        }
+        .btn-cancel {
+            width: 100%;
+            background: #faf7f0;
+            color: var(--text-sub);
+            border: 1px solid var(--border);
+            padding: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+        .btn-cancel:hover { background: #f0ebd9; color: var(--danger); }
+        .btn-sub {
+            background: #faf7f0;
+            border: 1px solid var(--gold-border);
+            color: var(--primary);
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-sub:hover { background: var(--gold-light); }
+        .btn-edit {
+            background: #faf7f0;
+            color: var(--primary);
+            border: 1px solid var(--gold-border);
+            padding: 9px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-back {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 14px;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* スコア表 */
+        .score-editor-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 10px 0 18px;
+            border: 1px solid var(--gold-border);
+            border-radius: 8px;
+            background: #faf7f0;
+        }
+        .scorecard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .scorecard-table th, .scorecard-table td {
+            border: 1px solid #e5dcce;
+            padding: 7px 5px;
+            text-align: center;
+        }
+        .scorecard-table thead th {
+            background: var(--primary);
+            color: #f7f4ee;
+            font-weight: 700;
+            font-family: 'Cinzel', serif;
+        }
+        .scorecard-table tr.par-row {
+            background: var(--gold-light);
+            font-weight: 700;
+            color: #7a5823;
+        }
+        .scorecard-table td.player-name-cell {
+            position: sticky;
+            left: 0;
+            background: #f5eedf;
+            z-index: 2;
+            border-right: 2px solid var(--gold-border);
+            min-width: 140px;
+            text-align: left;
+            padding: 6px;
+        }
+        .scorecard-table thead th.player-name-cell {
+            position: sticky;
+            left: 0;
+            background: var(--primary);
+            z-index: 3;
+            border-right: 2px solid var(--gold-border);
+        }
+        .scorecard-table td.total-cell {
+            background: #f6ebd5;
+            font-weight: 700;
+            color: #9c6010;
+            font-family: 'Cinzel', serif;
+            font-size: 13px;
+            min-width: 46px;
+        }
+        .score-input {
+            width: 32px;
+            height: 28px;
+            text-align: center;
+            border: 1px solid #cfc4b0;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'Cinzel', serif;
+            background: #fff;
+            color: var(--text-main);
+            outline: none;
+        }
+        .score-input:focus { border-color: var(--gold); }
+        .name-select {
+            width: 100%;
+            padding: 5px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid #cfc4b0;
+            border-radius: 4px;
+            background: #faf7f0;
+            color: var(--text-main);
+        }
+
+        .half-toggle-bar { display: flex; gap: 6px; margin-bottom: 8px; }
+        .half-btn {
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid var(--border);
+            background: #faf7f0;
+            color: var(--text-main);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .half-btn.active {
+            background: var(--primary);
+            color: #f7f4ee;
+            border-color: var(--primary);
+        }
+
+        /* 写真グリッド */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .photo-item {
+            position: relative;
+            height: 110px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            background: #ded5c2;
+            box-shadow: var(--shadow-sm);
+        }
+        .photo-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .photo-item.best { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(179, 135, 67, 0.4); }
+        .best-badge {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            background: var(--gold);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+        }
+        .btn-remove-photo {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(45,36,28,0.65);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+
+        /* 切り替えタブ */
+        .toggle-group {
+            display: flex;
+            background: #e3dbca;
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 18px;
+        }
+        .toggle-btn {
+            flex: 1;
+            border: none;
+            padding: 9px;
+            border-radius: 8px;
+            background: none;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--text-sub);
+            transition: 0.2s;
+        }
+        .toggle-btn.active {
+            background: #faf7f0;
+            color: var(--primary);
+            box-shadow: 0 2px 6px rgba(45,36,28,0.08);
+        }
+
+        /* ギャラリー一覧 */
+        .all-gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+        .gallery-card {
+            background: #faf7f0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s;
+        }
+        .gallery-card:hover { transform: translateY(-2px); }
+        .gallery-card img { width: 100%; height: 140px; object-fit: cover; display: block; }
+        .gallery-card-info { padding: 10px; font-size: 11px; }
+        .gallery-card-title {
+            font-weight: 700;
+            color: var(--primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+
+        /* 振り返りドリルダウン */
+        .drilldown-container {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--gold-border);
+            display: none;
+        }
+        .drilldown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee7d7;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .drilldown-item:hover { background: #f5eedf; }
+        .drilldown-thumb { width: 38px; height: 38px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+
+        .score-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: #faf7f0;
+        }
+        .score-table th, .score-table td {
+            border: 1px solid #e5dcce;
+            padding: 9px 6px;
+            text-align: center;
+        }
+        .score-table th {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
+        }
+        .accordion-btn {
+            background: #faf7f0;
+            border: 1px solid var(--border);
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 4px 2px;
+            font-weight: 700;
+        }
+        .detail-row { display: none; background: #f3ebdc; }
+        .detail-row.open { display: table-row; }
+
+        .profile-edit-box { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+        .avatar-preview {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--gold);
+            background: #ded5c2;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-sm);
+        }
+        .member-card {
+            background: #faf7f0;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Golstagram ヘッダー（ブランド＆商標クレジット配置） -->
+    <header>
+        <div class="logo-container">
+            <span class="golstagram-logo">Golstagram<span class="gold-dot">.</span></span>
+            <span class="header-tagline">No Golf no Life</span>
+            <span class="header-trademark">Longfield LLC ®</span>
+        </div>
+    </header>
+
+    <!-- ① タイムライン画面 (Home) -->
+    <div id="screen-home" class="screen active">
+        <div class="container">
+            <div id="timeline-list"></div>
+        </div>
+        <button class="fab" onclick="openNewRegistration()">
+            <span>＋ <span class="font-golsta">Golsta</span> 登録</span>
+        </button>
+    </div>
+
+    <!-- ② スコア＆写真登録・編集画面 -->
+    <div id="screen-add" class="screen">
+        <div class="container">
+            <div class="card" style="padding: 18px;">
+                <h3 id="formTitle" style="margin-bottom: 4px; color: var(--primary); font-size: 18px;">
+                    <span class="font-golsta">Golsta</span> 登録
+                </h3>
+                <p id="formSubTitle" style="font-size: 12px; color: var(--text-sub); margin-bottom: 14px;">スコアカード画面の写真をセットしてAI解析を行うか、手動で入力してください。</p>
+                
+                <!-- AI読み取りセクション -->
+                <div id="aiUploadSection">
+                    <div class="form-group">
+                        <label class="form-label">スコア画面画像 1 (必須)</label>
+                        <input type="file" id="scoreImageInput1" accept="image/*" class="form-control" onchange="checkScoreButtonState()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">スコア画面画像 2 (任意・ハーフ別など)</label>
+                        <input type="file" id="scoreImageInput2" accept="image/*" class="form-control" onchange="checkScoreButtonState()">
+                    </div>
+                    
+                    <button class="btn-main" id="aiAnalyzeBtn" onclick="processScoreImagesSafe()" style="background:#b0bec5; cursor:not-allowed;" disabled>AIでスコアを解析する</button>
+                    <div id="aiStatus" style="font-size: 13px; color: var(--primary); font-weight: 700; margin-top: 10px;"></div>
+
+                    <div style="text-align: center; margin-top: 16px;">
+                        <button type="button" class="btn-sub" onclick="openManualInput()">手動でスコア・写真を入力する →</button>
+                    </div>
+                </div>
+
+                <!-- スコア確認・写真追加エリア -->
+                <div id="parsedResultSection" style="display:none; margin-top: 18px; border-top: 1px solid var(--border); padding-top: 18px;">
+                    <div class="form-group">
+                        <label class="form-label">ゴルフ場・コース名</label>
+                        <input type="text" id="courseName" class="form-control" list="pastCourseList" placeholder="例: 熱海ゴルフ倶楽部">
+                        <datalist id="pastCourseList"></datalist>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">プレー日</label>
+                        <input type="date" id="playDate" class="form-control">
+                    </div>
+
+                    <div style="margin: 18px 0 8px; display:flex; justify-content:space-between; align-items:center;">
+                        <h4 style="color: var(--primary);">📊 スコアカード確認・編集</h4>
+                        <button class="btn-sub" onclick="addNewPlayerRow()">＋ プレイヤー追加</button>
+                    </div>
+
+                    <div class="half-toggle-bar">
+                        <button class="half-btn active" id="btn-view-out" onclick="setScoreViewMode('out')">OUT (1-9H)</button>
+                        <button class="half-btn" id="btn-view-in" onclick="setScoreViewMode('in')">IN (10-18H)</button>
+                        <button class="half-btn" id="btn-view-all" onclick="setScoreViewMode('all')">全18H表示</button>
+                    </div>
+
+                    <div class="score-editor-wrapper">
+                        <table class="scorecard-table" id="scoreEditorTable"></table>
+                    </div>
+                    
+                    <!-- 想い出写真追加エリア -->
+                    <h3 style="margin: 20px 0 6px; color: var(--primary); font-size: 15px;">2. 想い出写真を追加 (<span id="photoCountLabel">0</span> / 5枚)</h3>
+                    <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 8px;">写真をタップすると「★ カバー写真」に設定できます（JPEG/PNG形式）</p>
+                    
+                    <input type="file" id="photoGalleryInput" accept="image/jpeg,image/png,image/webp" multiple class="form-control" onchange="addGalleryPhotos(this)">
+                    <div id="photoPreviewGrid" class="photo-grid"></div>
+
+                    <div class="form-group" style="margin-top: 18px;">
+                        <label class="form-label">公開範囲</label>
+                        <select id="visibility" class="form-control">
+                            <option value="friends">ゴルフ仲間に公開 (タイムライン)</option>
+                            <option value="members_only">同伴者のみに公開</option>
+                        </select>
+                    </div>
+
+                    <button class="btn-main" onclick="saveRound()">この内容でラウンドを保存する</button>
+                    <button class="btn-cancel" onclick="cancelAndBackToHome()">タイムラインに戻る（入力を破棄）</button>
+                </div>
+
+                <div id="initialCancelSection" style="margin-top: 12px;">
+                    <button class="btn-cancel" onclick="cancelAndBackToHome()">タイムラインに戻る</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ③ ラウンド詳細画面 -->
+    <div id="screen-detail" class="screen">
+        <div class="container">
+            <button class="btn-back" id="detailBackBtn" onclick="showScreen('screen-home')">← 戻る</button>
+            <div id="detail-content"></div>
+        </div>
+    </div>
+
+    <!-- ④ ギャラリー画面 -->
+    <div id="screen-gallery" class="screen">
+        <div class="container">
+            <div class="section-header-title">
+                📷 <span class="font-golsta">Golsta</span> Gallery
+            </div>
+            <div class="section-header-desc">メンバーが登録したすべてのラウンド写真です（タップで詳細を表示）</div>
+            <div id="allGalleryContainer" class="all-gallery-grid"></div>
+        </div>
+    </div>
+
+    <!-- ⑤ 振り返り画面 -->
+    <div id="screen-summary" class="screen">
+        <div class="container">
+            <div class="section-header-title">
+                🏌️‍♂️ <span class="font-golsta">Golsta</span> Memory
+            </div>
+            <div class="section-header-desc">過去の対戦履歴やゴルフ場ごとの記録を振り返ります</div>
+            <div class="toggle-group">
+                <button class="toggle-btn active" id="btn-toggle-members" onclick="switchSummaryTab('members')">メンバー別</button>
+                <button class="toggle-btn" id="btn-toggle-courses" onclick="switchSummaryTab('courses')">ゴルフ場別</button>
+            </div>
+            <div id="summary-content"></div>
+        </div>
+    </div>
+
+    <!-- ⑥ メンバー・プロフィール管理画面 -->
+    <div id="screen-members" class="screen">
+        <div class="container">
+            <div class="section-header-title">
+                👥 <span class="font-golsta">Golsta</span> Friend
+            </div>
+            <div class="section-header-desc">あなたのプロフィールとゴルフ仲間の登録・管理を行います</div>
+
+            <div class="card" style="padding: 18px; border: 2px solid var(--gold-border);">
+                <h3 style="margin-bottom: 14px; color: var(--primary); font-size: 16px;">👤 あなたのプロフィール</h3>
+                <div class="profile-edit-box">
+                    <img id="myAvatarImg" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" class="avatar-preview">
+                    <div style="flex: 1;">
+                        <label class="form-label" style="font-size: 11px;">アイコン写真／イラストを変更</label>
+                        <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp" class="form-control" style="padding: 6px; font-size: 11px;" onchange="updateProfileAvatar(this)">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">氏名（表示名）</label>
+                    <input type="text" id="myProfileName" class="form-control" value="長原 健太">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">カートナビでの表示名・エイリアス</label>
+                    <input type="text" id="myProfileAlias" class="form-control" value="長原">
+                </div>
+                <button class="btn-main" onclick="saveMyProfile()">プロフィールを更新保存</button>
+            </div>
+
+            <div class="card" style="padding: 18px;">
+                <h3 style="margin-bottom: 14px; color: var(--primary); font-size: 16px;">👥 ゴルフ仲間の登録</h3>
+                <div class="form-group">
+                    <label class="form-label">仲間のお名前</label>
+                    <input type="text" id="newMemberName" class="form-control" placeholder="例: レナ, リエ, 田中">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">カートナビでの表示名（任意）</label>
+                    <input type="text" id="newMemberAlias" class="form-control" placeholder="例: RENA, TANAKA">
+                </div>
+                <button class="btn-sub" style="width: 100%; padding: 11px;" onclick="addNewMember()">仲間をリストに追加</button>
+            </div>
+
+            <h4 style="margin: 18px 0 10px; color: var(--primary); font-size: 15px;">📋 登録済みゴルフ仲間一覧</h4>
+            <div id="memberListContainer"></div>
+        </div>
+    </div>
+
+    <!-- 下部タブバー -->
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="navigateTab('screen-home')">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            タイムライン
+        </button>
+        <button class="tab-btn" onclick="navigateTab('screen-gallery')">
+            <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+            ギャラリー
+        </button>
+        <button class="tab-btn" onclick="navigateTab('screen-summary')">
+            <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            振り返り
+        </button>
+        <button class="tab-btn" onclick="navigateTab('screen-members')">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            メンバー
+        </button>
+    </div>
+
+    <script>
+        const GEMINI_API_KEY = 'AQ.Ab8RN6JP-oM5a54UjwIpM8lLKu5v0gMk5XUePUMukE4wOZQxYw';
+
+        let rounds = JSON.parse(localStorage.getItem('golf_rounds') || '[]');
+        let myProfile = JSON.parse(localStorage.getItem('golf_my_profile') || JSON.stringify({
+            name: '長原 健太',
+            alias: '長原',
+            avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
+        }));
+
+        let members = JSON.parse(localStorage.getItem('golf_members') || JSON.stringify([
+            { id: 'm2', name: 'レナ', alias: 'レナ', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150' },
+            { id: 'm3', name: 'リエ', alias: 'リエ', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150' },
+            { id: 'm4', name: 'こうしろう', alias: 'こうしろう', avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150' }
+        ]));
+
+        let tempPlayersData = [];
+        let tempParData = {
+            out: [4, 5, 3, 5, 4, 4, 3, 4, 4],
+            in:  [5, 4, 5, 4, 3, 4, 3, 4, 4]
+        };
+        let scoreViewMode = 'out';
+        let tempPhotos = [];
+        let bestPhotoIndex = 0;
+        let isEditingRound = false;
+        let editingRoundId = null;
+
+        function checkScoreButtonState() {
+            const file1 = document.getElementById('scoreImageInput1').files[0];
+            const btn = document.getElementById('aiAnalyzeBtn');
+            if (file1) {
+                btn.style.background = 'linear-gradient(135deg, #23382b 0%, #344d3d 100%)';
+                btn.style.cursor = 'pointer';
+                btn.disabled = false;
+            } else {
+                btn.style.background = '#b0bec5';
+                btn.style.cursor = 'not-allowed';
+                btn.disabled = true;
+            }
+        }
+
+        function openNewRegistration() {
+            editingRoundId = null;
+            document.getElementById('formTitle').innerHTML = '<span class="font-golsta">Golsta</span> 登録';
+            document.getElementById('aiUploadSection').style.display = 'block';
+            document.getElementById('parsedResultSection').style.display = 'none';
+            document.getElementById('initialCancelSection').style.display = 'block';
+
+            document.getElementById('courseName').value = '';
+            document.getElementById('playDate').value = new Date().toISOString().split('T')[0];
+
+            tempParData = {
+                out: [4, 5, 3, 5, 4, 4, 3, 4, 4],
+                in:  [5, 4, 5, 4, 3, 4, 3, 4, 4]
+            };
+            tempPlayersData = [{
+                cart_name: myProfile.name,
+                out_scores: Array(9).fill(4),
+                in_scores: Array(9).fill(4),
+                out_total: 36,
+                in_total: 36,
+                total_score: 72
+            }];
+            tempPhotos = [];
+            bestPhotoIndex = 0;
+
+            renderScorecardEditor();
+            renderPhotoGrid();
+            isEditingRound = false;
+
+            showScreen('screen-add');
+        }
+
+        function openManualInput() {
+            document.getElementById('parsedResultSection').style.display = 'block';
+            document.getElementById('initialCancelSection').style.display = 'none';
+            isEditingRound = true;
+        }
+
+        function openEditRegistration(roundId) {
+            const r = rounds.find(item => item.id === roundId);
+            if (!r) return;
+
+            editingRoundId = r.id;
+            document.getElementById('formTitle').innerText = `✏️ ラウンド情報の編集 (${r.courseName})`;
+            document.getElementById('aiUploadSection').style.display = 'none';
+
+            document.getElementById('courseName').value = r.courseName;
+            document.getElementById('playDate').value = r.playDate;
+            document.getElementById('visibility').value = r.visibility || 'friends';
+
+            tempParData = r.par || tempParData;
+            tempPlayersData = JSON.parse(JSON.stringify(r.players || []));
+            tempPhotos = JSON.parse(JSON.stringify(r.photos || []));
+            bestPhotoIndex = r.bestPhotoIndex || 0;
+
+            renderScorecardEditor();
+            renderPhotoGrid();
+            document.getElementById('parsedResultSection').style.display = 'block';
+            document.getElementById('initialCancelSection').style.display = 'none';
+            isEditingRound = true;
+
+            showScreen('screen-add');
+        }
+
+        function navigateTab(targetScreenId) {
+            const currentActive = document.querySelector('.screen.active');
+            if (currentActive && currentActive.id === 'screen-add' && isEditingRound) {
+                if (confirm('入力内容が破棄されますが、画面を移動してもよろしいですか？')) {
+                    resetAddForm();
+                    showScreen(targetScreenId);
+                }
+            } else {
+                showScreen(targetScreenId);
+            }
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(screenId).classList.add('active');
+            if (screenId === 'screen-home') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                renderTimeline();
+            } else if (screenId === 'screen-gallery') {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                renderAllGallery();
+            } else if (screenId === 'screen-summary') {
+                document.querySelectorAll('.tab-btn')[2].classList.add('active');
+                renderSummary('members');
+            } else if (screenId === 'screen-members') {
+                document.querySelectorAll('.tab-btn')[3].classList.add('active');
+                initProfileScreen();
+            } else if (screenId === 'screen-add') {
+                updateCourseDatalist();
+            }
+            window.scrollTo(0, 0);
+        }
+
+        function cancelAndBackToHome() {
+            if (isEditingRound) {
+                if (confirm('入力内容を破棄してタイムラインに戻りますか？')) {
+                    resetAddForm();
+                    showScreen('screen-home');
+                }
+            } else {
+                showScreen('screen-home');
+            }
+        }
+
+        function resetAddForm() {
+            document.getElementById('scoreImageInput1').value = '';
+            document.getElementById('scoreImageInput2').value = '';
+            document.getElementById('photoGalleryInput').value = '';
+            document.getElementById('aiStatus').innerText = '';
+            document.getElementById('parsedResultSection').style.display = 'none';
+            document.getElementById('initialCancelSection').style.display = 'block';
+            checkScoreButtonState();
+            tempPlayersData = [];
+            tempPhotos = [];
+            bestPhotoIndex = 0;
+            isEditingRound = false;
+            editingRoundId = null;
+            renderPhotoGrid();
+        }
+
+        function updateCourseDatalist() {
+            const datalist = document.getElementById('pastCourseList');
+            const uniqueCourses = Array.from(new Set(rounds.map(r => r.courseName).filter(Boolean)));
+            if (uniqueCourses.length === 0) {
+                uniqueCourses.push('熱海ゴルフ倶楽部', '川奈ホテルゴルフコース', '太平洋クラブ');
+            }
+            datalist.innerHTML = uniqueCourses.map(course => `<option value="${course}">`).join('');
+        }
+
+        function initProfileScreen() {
+            document.getElementById('myProfileName').value = myProfile.name;
+            document.getElementById('myProfileAlias').value = myProfile.alias;
+            document.getElementById('myAvatarImg').src = myProfile.avatar;
+            renderMemberList();
+        }
+
+        function compressImageFile(file, maxWidth = 600, quality = 0.6) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.naturalWidth || img.width;
+                        let height = img.naturalHeight || img.height;
+                        
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        
+                        ctx.fillStyle = "#faf7f0";
+                        ctx.fillRect(0, 0, width, height);
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.onerror = () => reject(new Error('画像の展開に失敗しました（JPEGまたはPNG形式の写真をお使いください）'));
+                    img.src = e.target.result;
+                };
+                reader.onerror = () => reject(new Error('ファイルの読み込みに失敗しました'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function updateProfileAvatar(input) {
+            if (input.files && input.files[0]) {
+                try {
+                    const compressed = await compressImageFile(input.files[0], 200, 0.8);
+                    myProfile.avatar = compressed;
+                    document.getElementById('myAvatarImg').src = compressed;
+                } catch (e) {
+                    alert(e.message);
+                }
+            }
+        }
+
+        function saveMyProfile() {
+            myProfile.name = document.getElementById('myProfileName').value.trim() || '長原 健太';
+            myProfile.alias = document.getElementById('myProfileAlias').value.trim() || myProfile.name;
+            localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
+            alert('プロフィールを保存しました！');
+        }
+
+        function renderMemberList() {
+            const container = document.getElementById('memberListContainer');
+            if (members.length === 0) {
+                container.innerHTML = '<p style="color:#888;">登録されている仲間はいません。</p>';
+                return;
+            }
+            container.innerHTML = members.map((m, idx) => `
+                <div class="member-card">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <img src="${m.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="avatar-img-sm">
+                        <div>
+                            <div style="font-weight:700; font-size:14px; color:var(--text-main);">${m.name}</div>
+                            <div style="font-size:11px; color:var(--text-sub);">エイリアス: ${m.alias || 'なし'}</div>
+                        </div>
+                    </div>
+                    <button class="btn-cancel" style="width:auto; margin:0; padding:4px 12px; font-size:11px; border-radius:6px;" onclick="deleteMember(${idx})">削除</button>
+                </div>
+            `).join('');
+        }
+
+        function addNewMember() {
+            const name = document.getElementById('newMemberName').value.trim();
+            const alias = document.getElementById('newMemberAlias').value.trim();
+            if (!name) {
+                alert('仲間のお名前を入力してください。');
+                return;
+            }
+            members.push({
+                id: 'm_' + Date.now(),
+                name: name,
+                alias: alias || name,
+                avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
+            });
+            localStorage.setItem('golf_members', JSON.stringify(members));
+            document.getElementById('newMemberName').value = '';
+            document.getElementById('newMemberAlias').value = '';
+            renderMemberList();
+            alert(`「${name}」さんを追加しました！`);
+        }
+
+        function deleteMember(index) {
+            if (confirm(`「${members[index].name}」さんを削除しますか？`)) {
+                members.splice(index, 1);
+                localStorage.setItem('golf_members', JSON.stringify(members));
+                renderMemberList();
+            }
+        }
+
+        async function addGalleryPhotos(input) {
+            const files = Array.from(input.files);
+            if (!files.length) return;
+
+            isEditingRound = true;
+            const remainingSlots = 5 - tempPhotos.length;
+            if (remainingSlots <= 0) {
+                alert('写真は最大5枚まで登録できます。不要な写真を削除してください。');
+                input.value = '';
+                return;
+            }
+
+            const filesToProcess = files.slice(0, remainingSlots);
+            if (files.length > remainingSlots) {
+                alert(`上限（5枚）を超えたため、最初の${remainingSlots}枚のみ追加します。`);
+            }
+
+            document.getElementById('photoCountLabel').innerText = '圧縮中...';
+
+            for (const file of filesToProcess) {
+                try {
+                    const compressed = await compressImageFile(file, 600, 0.6);
+                    tempPhotos.push(compressed);
+                } catch (e) {
+                    alert('写真「' + file.name + '」: ' + e.message);
+                }
+            }
+
+            renderPhotoGrid();
+            input.value = '';
+        }
+
+        function removePhoto(e, index) {
+            e.stopPropagation();
+            isEditingRound = true;
+            tempPhotos.splice(index, 1);
+            if (bestPhotoIndex >= tempPhotos.length) {
+                bestPhotoIndex = Math.max(0, tempPhotos.length - 1);
+            }
+            renderPhotoGrid();
+        }
+
+        function renderPhotoGrid() {
+            const grid = document.getElementById('photoPreviewGrid');
+            const countLabel = document.getElementById('photoCountLabel');
+            countLabel.innerText = tempPhotos.length;
+            grid.innerHTML = '';
+
+            tempPhotos.forEach((src, idx) => {
+                const div = document.createElement('div');
+                div.className = `photo-item ${idx === bestPhotoIndex ? 'best' : ''}`;
+                div.onclick = () => { bestPhotoIndex = idx; renderPhotoGrid(); };
+                div.innerHTML = `
+                    <img src="${src}">
+                    <button class="btn-remove-photo" onclick="removePhoto(event, ${idx})">✕</button>
+                    ${idx === bestPhotoIndex ? '<span class="best-badge">★ カバー</span>' : ''}
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        async function processScoreImagesSafe() {
+            const file1 = document.getElementById('scoreImageInput1').files[0];
+            const file2 = document.getElementById('scoreImageInput2').files[0];
+            const status = document.getElementById('aiStatus');
+            if (!file1) return;
+
+            isEditingRound = true;
+            status.innerText = 'AIがスコア画像を解析中...⛳';
+
+            try {
+                const base641 = (await compressImageFile(file1, 1024, 0.8)).split(',')[1];
+                let base642 = file2 ? (await compressImageFile(file2, 1024, 0.8)).split(',')[1] : null;
+
+                const promptText = `提供されたスコアカード（またはカート画面）の画像を解析し、ゴルフ場名・プレー日・各ホールのPAR・各プレイヤー打数（1〜18H、OUT計、IN計、TOTAL）を抽出してください。
+2枚ある場合はOUTとINを統合してください。
+必ず以下のJSON形式のみを出力してください。挨拶やMarkdown等の装飾は不要です。
+{
+  "course_name": "ゴルフ場名",
+  "play_date": "YYYY-MM-DD",
+  "par": {
+    "out": [4,5,3,5,4,4,3,4,4],
+    "in": [5,4,5,4,3,4,3,4,4]
+  },
+  "players": [
+    {
+      "cart_name": "氏名",
+      "out_scores": [0,0,0,0,0,0,0,0,0],
+      "in_scores": [0,0,0,0,0,0,0,0,0],
+      "out_total": 0,
+      "in_total": 0,
+      "total_score": 0
+    }
+  ]
+}`;
+
+                const parts = [
+                    { text: promptText },
+                    { inlineData: { mimeType: "image/jpeg", data: base641 } }
+                ];
+                if (base642) {
+                    parts.push({ inlineData: { mimeType: "image/jpeg", data: base642 } });
+                }
+
+                const mRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
+                const mData = await mRes.json();
+                
+                if (!mData.models || mData.models.length === 0) {
+                    throw new Error('利用可能なモデルが見つかりません。APIキーを確認してください。');
+                }
+
+                const candidateModels = mData.models.filter(m => 
+                    m.supportedGenerationMethods && 
+                    m.supportedGenerationMethods.includes('generateContent') && 
+                    !m.name.includes('embedding')
+                );
+
+                let parsedJSON = null;
+
+                for (const model of candidateModels) {
+                    try {
+                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model.name}:generateContent?key=${GEMINI_API_KEY}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ contents: [{ parts: parts }] })
+                        });
+                        const resData = await res.json();
+
+                        if (res.ok && resData.candidates?.[0]?.content?.parts?.[0]?.text) {
+                            let rawText = resData.candidates[0].content.parts[0].text;
+                            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+                            if (jsonMatch) {
+                                parsedJSON = JSON.parse(jsonMatch[0]);
+                                break;
+                            }
+                        }
+                    } catch (err) {
+                        continue;
+                    }
+                }
+
+                if (parsedJSON) {
+                    tempPlayersData = parsedJSON.players || [];
+                    const allRegistered = [myProfile, ...members];
+                    tempPlayersData.forEach(p => {
+                        const matched = allRegistered.find(m => m.alias === p.cart_name || m.name === p.cart_name || p.cart_name.includes(m.name));
+                        if (matched) p.cart_name = matched.name;
+                    });
+
+                    if (parsedJSON.par && parsedJSON.par.out) {
+                        tempParData = parsedJSON.par;
+                    }
+                    
+                    document.getElementById('courseName').value = parsedJSON.course_name || '';
+                    document.getElementById('playDate').value = parsedJSON.play_date || new Date().toISOString().split('T')[0];
+                    renderScorecardEditor();
+                    document.getElementById('parsedResultSection').style.display = 'block';
+                    document.getElementById('initialCancelSection').style.display = 'none';
+                    status.innerText = `✅ AI解析完了（${tempPlayersData.length}名分のスコアを読み込みました）`;
+                } else {
+                    status.innerText = '⚠️ 自動解析できませんでした。手動で入力してください。';
+                    document.getElementById('parsedResultSection').style.display = 'block';
+                    document.getElementById('initialCancelSection').style.display = 'none';
+                }
+            } catch (e) {
+                status.innerText = '解析エラー: ' + e.message;
+                document.getElementById('parsedResultSection').style.display = 'block';
+                document.getElementById('initialCancelSection').style.display = 'none';
+            }
+        }
+
+        function setScoreViewMode(mode) {
+            scoreViewMode = mode;
+            document.getElementById('btn-view-out').classList.toggle('active', mode === 'out');
+            document.getElementById('btn-view-in').classList.toggle('active', mode === 'in');
+            document.getElementById('btn-view-all').classList.toggle('active', mode === 'all');
+            renderScorecardEditor();
+        }
+
+        function addNewPlayerRow() {
+            isEditingRound = true;
+            const allMembers = [myProfile, ...members];
+            const defaultName = allMembers.length > tempPlayersData.length ? allMembers[tempPlayersData.length].name : `プレイヤー${tempPlayersData.length + 1}`;
+            tempPlayersData.push({
+                cart_name: defaultName,
+                out_scores: Array(9).fill(4),
+                in_scores: Array(9).fill(4),
+                out_total: 36,
+                in_total: 36,
+                total_score: 72
+            });
+            renderScorecardEditor();
+        }
+
+        function removePlayerRow(playerIndex) {
+            if (tempPlayersData.length <= 1) {
+                alert('最低1名のプレイヤーが必要です。');
+                return;
+            }
+            tempPlayersData.splice(playerIndex, 1);
+            renderScorecardEditor();
+        }
+
+        function renderScorecardEditor() {
+            const table = document.getElementById('scoreEditorTable');
+            const showOut = (scoreViewMode === 'out' || scoreViewMode === 'all');
+            const showIn = (scoreViewMode === 'in' || scoreViewMode === 'all');
+
+            let headerHoles = '<th class="player-name-cell">PLAYER</th>';
+            let parRow = '<td class="player-name-cell"><strong>PAR</strong></td>';
+
+            let outParTotal = tempParData.out.reduce((a,b)=>a+b, 0);
+            let inParTotal = tempParData.in.reduce((a,b)=>a+b, 0);
+
+            if (showOut) {
+                for (let i = 1; i <= 9; i++) {
+                    headerHoles += `<th>${i}</th>`;
+                    parRow += `<td>${tempParData.out[i-1]}</td>`;
+                }
+                headerHoles += `<th>OUT</th>`;
+                parRow += `<td><strong>${outParTotal}</strong></td>`;
+            }
+
+            if (showIn) {
+                for (let i = 10; i <= 18; i++) {
+                    headerHoles += `<th>${i}</th>`;
+                    parRow += `<td>${tempParData.in[i-10]}</td>`;
+                }
+                headerHoles += `<th>IN</th>`;
+                parRow += `<td><strong>${inParTotal}</strong></td>`;
+            }
+
+            headerHoles += `<th>TOTAL</th><th>操作</th>`;
+            parRow += `<td><strong>${outParTotal + inParTotal}</strong></td><td>-</td>`;
+
+            const allRegistered = [myProfile, ...members];
+
+            let playersRows = tempPlayersData.map((p, pIdx) => {
+                let memberOptions = allRegistered.map(m => `
+                    <option value="${m.name}" ${m.name === p.cart_name ? 'selected' : ''}>${m.name}</option>
+                `).join('');
+                let customSelected = !allRegistered.some(m => m.name === p.cart_name) ? `<option value="${p.cart_name}" selected>${p.cart_name} (直接入力)</option>` : '';
+
+                let row = `<td class="player-name-cell">
+                    <select class="name-select" onchange="tempPlayersData[${pIdx}].cart_name = this.value">
+                        ${memberOptions}
+                        ${customSelected}
+                    </select>
+                </td>`;
+
+                if (showOut) {
+                    for (let i = 0; i < 9; i++) {
+                        row += `<td>
+                            <input type="number" class="score-input" value="${p.out_scores[i] || 0}" min="1" max="20"
+                                onchange="updateTableScore(${pIdx}, 'out', ${i}, this.value)">
+                        </td>`;
+                    }
+                    row += `<td style="font-weight:700; background:#f4eedf; font-family:'Cinzel',serif;" id="out-total-${pIdx}">${p.out_total}</td>`;
+                }
+
+                if (showIn) {
+                    for (let i = 0; i < 9; i++) {
+                        row += `<td>
+                            <input type="number" class="score-input" value="${p.in_scores[i] || 0}" min="1" max="20"
+                                onchange="updateTableScore(${pIdx}, 'in', ${i}, this.value)">
+                        </td>`;
+                    }
+                    row += `<td style="font-weight:700; background:#f4eedf; font-family:'Cinzel',serif;" id="in-total-${pIdx}">${p.in_total}</td>`;
+                }
+
+                row += `<td class="total-cell" id="grand-total-${pIdx}">${p.total_score}</td>`;
+                row += `<td><button onclick="removePlayerRow(${pIdx})" style="border:none; background:none; color:var(--danger); font-weight:700; cursor:pointer;">✕</button></td>`;
+                return `<tr>${row}</tr>`;
+            }).join('');
+
+            table.innerHTML = `
+                <thead>
+                    <tr>${headerHoles}</tr>
+                </thead>
+                <tbody>
+                    <tr class="par-row">${parRow}</tr>
+                    ${playersRows}
+                </tbody>
+            `;
+        }
+
+        function updateTableScore(playerIndex, type, holeIndex, val) {
+            isEditingRound = true;
+            const num = parseInt(val, 10) || 0;
+            const player = tempPlayersData[playerIndex];
+            if (type === 'out') {
+                player.out_scores[holeIndex] = num;
+                player.out_total = player.out_scores.reduce((a, b) => a + b, 0);
+            } else {
+                player.in_scores[holeIndex] = num;
+                player.in_total = player.in_scores.reduce((a, b) => a + b, 0);
+            }
+            player.total_score = player.out_total + player.in_total;
+
+            const outEl = document.getElementById(`out-total-${playerIndex}`);
+            const inEl = document.getElementById(`in-total-${playerIndex}`);
+            const grandEl = document.getElementById(`grand-total-${playerIndex}`);
+
+            if (outEl) outEl.innerText = player.out_total;
+            if (inEl) inEl.innerText = player.in_total;
+            if (grandEl) grandEl.innerText = player.total_score;
+        }
+
+        function saveRound() {
+            const courseName = document.getElementById('courseName').value.trim();
+            const playDate = document.getElementById('playDate').value;
+            if (!courseName) {
+                alert('ゴルフ場名を入力または選択してください。');
+                return;
+            }
+
+            if (editingRoundId) {
+                const targetIndex = rounds.findIndex(r => r.id === editingRoundId);
+                if (targetIndex !== -1) {
+                    rounds[targetIndex].courseName = courseName;
+                    rounds[targetIndex].playDate = playDate;
+                    rounds[targetIndex].visibility = document.getElementById('visibility').value;
+                    rounds[targetIndex].par = tempParData;
+                    rounds[targetIndex].players = tempPlayersData;
+                    rounds[targetIndex].photos = tempPhotos;
+                    rounds[targetIndex].bestPhotoIndex = bestPhotoIndex;
+                }
+                alert('🎉 ラウンド情報を更新しました！');
+            } else {
+                const newRound = {
+                    id: 'round_' + Date.now(),
+                    authorName: myProfile.name,
+                    authorAvatar: myProfile.avatar,
+                    courseName: courseName,
+                    playDate: playDate,
+                    visibility: document.getElementById('visibility').value,
+                    par: tempParData,
+                    players: tempPlayersData,
+                    photos: tempPhotos,
+                    bestPhotoIndex: bestPhotoIndex,
+                    comments: []
+                };
+                rounds.unshift(newRound);
+                alert('🎉 ラウンドの想い出を正常に保存しました！');
+            }
+
+            try {
+                localStorage.setItem('golf_rounds', JSON.stringify(rounds));
+                isEditingRound = false;
+                editingRoundId = null;
+                resetAddForm();
+                showScreen('screen-home');
+            } catch (err) {
+                alert('保存エラー: 写真のデータ量が大きすぎます。何枚か写真を削除して再試行してください。\n詳細: ' + err.message);
+                if (!editingRoundId) rounds.shift();
+            }
+        }
+
+        function deleteRound(e, roundId) {
+            e.stopPropagation();
+            if (confirm('このラウンド記録を削除してもよろしいですか？（復元できません）')) {
+                rounds = rounds.filter(r => r.id !== roundId);
+                localStorage.setItem('golf_rounds', JSON.stringify(rounds));
+                renderTimeline();
+                renderAllGallery();
+            }
+        }
+
+        function addComment(e, roundIndex) {
+            e.preventDefault();
+            const input = document.getElementById(`comment-input-${roundIndex}`);
+            const text = input.value.trim();
+            if (!text) return;
+
+            if (!rounds[roundIndex].comments) {
+                rounds[roundIndex].comments = [];
+            }
+
+            rounds[roundIndex].comments.push({
+                author: myProfile.name,
+                avatar: myProfile.avatar,
+                text: text,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+
+            try {
+                localStorage.setItem('golf_rounds', JSON.stringify(rounds));
+            } catch (err) {}
+            
+            input.value = '';
+            renderTimeline();
+        }
+
+        function renderTimeline() {
+            const list = document.getElementById('timeline-list');
+            if (rounds.length === 0) {
+                list.innerHTML = '<div style="text-align:center; padding:50px 20px; color:#888;">まだラウンド履歴がありません。<br>右下のボタンから想い出を登録してください⛳</div>';
+                return;
+            }
+            list.innerHTML = rounds.map((r, idx) => {
+                const cover = r.photos[r.bestPhotoIndex] || (r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600');
+                const mainScore = r.players[0] ? `${r.players[0].cart_name}: ${r.players[0].total_score}` : '';
+                const authorAvatar = r.authorAvatar || myProfile.avatar;
+                const authorName = r.authorName || myProfile.name;
+
+                const commentsHtml = (r.comments || []).map(c => `
+                    <div class="comment-bubble">
+                        <img src="${c.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="avatar-img-sm">
+                        <span class="comment-author">${c.author}:</span>
+                        <span>${c.text}</span>
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="card">
+                        <button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ 削除</button>
+                        
+                        <div class="card-header-user">
+                            <img src="${authorAvatar}" class="avatar-img">
+                            <div>
+                                <div class="user-name-text">${authorName}</div>
+                                <div style="font-size:11px; color:var(--text-sub);">📅 ${r.playDate} プレー</div>
+                            </div>
+                        </div>
+
+                        <img src="${cover}" class="card-img" onclick="showDetail('${r.id}', 'home')" style="cursor:pointer;">
+                        
+                        <div class="card-body">
+                            <div class="card-title" onclick="showDetail('${r.id}', 'home')" style="cursor:pointer;">${r.courseName}</div>
+                            <div class="card-date">👥 同伴: ${r.players.map(p=>p.cart_name).join(', ')}</div>
+                            <div class="score-highlight">${mainScore}</div>
+                        </div>
+
+                        <div class="comment-section">
+                            <div class="comment-list" id="comment-list-${idx}">
+                                ${commentsHtml || '<div style="color:#aaa; font-size:11px;">コメントはまだありません</div>'}
+                            </div>
+                            <form class="comment-form" onsubmit="addComment(event, ${idx})">
+                                <input type="text" class="comment-input" id="comment-input-${idx}" placeholder="ナイスバーディー！ 🏌️‍♂️ ⛳ など一言...">
+                                <button type="submit" class="btn-comment-send">送信</button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderAllGallery() {
+            const container = document.getElementById('allGalleryContainer');
+            const allPhotos = [];
+
+            rounds.forEach(r => {
+                (r.photos || []).forEach(pUrl => {
+                    allPhotos.push({
+                        photoUrl: pUrl,
+                        roundId: r.id,
+                        courseName: r.courseName,
+                        playDate: r.playDate,
+                        authorName: r.authorName || myProfile.name
+                    });
+                });
+            });
+
+            if (allPhotos.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; padding:40px; color:#888;">登録された写真がありません。<br><span class="font-golsta">Golsta</span> 登録から写真を追加してください📷</div>';
+                return;
+            }
+
+            container.innerHTML = allPhotos.map(item => `
+                <div class="gallery-card" onclick="showDetail('${item.roundId}', 'gallery')">
+                    <img src="${item.photoUrl}">
+                    <div class="gallery-card-info">
+                        <div class="gallery-card-title">⛳ ${item.courseName}</div>
+                        <div style="color:var(--text-sub); font-size:10px;">📅 ${item.playDate} ｜ 👤 ${item.authorName}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function switchSummaryTab(type) {
+            document.getElementById('btn-toggle-members').classList.toggle('active', type === 'members');
+            document.getElementById('btn-toggle-courses').classList.toggle('active', type === 'courses');
+            renderSummary(type);
+        }
+
+        function toggleDrilldown(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.display = el.style.display === 'block' ? 'none' : 'block';
+            }
+        }
+
+        function renderSummary(type) {
+            const container = document.getElementById('summary-content');
+            if (type === 'members') {
+                const memberMap = {};
+                rounds.forEach(r => {
+                    r.players.forEach(p => {
+                        if (!memberMap[p.cart_name]) {
+                            memberMap[p.cart_name] = { count: 0, scores: [], rounds: [] };
+                        }
+                        memberMap[p.cart_name].count += 1;
+                        if (p.total_score) memberMap[p.cart_name].scores.push(p.total_score);
+                        memberMap[p.cart_name].rounds.push({
+                            roundId: r.id,
+                            courseName: r.courseName,
+                            playDate: r.playDate,
+                            score: p.total_score,
+                            photo: r.photos[r.bestPhotoIndex] || (r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
+                        });
+                    });
+                });
+
+                container.innerHTML = Object.keys(memberMap).map((name, idx) => {
+                    const data = memberMap[name];
+                    const avg = data.scores.length ? (data.scores.reduce((a,b)=>a+b, 0) / data.scores.length).toFixed(1) : '-';
+                    const best = data.scores.length ? Math.min(...data.scores) : '-';
+
+                    const historyList = data.rounds.map(rd => `
+                        <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
+                            <img src="${rd.photo}" class="drilldown-thumb">
+                            <div style="flex:1;">
+                                <div style="font-weight:700; color:var(--primary);">${rd.courseName}</div>
+                                <div style="color:var(--text-sub); font-size:11px;">📅 ${rd.playDate}</div>
+                            </div>
+                            <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:15px;">${rd.score}</div>
+                        </div>
+                    `).join('');
+
+                    return `
+                        <div class="card" style="padding:16px; margin-bottom:12px;">
+                            <div onclick="toggleDrilldown('drilldown-member-${idx}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <div style="font-size:16px; font-weight:700; color:var(--primary);">👤 ${name}</div>
+                                    <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">
+                                        ラウンド: <strong>${data.count}回</strong> ｜ ベスト: <strong>${best}</strong> ｜ 平均: <strong>${avg}</strong>
+                                    </div>
+                                </div>
+                                <span style="font-size:12px; color:var(--gold); font-weight:700;">▼ 履歴</span>
+                            </div>
+                            
+                            <div class="drilldown-container" id="drilldown-member-${idx}">
+                                <div style="font-size:11px; font-weight:700; color:var(--text-sub); margin-bottom:6px;">過去のラウンド対戦履歴（タップで詳細）:</div>
+                                ${historyList}
+                            </div>
+                        </div>
+                    `;
+                }).join('') || '<p style="color:#888; text-align:center; padding:20px;">データがありません</p>';
+            } else {
+                const courseMap = {};
+                rounds.forEach(r => {
+                    if (!courseMap[r.courseName]) {
+                        courseMap[r.courseName] = { count: 0, bestScore: 999, rounds: [] };
+                    }
+                    courseMap[r.courseName].count += 1;
+                    const myScore = r.players[0]?.total_score;
+                    if (myScore) {
+                        courseMap[r.courseName].bestScore = Math.min(courseMap[r.courseName].bestScore, myScore);
+                    }
+                    courseMap[r.courseName].rounds.push({
+                        roundId: r.id,
+                        playDate: r.playDate,
+                        score: myScore,
+                        playersCount: r.players.length,
+                        photo: r.photos[r.bestPhotoIndex] || (r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
+                    });
+                });
+
+                container.innerHTML = Object.keys(courseMap).map((course, idx) => {
+                    const data = courseMap[course];
+                    const best = data.bestScore === 999 ? '-' : data.bestScore;
+
+                    const historyList = data.rounds.map(rd => `
+                        <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
+                            <img src="${rd.photo}" class="drilldown-thumb">
+                            <div style="flex:1;">
+                                <div style="font-weight:700; color:var(--primary);">⛳ ${course}</div>
+                                <div style="color:var(--text-sub); font-size:11px;">訪問回数: <strong>${data.count}回</strong> ｜ ベスト: <strong>${best}</strong></div>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    return `
+                        <div class="card" style="padding:16px; margin-bottom:12px;">
+                            <div onclick="toggleDrilldown('drilldown-course-${idx}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <div style="font-size:16px; font-weight:700; color:var(--primary);">⛳ ${course}</div>
+                                    <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">
+                                        訪問回数: <strong>${data.count}回</strong> ｜ ベストスコア: <strong>${best}</strong>
+                                    </div>
+                                </div>
+                                <span style="font-size:12px; color:var(--gold); font-weight:700;">▼ 履歴</span>
+                            </div>
+
+                            <div class="drilldown-container" id="drilldown-course-${idx}">
+                                <div style="font-size:11px; font-weight:700; color:var(--text-sub); margin-bottom:6px;">このコースでの過去ラウンド（タップで詳細）:</div>
+                                ${historyList}
+                            </div>
+                        </div>
+                    `;
+                }).join('') || '<p style="color:#888; text-align:center; padding:20px;">データがありません</p>';
+            }
+        }
+
+        function showDetail(roundId, fromScreen = 'home') {
+            const r = rounds.find(item => item.id === roundId);
+            if (!r) return;
+
+            const cover = r.photos[r.bestPhotoIndex] || (r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600');
+            const detail = document.getElementById('detail-content');
+            const backBtn = document.getElementById('detailBackBtn');
+
+            if (fromScreen === 'gallery') {
+                backBtn.setAttribute('onclick', "showScreen('screen-gallery')");
+                backBtn.innerHTML = '← ギャラリーに戻る';
+            } else if (fromScreen === 'summary') {
+                backBtn.setAttribute('onclick', "showScreen('screen-summary')");
+                backBtn.innerHTML = '← 振り返りに戻る';
+            } else {
+                backBtn.setAttribute('onclick', "showScreen('screen-home')");
+                backBtn.innerHTML = '← タイムラインに戻る';
+            }
+            
+            let scoreRows = r.players.map((p, pIdx) => `
+                <tr>
+                    <td style="font-weight:700;">${p.cart_name}</td>
+                    <td style="font-family:'Cinzel',serif;">${p.out_total}</td>
+                    <td style="font-family:'Cinzel',serif;">${p.in_total}</td>
+                    <td style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:16px;">${p.total_score}</td>
+                </tr>
+                <tr class="detail-row" id="detail-out-${pIdx}">
+                    <td colspan="4" style="background:var(--primary-light); padding:8px;">
+                        <strong>OUT (1-9H):</strong> ${p.out_scores ? p.out_scores.join(' | ') : '-'}
+                    </td>
+                </tr>
+                <tr class="detail-row" id="detail-in-${pIdx}">
+                    <td colspan="4" style="background:var(--primary-light); padding:8px;">
+                        <strong>IN (10-18H):</strong> ${p.in_scores ? p.in_scores.join(' | ') : '-'}
+                    </td>
+                </tr>
+            `).join('');
+
+            let galleryHtml = r.photos.map(p => `<img src="${p}" style="width:100%; height:100px; object-fit:cover; border-radius:8px; border:1px solid var(--border);">`).join('');
+
+            detail.innerHTML = `
+                <div class="card">
+                    <img src="${cover}" class="card-img" style="height:260px;">
+                    <div class="card-body">
+                        <button class="btn-edit" onclick="openEditRegistration('${r.id}')">✏️ このラウンドを編集する</button>
+
+                        <h2 style="color:var(--primary); font-size:22px; margin-bottom:4px;">${r.courseName}</h2>
+                        <p style="color:var(--text-sub); font-size:13px; margin-bottom:16px;">プレー日: ${r.playDate}</p>
+                        
+                        <h4 style="margin-top:18px; border-left:4px solid var(--gold); padding-left:10px; color:var(--primary);">📊 スコア一覧</h4>
+                        <div style="margin: 8px 0;">
+                            <button class="accordion-btn" onclick="toggleScoreDetail('out')">OUT各ホール打数 展開/収納</button>
+                            <button class="accordion-btn" onclick="toggleScoreDetail('in')">IN各ホール打数 展開/収納</button>
+                        </div>
+                        <table class="score-table">
+                            <thead>
+                                <tr>
+                                    <th>プレイヤー</th>
+                                    <th>OUT</th>
+                                    <th>IN</th>
+                                    <th>TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${scoreRows}
+                            </tbody>
+                        </table>
+
+                        <h4 style="margin:22px 0 10px; border-left:4px solid var(--gold); padding-left:10px; color:var(--primary);">📷 想い出ギャラリー (${r.photos.length}枚)</h4>
+                        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
+                            ${galleryHtml || '<p style="font-size:12px; color:#999;">写真はありません</p>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+            showScreen('screen-detail');
+        }
+
+        function toggleScoreDetail(type) {
+            document.querySelectorAll(`[id^="detail-${type}-"]`).forEach(el => {
+                el.classList.toggle('open');
+            });
+        }
+
+        renderTimeline();
+    </script>
+</body>
+</html>
