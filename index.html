@@ -267,13 +267,74 @@
             color: var(--text-main);
         }
         
-        .card-img {
+        /* Instagram風 カルーセルスライダー */
+        .carousel-wrapper {
+            position: relative;
             width: 100%;
-            height: 240px;
-            object-fit: cover;
             background: #ded5c2;
-            display: block;
         }
+        .carousel-track {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .carousel-track::-webkit-scrollbar {
+            display: none;
+        }
+        .carousel-slide {
+            flex: 0 0 100%;
+            width: 100%;
+            height: 260px;
+            scroll-snap-align: start;
+            position: relative;
+        }
+        .carousel-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            cursor: pointer;
+        }
+        .carousel-count-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(35, 45, 38, 0.7);
+            backdrop-filter: blur(4px);
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 12px;
+            z-index: 5;
+            letter-spacing: 0.05em;
+        }
+        .carousel-dots {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            z-index: 5;
+            pointer-events: none;
+        }
+        .carousel-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.45);
+            transition: all 0.2s ease;
+        }
+        .carousel-dot.active {
+            background: var(--gold);
+            width: 14px;
+            border-radius: 4px;
+        }
+
         .card-body { padding: 16px; }
         .card-title {
             font-size: 18px;
@@ -313,7 +374,7 @@
             padding: 4px 10px;
             font-size: 11px;
             cursor: pointer;
-            z-index: 5;
+            z-index: 10;
             transition: 0.2s;
         }
         .btn-card-delete:hover { background: var(--danger); }
@@ -391,7 +452,6 @@
             padding-right: 4px;
         }
 
-        /* 相手のコメント行（左側） */
         .chat-row-other {
             display: flex;
             align-items: flex-end;
@@ -423,7 +483,6 @@
             line-height: 1.4;
         }
 
-        /* 自分のコメント行（右側・LINE風） */
         .chat-row-my {
             display: flex;
             align-items: flex-end;
@@ -649,7 +708,6 @@
         }
         .score-input:focus { border-color: var(--gold); }
         
-        /* プレイヤー名編集用UI（直接入力 ＋ 選択プルダウン） */
         .player-name-input-box {
             display: flex;
             flex-direction: column;
@@ -1320,6 +1378,28 @@
         let bestPhotoIndex = 0;
         let isEditingRound = false;
         let editingRoundId = null;
+
+        // カルーセル スクロール連動インジケーター更新
+        function handleCarouselScroll(trackEl, roundIdx) {
+            const scrollLeft = trackEl.scrollLeft;
+            const slideWidth = trackEl.clientWidth;
+            if (!slideWidth) return;
+
+            const currentIndex = Math.round(scrollLeft / slideWidth);
+            
+            // バッジ更新 (例: 1/3)
+            const badge = document.getElementById(`carousel-badge-${roundIdx}`);
+            const total = trackEl.children.length;
+            if (badge) {
+                badge.innerText = `${currentIndex + 1}/${total}`;
+            }
+
+            // ドット更新
+            const dots = document.querySelectorAll(`.dot-round-${roundIdx}`);
+            dots.forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === currentIndex);
+            });
+        }
 
         // LINE共有URL生成
         function getLineShareUrl(roundData) {
@@ -2154,7 +2234,6 @@
                 return;
             }
 
-            // 未登録プレイヤーの自動仲間登録チェック
             const existingNames = [myProfile.name, ...members.map(m => m.name)];
             for (const p of tempPlayersData) {
                 const pName = p.cart_name.trim();
@@ -2197,7 +2276,6 @@
                     await db.collection("rounds").doc(targetRoundId).set(roundData);
                     showToast('🎉 ラウンドの想い出をクラウドに保存しました！');
 
-                    // LINEで共有するか確認
                     const wantShareLine = await showAppConfirm('保存完了！⛳', 'ラウンドの想い出を保存しました！\nLINEでゴルフ仲間にシェアしますか？', '🟢 LINEで送る', 'タイムラインへ');
                     if (wantShareLine) {
                         const lineUrl = getLineShareUrl(roundData);
@@ -2255,7 +2333,6 @@
             }
         }
 
-        // 公開範囲（visibility）による表示判定
         function isRoundVisibleToMe(r) {
             if (r.visibility === 'members_only') {
                 const isAuthor = (r.authorName === myProfile.name);
@@ -2278,7 +2355,6 @@
                 return;
             }
             list.innerHTML = visibleRounds.map((r, idx) => {
-                const cover = (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600');
                 const mainScore = (r.players && r.players[0]) ? `${r.players[0].cart_name}: ${r.players[0].total_score}` : '';
                 const authorAvatar = globalUsersMap[r.authorName] || r.authorAvatar || myProfile.avatar;
                 const authorName = r.authorName || myProfile.name;
@@ -2293,12 +2369,49 @@
                     </button>
                 ` : '';
 
-                // いいね！状態判定
                 const likes = r.likes || [];
                 const isLikedByMe = likes.includes(myProfile.name);
                 const likeCount = likes.length;
 
-                // LINE風チャット・コメント描画（自分は右、相手は左）
+                // 写真リスト構築（カバー写真を先頭にして並べ替え）
+                let photoList = (r.photos && r.photos.length) ? [...r.photos] : ['https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600'];
+                if (r.photos && r.photos.length > 1 && r.bestPhotoIndex > 0 && r.bestPhotoIndex < r.photos.length) {
+                    const cover = photoList.splice(r.bestPhotoIndex, 1)[0];
+                    photoList.unshift(cover);
+                }
+
+                const totalPhotos = photoList.length;
+                let carouselHtml = '';
+
+                if (totalPhotos > 1) {
+                    const slidesHtml = photoList.map(pUrl => `
+                        <div class="carousel-slide">
+                            <img src="${pUrl}" class="carousel-img" onclick="showDetail('${r.id}', 'home')">
+                        </div>
+                    `).join('');
+
+                    const dotsHtml = photoList.map((_, pIdx) => `
+                        <div class="carousel-dot dot-round-${idx} ${pIdx === 0 ? 'active' : ''}"></div>
+                    `).join('');
+
+                    carouselHtml = `
+                        <div class="carousel-wrapper">
+                            <span class="carousel-count-badge" id="carousel-badge-${idx}">1/${totalPhotos}</span>
+                            <div class="carousel-track" onscroll="handleCarouselScroll(this, ${idx})">
+                                ${slidesHtml}
+                            </div>
+                            <div class="carousel-dots">
+                                ${dotsHtml}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    carouselHtml = `
+                        <img src="${photoList[0]}" class="card-img" onclick="showDetail('${r.id}', 'home')" style="cursor:pointer;">
+                    `;
+                }
+
+                // LINE風チャット・コメント描画
                 const commentsHtml = (r.comments || []).map(c => {
                     const isMyComment = (c.author === myProfile.name);
                     const timeStr = c.time || '';
@@ -2337,7 +2450,7 @@
                             </div>
                         </div>
 
-                        <img src="${cover}" class="card-img" onclick="showDetail('${r.id}', 'home')" style="cursor:pointer;">
+                        ${carouselHtml}
                         
                         <div class="card-body">
                             <div class="card-title" onclick="showDetail('${r.id}', 'home')" style="cursor:pointer;">${r.courseName}</div>
