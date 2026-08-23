@@ -2236,11 +2236,17 @@
                 return;
             }
 
+            // 未登録プレイヤーの自動仲間登録チェック（「追加する」「追加しない」ボタン）
             const existingNames = [myProfile.name, ...members.map(m => m.name)];
             for (const p of tempPlayersData) {
                 const pName = p.cart_name.trim();
                 if (pName && !existingNames.includes(pName) && !pName.startsWith('プレイヤー')) {
-                    const ok = await showAppConfirm('新しいゴルフ仲間', `「${pName}」さんはゴルフ仲間に未登録です。\nメンバーリストに追加しますか？`);
+                    const ok = await showAppConfirm(
+                        '新しいゴルフ仲間',
+                        `「${pName}」さんはゴルフ仲間に未登録です。\nメンバーリストに追加しますか？`,
+                        '追加する',
+                        '追加しない'
+                    );
                     if (ok) {
                         members.push({
                             id: 'm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
@@ -2278,7 +2284,6 @@
                     await db.collection("rounds").doc(targetRoundId).set(roundData);
                     showToast('🎉 ラウンドの想い出をクラウドに保存しました！');
 
-                    // 非公開以外の設定の場合のみLINE共有を確認
                     if (visibilityVal !== 'private') {
                         const wantShareLine = await showAppConfirm('保存完了！⛳', 'ラウンドの想い出を保存しました！\nLINEでゴルフ仲間にシェアしますか？', '🟢 LINEで送る', 'タイムラインへ');
                         if (wantShareLine) {
@@ -2338,10 +2343,9 @@
             }
         }
 
-        // タイムライン・ギャラリー用：公開範囲判定（private は一切出さない）
         function isRoundVisibleInTimeline(r) {
             if (r.visibility === 'private') {
-                return false; // 非公開はタイムライン・ギャラリーに出さない
+                return false;
             }
             if (r.visibility === 'members_only') {
                 const isAuthor = (r.authorName === myProfile.name);
@@ -2355,11 +2359,9 @@
             return rounds.filter(isRoundVisibleInTimeline);
         }
 
-        // 振り返り・分析・メンバー用：自分のデータが含まれる全ラウンド（非公開含む）
         function getMyAccessibleRounds() {
             return rounds.filter(r => {
                 if (r.visibility === 'private') {
-                    // 非公開は投稿者本人（自分）のみ振り返り・分析に反映
                     return (r.authorName === myProfile.name);
                 }
                 if (r.visibility === 'members_only') {
