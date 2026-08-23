@@ -146,7 +146,7 @@
             margin-bottom: 16px;
         }
 
-        /* 下部タブバー（5タブ対応） */
+        /* 下部タブバー（5タブ構成） */
         .tab-bar {
             position: fixed;
             bottom: 0;
@@ -251,12 +251,13 @@
             flex-shrink: 0;
         }
         .avatar-img-sm {
-            width: 26px;
-            height: 26px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             object-fit: cover;
             border: 1px solid var(--gold-border);
             flex-shrink: 0;
+            background: #ded5c2;
         }
         .user-name-text {
             font-size: 14px;
@@ -1043,7 +1044,7 @@
         </div>
     </div>
 
-    <!-- ★ ⑥ 分析画面 (Analytics) ★ -->
+    <!-- ⑥ 分析画面 (Analytics) -->
     <div id="screen-analytics" class="screen">
         <div class="container">
             <div class="section-header-title">
@@ -1167,6 +1168,7 @@
         <div class="app-modal-box">
             <div id="modalTitle" class="app-modal-title">確認</div>
             <div id="modalText" class="app-modal-text">メッセージ</div>
+            <input type="text" id="modalInputText" class="form-control" style="display:none; margin-bottom:14px; text-align:center;">
             <div class="app-modal-buttons">
                 <button id="modalBtnCancel" class="btn-cancel" style="margin-top:0; flex:1;">キャンセル</button>
                 <button id="modalBtnOk" class="btn-main" style="padding:10px; font-size:13px; flex:1;">OK</button>
@@ -1194,6 +1196,8 @@
         const db = firebase.firestore();
 
         let rounds = [];
+        let globalUsersMap = {}; // クラウド上のユーザープロフ情報 { '名前': 'avatarUrl' }
+
         let myProfile = JSON.parse(localStorage.getItem('golf_my_profile') || JSON.stringify({
             name: '長原 健太',
             avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
@@ -1227,21 +1231,17 @@
                 const overlay = document.getElementById('customModal');
                 const titleEl = document.getElementById('modalTitle');
                 const textEl = document.getElementById('modalText');
+                const inputEl = document.getElementById('modalInputText');
                 const btnOk = document.getElementById('modalBtnOk');
                 const btnCancel = document.getElementById('modalBtnCancel');
 
                 titleEl.innerText = title;
                 textEl.innerText = message;
+                inputEl.style.display = 'none';
                 btnCancel.style.display = 'block';
 
-                const handleOk = () => {
-                    cleanup();
-                    resolve(true);
-                };
-                const handleCancel = () => {
-                    cleanup();
-                    resolve(false);
-                };
+                const handleOk = () => { cleanup(); resolve(true); };
+                const handleCancel = () => { cleanup(); resolve(false); };
                 const cleanup = () => {
                     overlay.classList.remove('active');
                     btnOk.removeEventListener('click', handleOk);
@@ -1254,16 +1254,52 @@
             });
         }
 
-        function showAppAlert(title, message) {
+        function showAppPrompt(title, message, defaultValue = '') {
             return new Promise((resolve) => {
                 const overlay = document.getElementById('customModal');
                 const titleEl = document.getElementById('modalTitle');
                 const textEl = document.getElementById('modalText');
+                const inputEl = document.getElementById('modalInputText');
                 const btnOk = document.getElementById('modalBtnOk');
                 const btnCancel = document.getElementById('modalBtnCancel');
 
                 titleEl.innerText = title;
                 textEl.innerText = message;
+                inputEl.style.display = 'block';
+                inputEl.value = defaultValue;
+                btnCancel.style.display = 'block';
+
+                const handleOk = () => {
+                    const val = inputEl.value.trim();
+                    cleanup();
+                    resolve(val);
+                };
+                const handleCancel = () => { cleanup(); resolve(null); };
+                const cleanup = () => {
+                    overlay.classList.remove('active');
+                    btnOk.removeEventListener('click', handleOk);
+                    btnCancel.removeEventListener('click', handleCancel);
+                };
+
+                btnOk.addEventListener('click', handleOk);
+                btnCancel.addEventListener('click', handleCancel);
+                overlay.classList.add('active');
+                inputEl.focus();
+            });
+        }
+
+        function showAppAlert(title, message) {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('customModal');
+                const titleEl = document.getElementById('modalTitle');
+                const textEl = document.getElementById('modalText');
+                const inputEl = document.getElementById('modalInputText');
+                const btnOk = document.getElementById('modalBtnOk');
+                const btnCancel = document.getElementById('modalBtnCancel');
+
+                titleEl.innerText = title;
+                textEl.innerText = message;
+                inputEl.style.display = 'none';
                 btnCancel.style.display = 'none';
 
                 const handleOk = () => {
@@ -1276,6 +1312,19 @@
                 overlay.classList.add('active');
             });
         }
+
+        // Firestore ユーザープロフィール同期リスナー（他の人が設定したアイコンを自動反映）
+        db.collection("users").onSnapshot((snapshot) => {
+            globalUsersMap = {};
+            snapshot.forEach((doc) => {
+                const d = doc.data();
+                if (d.name && d.avatar) {
+                    globalUsersMap[d.name] = d.avatar;
+                }
+            });
+            renderMemberList();
+            renderTimeline();
+        });
 
         // Firestore リアルタイム同期
         db.collection("rounds").onSnapshot((snapshot) => {
@@ -1531,10 +1580,22 @@
             }
         }
 
-        function saveMyProfile() {
+        async function saveMyProfile() {
             myProfile.name = document.getElementById('myProfileName').value.trim() || '長原 健太';
             localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
-            showToast('👤 プロフィールを保存しました！');
+            
+            // クラウド上にもユーザープロフィールを登録・更新
+            try {
+                await db.collection("users").doc(myProfile.name).set({
+                    name: myProfile.name,
+                    avatar: myProfile.avatar,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (e) {
+                console.error("プロフィール同期エラー:", e);
+            }
+
+            showToast('👤 プロフィールをクラウドに保存しました！');
         }
 
         function renderMemberList() {
@@ -1543,15 +1604,22 @@
                 container.innerHTML = '<p style="color:#888; font-size:12px; padding:10px 0;">登録されている仲間はいません。</p>';
                 return;
             }
-            container.innerHTML = members.map((m, idx) => `
-                <div class="member-card">
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <img src="${m.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="avatar-img-sm">
-                        <div style="font-weight:700; font-size:14px; color:var(--text-main);">${m.name}</div>
+            container.innerHTML = members.map((m, idx) => {
+                // 各自が設定したクラウド最新アイコンがあれば優先表示、なければローカル初期値
+                const memberAvatar = globalUsersMap[m.name] || m.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150';
+                return `
+                    <div class="member-card">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <img src="${memberAvatar}" class="avatar-img-sm">
+                            <div style="font-weight:700; font-size:14px; color:var(--text-main);">${m.name}</div>
+                        </div>
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn-sub" style="padding:4px 10px; font-size:11px;" onclick="editMember(${idx})">✏️ 編集</button>
+                            <button class="btn-cancel" style="width:auto; margin:0; padding:4px 10px; font-size:11px; border-radius:6px;" onclick="deleteMember(${idx})">削除</button>
+                        </div>
                     </div>
-                    <button class="btn-cancel" style="width:auto; margin:0; padding:4px 12px; font-size:11px; border-radius:6px;" onclick="deleteMember(${idx})">削除</button>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         async function addNewMember() {
@@ -1563,12 +1631,27 @@
             members.push({
                 id: 'm_' + Date.now(),
                 name: name,
-                avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
+                avatar: globalUsersMap[name] || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
             });
             localStorage.setItem('golf_members', JSON.stringify(members));
             document.getElementById('newMemberName').value = '';
             renderMemberList();
             showToast(`👥 「${name}」さんを追加しました！`);
+        }
+
+        // 登録仲間のお名前編集
+        async function editMember(index) {
+            const currentMember = members[index];
+            const newName = await showAppPrompt('仲間の名前を編集', '新しいお名前を入力してください:', currentMember.name);
+            if (newName && newName !== currentMember.name) {
+                members[index].name = newName;
+                if (globalUsersMap[newName]) {
+                    members[index].avatar = globalUsersMap[newName];
+                }
+                localStorage.setItem('golf_members', JSON.stringify(members));
+                renderMemberList();
+                showToast(`✏️ 「${newName}」さんに変更しました`);
+            }
         }
 
         async function deleteMember(index) {
@@ -1932,7 +2015,7 @@
                         members.push({
                             id: 'm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
                             name: pName,
-                            avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
+                            avatar: globalUsersMap[pName] || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
                         });
                         localStorage.setItem('golf_members', JSON.stringify(members));
                         existingNames.push(pName);
@@ -2040,19 +2123,22 @@
             list.innerHTML = visibleRounds.map((r, idx) => {
                 const cover = (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600');
                 const mainScore = (r.players && r.players[0]) ? `${r.players[0].cart_name}: ${r.players[0].total_score}` : '';
-                const authorAvatar = r.authorAvatar || myProfile.avatar;
+                const authorAvatar = globalUsersMap[r.authorName] || r.authorAvatar || myProfile.avatar;
                 const authorName = r.authorName || myProfile.name;
                 
                 const isMyPost = (authorName === myProfile.name);
                 const deleteBtnHtml = isMyPost ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ 削除</button>` : '';
 
-                const commentsHtml = (r.comments || []).map(c => `
-                    <div class="comment-bubble">
-                        <img src="${c.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="avatar-img-sm">
-                        <span class="comment-author">${c.author}:</span>
-                        <span>${c.text}</span>
-                    </div>
-                `).join('');
+                const commentsHtml = (r.comments || []).map(c => {
+                    const cAvatar = globalUsersMap[c.author] || c.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150';
+                    return `
+                        <div class="comment-bubble">
+                            <img src="${cAvatar}" class="avatar-img-sm">
+                            <span class="comment-author">${c.author}:</span>
+                            <span>${c.text}</span>
+                        </div>
+                    `;
+                }).join('');
 
                 return `
                     <div class="card">
@@ -2249,16 +2335,15 @@
             }
         }
 
-        // ★ 分析画面 (Analytics) の描画ロジック ★
+        // 分析画面 (Analytics) の描画ロジック
         function renderAnalytics() {
             const visibleRounds = getVisibleRounds();
             const myName = myProfile.name;
 
-            // 1. 自分の全スコアとラウンド履歴を抽出
             const myRoundRecords = [];
             const yearlyMap = {};
             const courseMap = {};
-            const h2hMap = {}; // 友人との対戦成績 { '田中': { rounds: 0, win: 0, lose: 0, draw: 0 } }
+            const h2hMap = {};
 
             visibleRounds.forEach(r => {
                 const myPlayer = (r.players || []).find(p => p.cart_name === myName || (r.authorName === myName && p === r.players[0]));
@@ -2273,16 +2358,13 @@
                     score: myScore
                 });
 
-                // 年別集計
                 const yr = (r.playDate || '').substring(0, 4) || '不明';
                 if (!yearlyMap[yr]) yearlyMap[yr] = [];
                 yearlyMap[yr].push(myScore);
 
-                // コース別集計
                 if (!courseMap[r.courseName]) courseMap[r.courseName] = [];
                 courseMap[r.courseName].push(myScore);
 
-                // 友人との対戦成績 (H2H)
                 (r.players || []).forEach(p => {
                     if (p.cart_name !== myPlayer.cart_name && p.total_score) {
                         const rivalName = p.cart_name;
@@ -2301,7 +2383,6 @@
                 });
             });
 
-            // 基本サマリー更新
             const allScores = myRoundRecords.map(r => r.score);
             const totalRounds = allScores.length;
             const bestScore = totalRounds ? Math.min(...allScores) : '-';
@@ -2311,7 +2392,6 @@
             document.getElementById('stat-avg-score').innerText = avgScore;
             document.getElementById('stat-total-rounds').innerText = totalRounds ? `${totalRounds}回` : '-';
 
-            // 1. 年別テーブル描画
             const yearlyContainer = document.getElementById('analytics-yearly-container');
             const years = Object.keys(yearlyMap).sort().reverse();
             if (years.length === 0) {
@@ -2346,7 +2426,6 @@
                 `;
             }
 
-            // 2. コース別テーブル描画
             const coursesContainer = document.getElementById('analytics-courses-container');
             const courses = Object.keys(courseMap);
             if (courses.length === 0) {
@@ -2381,7 +2460,6 @@
                 `;
             }
 
-            // 3. 対戦成績テーブル描画
             const h2hContainer = document.getElementById('analytics-h2h-container');
             const rivals = Object.keys(h2hMap);
             if (rivals.length === 0) {
