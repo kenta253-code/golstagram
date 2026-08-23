@@ -277,7 +277,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ★ 大型＆ピンクカラーのフローティング「＋Golsta登録」ボタン ★ */
+        /* 大型＆ピンクのフローティング「＋Golsta登録」ボタン */
         .fab {
             position: fixed;
             right: 18px;
@@ -1497,13 +1497,6 @@
 
             <h4 style="margin: 18px 0 10px; color: var(--primary); font-size: 15px;">📋 登録済みゴルフ仲間一覧</h4>
             <div id="memberListContainer"></div>
-
-            <!-- 全データリセットエリア -->
-            <div class="card" style="padding: 18px; margin-top: 30px; border: 1px solid var(--danger);">
-                <h3 style="margin-bottom: 6px; color: var(--danger); font-size: 14px;">⚠️ データ管理</h3>
-                <p style="font-size: 11px; color: var(--text-sub); margin-bottom: 12px;">古いテストデータが残って削除できない場合や初期化したい場合にご使用ください。</p>
-                <button class="btn-cancel" style="border-color:var(--danger); color:var(--danger); margin-top:0;" onclick="resetAllData()">アプリの全データを初期化（リセット）</button>
-            </div>
         </div>
     </div>
 
@@ -1992,27 +1985,6 @@
         }, (err) => {
             console.error("Firestore同期エラー:", err);
         });
-
-        // 全データリセット
-        async function resetAllData() {
-            const ok = await showAppConfirm('全データ初期化', 'すべてのラウンド情報と登録仲間データを完全に消去しますか？\n（この操作は元に戻せません）');
-            if (ok) {
-                try {
-                    const snap = await db.collection("rounds").get();
-                    const batch = db.batch();
-                    snap.docs.forEach(doc => batch.delete(doc.ref));
-                    await batch.commit();
-                } catch (e) {
-                    console.error(e);
-                }
-                localStorage.removeItem('golf_rounds');
-                localStorage.removeItem('golf_members');
-                rounds = [];
-                members = [];
-                showToast('データをリセットしました');
-                setTimeout(() => location.reload(), 1000);
-            }
-        }
 
         function checkScoreButtonState() {
             const file1 = document.getElementById('scoreImageInput1').files[0];
