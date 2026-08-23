@@ -1004,13 +1004,23 @@
         let isEditingRound = false;
         let editingRoundId = null;
 
-        // Firestore リアルタイム同期
+        // Firestore リアルタイム同期（最新のラウンドが一番上に来るようソート）
         db.collection("rounds").onSnapshot((snapshot) => {
             rounds = [];
             snapshot.forEach((doc) => {
                 rounds.push({ id: doc.id, ...doc.data() });
             });
-            rounds.sort((a, b) => (b.playDate || '').localeCompare(a.playDate || ''));
+            // プレー日(playDate)降順、同じ場合は作成日時(createdAt)降順でソート
+            rounds.sort((a, b) => {
+                const dateA = a.playDate || '';
+                const dateB = b.playDate || '';
+                if (dateA !== dateB) {
+                    return dateB.localeCompare(dateA);
+                }
+                const timeA = a.createdAt?.seconds || 0;
+                const timeB = b.createdAt?.seconds || 0;
+                return timeB - timeA;
+            });
             renderTimeline();
             renderAllGallery();
         }, (err) => {
@@ -1631,6 +1641,23 @@
             if (!courseName) {
                 alert('ゴルフ場名を入力または選択してください。');
                 return;
+            }
+
+            // 未登録プレイヤーの自動仲間登録チェック
+            const existingNames = [myProfile.name, ...members.map(m => m.name)];
+            for (const p of tempPlayersData) {
+                const pName = p.cart_name.trim();
+                if (pName && !existingNames.includes(pName) && !pName.startsWith('プレイヤー')) {
+                    if (confirm(`「${pName}」さんはゴルフ仲間に未登録です。\nメンバーリストに新しく追加しますか？`)) {
+                        members.push({
+                            id: 'm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                            name: pName,
+                            avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
+                        });
+                        localStorage.setItem('golf_members', JSON.stringify(members));
+                        existingNames.push(pName);
+                    }
+                }
             }
 
             const targetRoundId = editingRoundId || ('round_' + Date.now());
