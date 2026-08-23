@@ -1112,12 +1112,12 @@
             font-weight: 700;
         }
 
-        /* 設定モーダル用テーマ選択ボタンスタイル */
+        /* 設定モーダル・テーマ選択スタイル */
         .theme-select-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
-            margin: 12px 0 16px;
+            margin: 10px 0 16px;
         }
         .theme-btn-card {
             border: 2px solid var(--border);
@@ -1140,6 +1140,56 @@
             font-size: 20px;
             display: block;
             margin-bottom: 4px;
+        }
+
+        /* マニュアル・ガイドスタイル */
+        .manual-section-box {
+            background: var(--bg);
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 14px;
+            font-size: 12px;
+            line-height: 1.6;
+            max-height: 240px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+        .manual-hero-catch {
+            text-align: center;
+            padding: 8px 6px;
+            margin-bottom: 12px;
+            border-bottom: 1px dashed var(--gold-border);
+            background: var(--card);
+            border-radius: 8px;
+        }
+        .manual-hero-catch h4 {
+            font-size: 13px;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+        .manual-hero-catch p {
+            font-family: 'Alex Brush', cursive;
+            font-size: 14px;
+            color: var(--gold);
+            font-weight: normal;
+        }
+        .manual-step-title {
+            font-weight: 700;
+            color: var(--primary);
+            margin: 10px 0 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .manual-trademark-footer {
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 10px;
+            color: var(--text-sub);
+            letter-spacing: 0.05em;
         }
 
         /* モーダル＆トースト */
@@ -1165,11 +1215,13 @@
             background: var(--card);
             border: 2px solid var(--gold-border);
             border-radius: 16px;
-            padding: 22px;
+            padding: 20px;
             width: 100%;
-            max-width: 380px;
+            max-width: 420px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
             box-shadow: var(--shadow-lg);
-            text-align: center;
             transform: scale(0.95);
             transition: transform 0.2s ease;
         }
@@ -1492,16 +1544,16 @@
         </div>
     </div>
 
-    <!-- 設定モーダル（テーマ切り替え＆将来の設定拡張用） -->
+    <!-- 設定モーダル（テーマ切り替え ＆ 使い方ガイド） -->
     <div id="settingsModal" class="app-modal-overlay">
         <div class="app-modal-box" style="text-align: left;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid var(--border); padding-bottom:8px;">
-                <h3 style="color:var(--primary); font-size:16px;">⚙️ アプリ設定</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                <h3 style="color:var(--primary); font-size:16px;">⚙️ 設定 ＆ ガイド</h3>
                 <button onclick="closeSettingsModal()" style="background:none; border:none; font-size:18px; color:var(--text-sub); cursor:pointer;">✕</button>
             </div>
 
             <!-- テーマ切り替えセクション -->
-            <label class="form-label" style="font-size:12px; margin-bottom:4px;">🎨 テーマカラー選択</label>
+            <label class="form-label" style="font-size:12px; margin-bottom:2px;">🎨 テーマカラー選択</label>
             <div class="theme-select-grid">
                 <div class="theme-btn-card active" id="btn-theme-sepia" onclick="changeAppTheme('sepia')">
                     <span class="theme-btn-icon">📜</span>
@@ -1517,17 +1569,38 @@
                 </div>
             </div>
 
-            <!-- 今後拡張用の設定項目プレースホルダー -->
-            <div style="margin-top: 18px; border-top: 1px dashed var(--border); padding-top: 12px;">
-                <label class="form-label" style="font-size:12px; color:var(--text-sub);">🔐 アカウント・各種設定（今後追加予定）</label>
-                <div style="font-size: 11px; color: var(--text-sub); line-height: 1.5; background: var(--bg); padding: 10px; border-radius: 8px;">
-                    ・ログインアカウントの連携・管理<br>
-                    ・通知（LINE/プッシュ）の受信設定<br>
-                    ・バージョン情報: <strong>Golstagram v1.2</strong>
+            <!-- 📖 使い方ガイド（マニュアル） -->
+            <label class="form-label" style="font-size:12px; margin-top:8px; margin-bottom:4px;">📖 Golstagram クイックガイド</label>
+            <div class="manual-section-box">
+                <div class="manual-hero-catch">
+                    <h4>スコアカードを撮るだけ。仲間との最高の1日を、ずっと色あせない想い出に。</h4>
+                    <p>〜 No Golf no Life 〜</p>
+                </div>
+
+                <div class="manual-step-title">1. スコア＆想い出の登録（Golsta登録）</div>
+                <p>・<strong>AI自動入力</strong>: カート画面やスコアカードを撮影するだけで、ゴルフ場名・プレー日・PAR・全員のスコアを瞬時に読み取ります。<br>
+                ・<strong>想い出写真</strong>: 最大5枚まで登録可能。タップで「★ カバー写真」を設定できます。<br>
+                ・<strong>公開範囲</strong>: 仲間全体／同伴者のみ／非公開（会社コンペや練習用）から選べます。</p>
+
+                <div class="manual-step-title">2. タイムラインで仲間と楽しむ</div>
+                <p>・<strong>横スワイプ</strong>: 複数写真は指で左右にスライドしてインスタ感覚で閲覧。<br>
+                ・<strong>リアクション</strong>: 「❤️ いいね！」や「💬 コメント（吹き出し）」からLINE風にチャット。<br>
+                ・<strong>LINEシェア</strong>: 自分の投稿はワンタップでLINEグループへ共有可能。</p>
+
+                <div class="manual-step-title">3. 振り返り ＆ スタッツ分析</div>
+                <p>・<strong>Golsta Memory（振り返り）</strong>: 仲間別・ゴルフ場別の過去履歴をドリルダウン。<br>
+                ・<strong>Golsta Analytics（分析）</strong>: ベスト・通算平均・年別推移・仲間との対戦勝敗（〇勝〇敗）を自動集計。</p>
+
+                <div class="manual-step-title">4. プロフィール設定</div>
+                <p>・「メンバー」タブから自分のアイコン画像や名前を変更可能。登録仲間の一覧にも自動同期されます。</p>
+
+                <div class="manual-trademark-footer">
+                    Produced by <strong>Long Field LLC ®</strong><br>
+                    All Rights Reserved.
                 </div>
             </div>
 
-            <button class="btn-main" style="margin-top: 18px;" onclick="closeSettingsModal()">閉じる</button>
+            <button class="btn-main" style="margin-top: 14px;" onclick="closeSettingsModal()">閉じる</button>
         </div>
     </div>
 
@@ -1596,7 +1669,6 @@
             document.body.setAttribute('data-theme', themeName);
             localStorage.setItem('golf_app_theme', themeName);
 
-            // ボタンのアクティブ表示切り替え
             ['sepia', 'light', 'dark'].forEach(t => {
                 const btn = document.getElementById(`btn-theme-${t}`);
                 if (btn) btn.classList.toggle('active', t === themeName);
@@ -1616,7 +1688,6 @@
             document.getElementById('settingsModal').classList.remove('active');
         }
 
-        // 初期ロード時にテーマ適用
         initAppTheme();
 
         // カルーセル スクロール連動インジケーター更新
