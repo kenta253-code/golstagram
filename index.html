@@ -4,24 +4,28 @@
     <meta charset="UTF-8">
     <!-- 画面の拡大縮小・ズレを完全に固定するViewport設定 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-
+    
     <!-- ホーム画面追加時のネイティブアプリ化（フルスクリーン）設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Golstagram">
     <meta name="mobile-web-app-capable" content="yes">
     
-    <!-- ★ ここから追加：ホーム画面・アプリアイコン設定 -->
+    <!-- ホーム画面・アプリアイコン設定 -->
     <link rel="apple-touch-icon" sizes="180x180" href="./icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="./icon.png">
     <link rel="icon" type="image/png" sizes="512x512" href="./icon.png">
-    <!-- ★ ここまで追加 -->
     
     <title>Golstagram - ゴルフ想い出＆スコア共有</title>
     <!-- Google Fonts: ロゴ・Golsta用フォント ＆ 筆記体フォント ＆ 和欧文フォント -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@500;700&family=Comfortaa:wght@700&family=Noto+Sans+JP:wght@400;500;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK (v9 compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
     <style>
         :root {
             --primary: #23382b;        /* 深みのあるダークセピアグリーン */
@@ -976,14 +980,26 @@
     <script>
         const GEMINI_API_KEY = 'AQ.Ab8RN6JP-oM5a54UjwIpM8lLKu5v0gMk5XUePUMukE4wOZQxYw';
 
-        let rounds = JSON.parse(localStorage.getItem('golf_rounds') || '[]');
+        // Firebase 初期化
+        const firebaseConfig = {
+            apiKey: "AIzaSyDNcoTrSOG5vVKHW3EU71EET19D367QNIY",
+            authDomain: "golstagram-app.firebaseapp.com",
+            projectId: "golstagram-app",
+            storageBucket: "golstagram-app.firebasestorage.app",
+            messagingSenderId: "491482806133",
+            appId: "1:491482806133:web:00a6bdba4f23cfbee1453c",
+            measurementId: "G-CPCVK5G7N0"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let rounds = [];
         let myProfile = JSON.parse(localStorage.getItem('golf_my_profile') || JSON.stringify({
             name: '長原 健太',
             alias: '長原',
             avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
         }));
 
-        // デフォルトメンバーは空配列（0名スタート）
         let members = JSON.parse(localStorage.getItem('golf_members') || '[]');
 
         let tempPlayersData = [];
@@ -997,9 +1013,30 @@
         let isEditingRound = false;
         let editingRoundId = null;
 
+        // Firestore リアルタイムリスナー設定（誰かが保存・更新・コメントしたら全端末即座に更新）
+        db.collection("rounds").onSnapshot((snapshot) => {
+            rounds = [];
+            snapshot.forEach((doc) => {
+                rounds.push({ id: doc.id, ...doc.data() });
+            });
+            rounds.sort((a, b) => (b.playDate || '').localeCompare(a.playDate || ''));
+            renderTimeline();
+            renderAllGallery();
+        }, (err) => {
+            console.error("Firestore同期エラー:", err);
+        });
+
         // 全データリセット
-        function resetAllData() {
+        async function resetAllData() {
             if (confirm('すべてのラウンド情報と登録仲間データを完全に消去しますか？\n（この操作は元に戻せません）')) {
+                try {
+                    const snap = await db.collection("rounds").get();
+                    const batch = db.batch();
+                    snap.docs.forEach(doc => batch.delete(doc.ref));
+                    await batch.commit();
+                } catch (e) {
+                    console.error(e);
+                }
                 localStorage.removeItem('golf_rounds');
                 localStorage.removeItem('golf_members');
                 rounds = [];
@@ -1407,7 +1444,7 @@
                 }
 
                 if (parsedJSON) {
-                    tempPlayersData = (parsedJSON.players || []).slice(0, 4); // 最大4名に制限
+                    tempPlayersData = (parsedJSON.players || []).slice(0, 4);
                     const allRegistered = [myProfile, ...members];
                     tempPlayersData.forEach(p => {
                         const matched = allRegistered.find(m => m.alias === p.cart_name || m.name === p.cart_name || p.cart_name.includes(m.name));
@@ -1444,7 +1481,6 @@
             renderScorecardEditor();
         }
 
-        // プレイヤー追加（最大4名制限）
         function addNewPlayerRow() {
             if (tempPlayersData.length >= 4) {
                 alert('プレイヤーは最大4名まで登録できます。');
@@ -1472,13 +1508,11 @@
             renderScorecardEditor();
         }
 
-        // プレイヤー名の手動上書き変更
         function updatePlayerNameDirect(playerIndex, newName) {
             isEditingRound = true;
             tempPlayersData[playerIndex].cart_name = newName.trim() || `プレイヤー${playerIndex + 1}`;
         }
 
-        // プルダウンからのクイック名変更
         function applyQuickMemberName(playerIndex, selectEl) {
             if (!selectEl.value) return;
             isEditingRound = true;
@@ -1491,7 +1525,6 @@
             const showOut = (scoreViewMode === 'out' || scoreViewMode === 'all');
             const showIn = (scoreViewMode === 'in' || scoreViewMode === 'all');
 
-            // プレイヤー追加ボタンの状態更新
             const btnAdd = document.getElementById('btnAddPlayer');
             const countLabel = document.getElementById('playerCountLabel');
             if (countLabel) countLabel.innerText = tempPlayersData.length;
@@ -1533,7 +1566,6 @@
                     <option value="${m.name}">${m.name}</option>
                 `).join('');
 
-                // 直接テキスト入力 ＋ メンバーからの選択プルダウン
                 let row = `<td class="player-name-cell">
                     <div class="player-name-input-box">
                         <input type="text" class="name-text-input" value="${p.cart_name}" placeholder="プレイヤー名"
@@ -1604,7 +1636,7 @@
             if (grandEl) grandEl.innerText = player.total_score;
         }
 
-        function saveRound() {
+        async function saveRound() {
             const courseName = document.getElementById('courseName').value.trim();
             const playDate = document.getElementById('playDate').value;
             if (!courseName) {
@@ -1612,69 +1644,60 @@
                 return;
             }
 
-            if (editingRoundId) {
-                const targetIndex = rounds.findIndex(r => r.id === editingRoundId);
-                if (targetIndex !== -1) {
-                    rounds[targetIndex].courseName = courseName;
-                    rounds[targetIndex].playDate = playDate;
-                    rounds[targetIndex].visibility = document.getElementById('visibility').value;
-                    rounds[targetIndex].par = tempParData;
-                    rounds[targetIndex].players = tempPlayersData;
-                    rounds[targetIndex].photos = tempPhotos;
-                    rounds[targetIndex].bestPhotoIndex = bestPhotoIndex;
-                }
-                alert('🎉 ラウンド情報を更新しました！');
-            } else {
-                const newRound = {
-                    id: 'round_' + Date.now(),
-                    authorName: myProfile.name,
-                    authorAvatar: myProfile.avatar,
-                    courseName: courseName,
-                    playDate: playDate,
-                    visibility: document.getElementById('visibility').value,
-                    par: tempParData,
-                    players: tempPlayersData,
-                    photos: tempPhotos,
-                    bestPhotoIndex: bestPhotoIndex,
-                    comments: []
-                };
-                rounds.unshift(newRound);
-                alert('🎉 ラウンドの想い出を正常に保存しました！');
-            }
+            const targetRoundId = editingRoundId || ('round_' + Date.now());
+            const roundData = {
+                authorName: myProfile.name,
+                authorAvatar: myProfile.avatar,
+                courseName: courseName,
+                playDate: playDate,
+                visibility: document.getElementById('visibility').value,
+                par: tempParData,
+                players: tempPlayersData,
+                photos: tempPhotos,
+                bestPhotoIndex: bestPhotoIndex,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
 
             try {
-                localStorage.setItem('golf_rounds', JSON.stringify(rounds));
+                if (editingRoundId) {
+                    await db.collection("rounds").doc(editingRoundId).update(roundData);
+                    alert('🎉 ラウンド情報をクラウドに更新しました！');
+                } else {
+                    roundData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    roundData.comments = [];
+                    await db.collection("rounds").doc(targetRoundId).set(roundData);
+                    alert('🎉 ラウンドの想い出をクラウドに保存・共有しました！');
+                }
+
                 isEditingRound = false;
                 editingRoundId = null;
                 resetAddForm();
                 showScreen('screen-home');
             } catch (err) {
-                alert('保存エラー: 写真のデータ量が大きすぎます。何枚か写真を削除して再試行してください。\n詳細: ' + err.message);
-                if (!editingRoundId) rounds.shift();
+                alert('クラウド保存エラー: ' + err.message);
             }
         }
 
-        function deleteRound(e, roundId) {
+        async function deleteRound(e, roundId) {
             e.stopPropagation();
-            if (confirm('このラウンド記録を削除してもよろしいですか？（復元できません）')) {
-                rounds = rounds.filter(r => r.id !== roundId);
-                localStorage.setItem('golf_rounds', JSON.stringify(rounds));
-                renderTimeline();
-                renderAllGallery();
+            if (confirm('このラウンド記録を削除してもよろしいですか？（全員の画面から削除されます）')) {
+                try {
+                    await db.collection("rounds").doc(roundId).delete();
+                } catch (err) {
+                    alert('削除エラー: ' + err.message);
+                }
             }
         }
 
-        function addComment(e, roundIndex) {
+        async function addComment(e, roundIndex) {
             e.preventDefault();
             const input = document.getElementById(`comment-input-${roundIndex}`);
             const text = input.value.trim();
             if (!text) return;
 
-            if (!rounds[roundIndex].comments) {
-                rounds[roundIndex].comments = [];
-            }
-
-            rounds[roundIndex].comments.push({
+            const targetRound = rounds[roundIndex];
+            const updatedComments = targetRound.comments || [];
+            updatedComments.push({
                 author: myProfile.name,
                 avatar: myProfile.avatar,
                 text: text,
@@ -1682,11 +1705,13 @@
             });
 
             try {
-                localStorage.setItem('golf_rounds', JSON.stringify(rounds));
-            } catch (err) {}
-            
-            input.value = '';
-            renderTimeline();
+                await db.collection("rounds").doc(targetRound.id).update({
+                    comments: updatedComments
+                });
+                input.value = '';
+            } catch (err) {
+                alert('コメント送信エラー: ' + err.message);
+            }
         }
 
         function renderTimeline() {
@@ -1696,8 +1721,8 @@
                 return;
             }
             list.innerHTML = rounds.map((r, idx) => {
-                const cover = r.photos[r.bestPhotoIndex] || (r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600');
-                const mainScore = r.players[0] ? `${r.players[0].cart_name}: ${r.players[0].total_score}` : '';
+                const cover = (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600');
+                const mainScore = (r.players && r.players[0]) ? `${r.players[0].cart_name}: ${r.players[0].total_score}` : '';
                 const authorAvatar = r.authorAvatar || myProfile.avatar;
                 const authorName = r.authorName || myProfile.name;
 
@@ -1725,7 +1750,7 @@
                         
                         <div class="card-body">
                             <div class="card-title" onclick="showDetail('${r.id}', 'home')" style="cursor:pointer;">${r.courseName}</div>
-                            <div class="card-date">👥 同伴: ${r.players.map(p=>p.cart_name).join(', ')}</div>
+                            <div class="card-date">👥 同伴: ${(r.players || []).map(p=>p.cart_name).join(', ')}</div>
                             <div class="score-highlight">${mainScore}</div>
                         </div>
 
@@ -1793,7 +1818,7 @@
             if (type === 'members') {
                 const memberMap = {};
                 rounds.forEach(r => {
-                    r.players.forEach(p => {
+                    (r.players || []).forEach(p => {
                         if (!memberMap[p.cart_name]) {
                             memberMap[p.cart_name] = { count: 0, scores: [], rounds: [] };
                         }
@@ -1804,7 +1829,7 @@
                             courseName: r.courseName,
                             playDate: r.playDate,
                             score: p.total_score,
-                            photo: r.photos[r.bestPhotoIndex] || (r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
+                            photo: (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
                         });
                     });
                 });
@@ -1851,7 +1876,7 @@
                         courseMap[r.courseName] = { count: 0, bestScore: 999, rounds: [] };
                     }
                     courseMap[r.courseName].count += 1;
-                    const myScore = r.players[0]?.total_score;
+                    const myScore = r.players && r.players[0] ? r.players[0].total_score : null;
                     if (myScore) {
                         courseMap[r.courseName].bestScore = Math.min(courseMap[r.courseName].bestScore, myScore);
                     }
@@ -1859,8 +1884,8 @@
                         roundId: r.id,
                         playDate: r.playDate,
                         score: myScore,
-                        playersCount: r.players.length,
-                        photo: r.photos[r.bestPhotoIndex] || (r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
+                        playersCount: (r.players || []).length,
+                        photo: (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
                     });
                 });
 
@@ -1905,7 +1930,7 @@
             const r = rounds.find(item => item.id === roundId);
             if (!r) return;
 
-            const cover = r.photos[r.bestPhotoIndex] || (r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600');
+            const cover = (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600');
             const detail = document.getElementById('detail-content');
             const backBtn = document.getElementById('detailBackBtn');
 
@@ -1920,7 +1945,7 @@
                 backBtn.innerHTML = '← タイムラインに戻る';
             }
             
-            let scoreRows = r.players.map((p, pIdx) => `
+            let scoreRows = (r.players || []).map((p, pIdx) => `
                 <tr>
                     <td style="font-weight:700;">${p.cart_name}</td>
                     <td style="font-family:'Cinzel',serif;">${p.out_total}</td>
@@ -1939,7 +1964,7 @@
                 </tr>
             `).join('');
 
-            let galleryHtml = r.photos.map(p => `<img src="${p}" style="width:100%; height:100px; object-fit:cover; border-radius:8px; border:1px solid var(--border);">`).join('');
+            let galleryHtml = (r.photos || []).map(p => `<img src="${p}" style="width:100%; height:100px; object-fit:cover; border-radius:8px; border:1px solid var(--border);">`).join('');
 
             detail.innerHTML = `
                 <div class="card">
@@ -1969,7 +1994,7 @@
                             </tbody>
                         </table>
 
-                        <h4 style="margin:22px 0 10px; border-left:4px solid var(--gold); padding-left:10px; color:var(--primary);">📷 想い出ギャラリー (${r.photos.length}枚)</h4>
+                        <h4 style="margin:22px 0 10px; border-left:4px solid var(--gold); padding-left:10px; color:var(--primary);">📷 想い出ギャラリー (${(r.photos || []).length}枚)</h4>
                         <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
                             ${galleryHtml || '<p style="font-size:12px; color:#999;">写真はありません</p>'}
                         </div>
@@ -1984,8 +2009,6 @@
                 el.classList.toggle('open');
             });
         }
-
-        renderTimeline();
     </script>
 </body>
 </html>
