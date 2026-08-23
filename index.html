@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <!-- 画面の拡大縮小・ズレを完全に固定するViewport設定 -->
+    <!-- 画面の拡大縮小・ズレを完全に固定するViewport設定 (セーフエリア対応) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
     <!-- ホーム画面追加時のネイティブアプリ化（フルスクリーン）設定 -->
@@ -64,7 +64,8 @@
             background-color: var(--bg);
             color: var(--text-main);
             font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
-            padding-bottom: 85px;
+            /* 下部タブバーとセーフエリア分の余白 */
+            padding-bottom: calc(90px + env(safe-area-inset-bottom));
             letter-spacing: 0.02em;
         }
 
@@ -75,11 +76,14 @@
             letter-spacing: -0.02em;
         }
 
-        /* Golstagram ヘッダー */
+        /* Golstagram ヘッダー（スマホ上部ステータスバー・ノッチの余白を確保） */
         header {
             background: linear-gradient(135deg, #253328 0%, #1a241c 100%);
             color: #f7f4ee;
-            padding: 14px 20px;
+            padding-top: max(14px, env(safe-area-inset-top));
+            padding-bottom: 12px;
+            padding-left: max(16px, env(safe-area-inset-left));
+            padding-right: max(16px, env(safe-area-inset-right));
             position: sticky;
             top: 0;
             z-index: 100;
@@ -148,36 +152,39 @@
             margin-bottom: 16px;
         }
 
-        /* 下部タブバー（5タブ構成） */
+        /* 下部タブバー（大型化＆親指で押しやすい快適設計） */
         .tab-bar {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 64px;
-            background: rgba(250, 247, 240, 0.96);
-            backdrop-filter: blur(10px);
+            height: calc(68px + env(safe-area-inset-bottom));
+            padding-bottom: env(safe-area-inset-bottom);
+            background: rgba(250, 247, 240, 0.98);
+            backdrop-filter: blur(12px);
             border-top: 1px solid var(--border);
             display: flex;
             justify-content: space-around;
             align-items: center;
             z-index: 100;
-            box-shadow: 0 -4px 16px rgba(45,36,28,0.06);
+            box-shadow: 0 -4px 18px rgba(45,36,28,0.08);
         }
         .tab-btn {
             background: none;
             border: none;
-            font-size: 10px;
+            font-size: 11px;
             color: var(--text-sub);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 3px;
+            justify-content: center;
+            gap: 4px;
             cursor: pointer;
             transition: all 0.2s ease;
-            padding: 6px 8px;
-            border-radius: 8px;
+            padding: 8px 4px;
+            border-radius: 10px;
             flex: 1;
+            height: 100%;
         }
         .tab-btn.active {
             color: var(--primary);
@@ -186,8 +193,9 @@
         .tab-btn.active svg {
             fill: var(--primary);
             filter: drop-shadow(0 2px 4px rgba(35, 56, 43, 0.25));
+            transform: translateY(-1px);
         }
-        .tab-btn svg { width: 20px; height: 20px; fill: var(--text-sub); transition: 0.2s; }
+        .tab-btn svg { width: 24px; height: 24px; fill: var(--text-sub); transition: 0.2s; }
 
         .container { max-width: 600px; margin: 0 auto; padding: 18px 16px; width: 100%; }
         .screen { display: none; }
@@ -202,7 +210,7 @@
         .fab {
             position: fixed;
             right: 20px;
-            bottom: 80px;
+            bottom: calc(82px + env(safe-area-inset-bottom));
             background: linear-gradient(135deg, #23382b 0%, #344d3d 100%);
             color: #ffffff;
             border: 1px solid var(--gold);
@@ -442,7 +450,7 @@
             fill: #ffffff;
         }
 
-        /* Instagram風 専用コメントボトムシート（モーダル） */
+        /* Instagram風 専用コメントボトムシート */
         .comment-sheet-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -511,7 +519,7 @@
             background: #f4eee2;
         }
         .comment-sheet-footer {
-            padding: 12px 16px;
+            padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
             background: #faf7f0;
             border-top: 1px solid var(--border);
             display: flex;
@@ -1368,7 +1376,7 @@
         </div>
     </div>
 
-    <!-- 下部タブバー（5タブ構成） -->
+    <!-- 下部タブバー（5タブ構成・押しやすい大型サイズ） -->
     <div class="tab-bar">
         <button class="tab-btn active" onclick="navigateTab('screen-home')">
             <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
@@ -1392,7 +1400,7 @@
         </button>
     </div>
 
-    <!-- Instagram風 専用コメントボトムシート（モーダル） -->
+    <!-- Instagram風 専用コメントボトムシート -->
     <div id="commentSheetOverlay" class="comment-sheet-overlay" onclick="closeCommentSheet(event)">
         <div class="comment-sheet" onclick="event.stopPropagation()">
             <div class="comment-sheet-header">
@@ -1463,7 +1471,7 @@
         let isEditingRound = false;
         let editingRoundId = null;
 
-        let activeCommentRoundId = null; // 現在開いているコメントシートのラウンドID
+        let activeCommentRoundId = null;
 
         // カルーセル スクロール連動インジケーター更新
         function handleCarouselScroll(trackEl, roundIdx) {
@@ -1586,7 +1594,6 @@
                 }
             }).join('');
 
-            // 最下部まで自動スクロール
             setTimeout(() => {
                 listEl.scrollTop = listEl.scrollHeight;
             }, 50);
@@ -1756,7 +1763,6 @@
             renderAllGallery();
             renderAnalytics();
 
-            // シートが開いている場合はシート内容もリアルタイム同期
             if (activeCommentRoundId) {
                 const updated = rounds.find(r => r.id === activeCommentRoundId);
                 if (updated) renderSheetComments(updated);
@@ -2421,7 +2427,6 @@
                 return;
             }
 
-            // 未登録プレイヤーの自動仲間登録チェック
             const existingNames = [myProfile.name, ...members.map(m => m.name)];
             for (const p of tempPlayersData) {
                 const pName = p.cart_name.trim();
