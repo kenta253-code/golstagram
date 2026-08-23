@@ -925,10 +925,6 @@
                     <label class="form-label">氏名（表示名）</label>
                     <input type="text" id="myProfileName" class="form-control" value="長原 健太">
                 </div>
-                <div class="form-group">
-                    <label class="form-label">カートナビでの表示名・エイリアス</label>
-                    <input type="text" id="myProfileAlias" class="form-control" value="長原">
-                </div>
                 <button class="btn-main" onclick="saveMyProfile()">プロフィールを更新保存</button>
             </div>
 
@@ -936,11 +932,7 @@
                 <h3 style="margin-bottom: 14px; color: var(--primary); font-size: 16px;">👥 ゴルフ仲間の登録</h3>
                 <div class="form-group">
                     <label class="form-label">仲間のお名前</label>
-                    <input type="text" id="newMemberName" class="form-control" placeholder="例: レナ, リエ, 田中">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">カートナビでの表示名（任意）</label>
-                    <input type="text" id="newMemberAlias" class="form-control" placeholder="例: RENA, TANAKA">
+                    <input type="text" id="newMemberName" class="form-control" placeholder="例: 田中 太郎">
                 </div>
                 <button class="btn-sub" style="width: 100%; padding: 11px;" onclick="addNewMember()">仲間をリストに追加</button>
             </div>
@@ -996,7 +988,6 @@
         let rounds = [];
         let myProfile = JSON.parse(localStorage.getItem('golf_my_profile') || JSON.stringify({
             name: '長原 健太',
-            alias: '長原',
             avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
         }));
 
@@ -1013,7 +1004,7 @@
         let isEditingRound = false;
         let editingRoundId = null;
 
-        // Firestore リアルタイムリスナー設定（誰かが保存・更新・コメントしたら全端末即座に更新）
+        // Firestore リアルタイム同期
         db.collection("rounds").onSnapshot((snapshot) => {
             rounds = [];
             snapshot.forEach((doc) => {
@@ -1101,6 +1092,12 @@
         function openEditRegistration(roundId) {
             const r = rounds.find(item => item.id === roundId);
             if (!r) return;
+
+            // 投稿者本人以外の編集を防止
+            if (r.authorName && r.authorName !== myProfile.name) {
+                alert('他のユーザーが登録したラウンドは編集できません。');
+                return;
+            }
 
             editingRoundId = r.id;
             document.getElementById('formTitle').innerText = `✏️ ラウンド情報の編集 (${r.courseName})`;
@@ -1197,7 +1194,6 @@
 
         function initProfileScreen() {
             document.getElementById('myProfileName').value = myProfile.name;
-            document.getElementById('myProfileAlias').value = myProfile.alias;
             document.getElementById('myAvatarImg').src = myProfile.avatar;
             renderMemberList();
         }
@@ -1249,7 +1245,6 @@
 
         function saveMyProfile() {
             myProfile.name = document.getElementById('myProfileName').value.trim() || '長原 健太';
-            myProfile.alias = document.getElementById('myProfileAlias').value.trim() || myProfile.name;
             localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
             alert('プロフィールを保存しました！');
         }
@@ -1264,10 +1259,7 @@
                 <div class="member-card">
                     <div style="display:flex; align-items:center; gap:12px;">
                         <img src="${m.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" class="avatar-img-sm">
-                        <div>
-                            <div style="font-weight:700; font-size:14px; color:var(--text-main);">${m.name}</div>
-                            <div style="font-size:11px; color:var(--text-sub);">エイリアス: ${m.alias || 'なし'}</div>
-                        </div>
+                        <div style="font-weight:700; font-size:14px; color:var(--text-main);">${m.name}</div>
                     </div>
                     <button class="btn-cancel" style="width:auto; margin:0; padding:4px 12px; font-size:11px; border-radius:6px;" onclick="deleteMember(${idx})">削除</button>
                 </div>
@@ -1276,7 +1268,6 @@
 
         function addNewMember() {
             const name = document.getElementById('newMemberName').value.trim();
-            const alias = document.getElementById('newMemberAlias').value.trim();
             if (!name) {
                 alert('仲間のお名前を入力してください。');
                 return;
@@ -1284,12 +1275,10 @@
             members.push({
                 id: 'm_' + Date.now(),
                 name: name,
-                alias: alias || name,
                 avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
             });
             localStorage.setItem('golf_members', JSON.stringify(members));
             document.getElementById('newMemberName').value = '';
-            document.getElementById('newMemberAlias').value = '';
             renderMemberList();
             alert(`「${name}」さんを追加しました！`);
         }
@@ -1447,7 +1436,7 @@
                     tempPlayersData = (parsedJSON.players || []).slice(0, 4);
                     const allRegistered = [myProfile, ...members];
                     tempPlayersData.forEach(p => {
-                        const matched = allRegistered.find(m => m.alias === p.cart_name || m.name === p.cart_name || p.cart_name.includes(m.name));
+                        const matched = allRegistered.find(m => m.name === p.cart_name || p.cart_name.includes(m.name));
                         if (matched) p.cart_name = matched.name;
                     });
 
@@ -1725,6 +1714,10 @@
                 const mainScore = (r.players && r.players[0]) ? `${r.players[0].cart_name}: ${r.players[0].total_score}` : '';
                 const authorAvatar = r.authorAvatar || myProfile.avatar;
                 const authorName = r.authorName || myProfile.name;
+                
+                // 本人の投稿のみ削除ボタンを表示
+                const isMyPost = (authorName === myProfile.name);
+                const deleteBtnHtml = isMyPost ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ 削除</button>` : '';
 
                 const commentsHtml = (r.comments || []).map(c => `
                     <div class="comment-bubble">
@@ -1736,7 +1729,7 @@
 
                 return `
                     <div class="card">
-                        <button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ 削除</button>
+                        ${deleteBtnHtml}
                         
                         <div class="card-header-user">
                             <img src="${authorAvatar}" class="avatar-img">
@@ -1945,6 +1938,10 @@
                 backBtn.innerHTML = '← タイムラインに戻る';
             }
             
+            // 本人の投稿のみ編集ボタンを表示
+            const isMyPost = (r.authorName === myProfile.name);
+            const editBtnHtml = isMyPost ? `<button class="btn-edit" onclick="openEditRegistration('${r.id}')">✏️ このラウンドを編集する</button>` : '';
+
             let scoreRows = (r.players || []).map((p, pIdx) => `
                 <tr>
                     <td style="font-weight:700;">${p.cart_name}</td>
@@ -1970,7 +1967,7 @@
                 <div class="card">
                     <img src="${cover}" class="card-img" style="height:260px;">
                     <div class="card-body">
-                        <button class="btn-edit" onclick="openEditRegistration('${r.id}')">✏️ このラウンドを編集する</button>
+                        ${editBtnHtml}
 
                         <h2 style="color:var(--primary); font-size:22px; margin-bottom:4px;">${r.courseName}</h2>
                         <p style="color:var(--text-sub); font-size:13px; margin-bottom:16px;">プレー日: ${r.playDate}</p>
