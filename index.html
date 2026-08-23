@@ -1159,6 +1159,7 @@
                         <select id="visibility" class="form-control">
                             <option value="friends">ゴルフ仲間に公開 (タイムライン)</option>
                             <option value="members_only">同伴者のみに公開</option>
+                            <option value="private">🔒 非公開 (自分のみ・タイムライン非表示)</option>
                         </select>
                     </div>
 
@@ -1387,14 +1388,12 @@
 
             const currentIndex = Math.round(scrollLeft / slideWidth);
             
-            // バッジ更新 (例: 1/3)
             const badge = document.getElementById(`carousel-badge-${roundIdx}`);
             const total = trackEl.children.length;
             if (badge) {
                 badge.innerText = `${currentIndex + 1}/${total}`;
             }
 
-            // ドット更新
             const dots = document.querySelectorAll(`.dot-round-${roundIdx}`);
             dots.forEach((dot, idx) => {
                 dot.classList.toggle('active', idx === currentIndex);
@@ -1421,7 +1420,7 @@
 
         // いいね！（Like）トグル処理
         async function toggleLike(roundIndex) {
-            const visibleRounds = getVisibleRounds();
+            const visibleRounds = getVisibleTimelineRounds();
             const targetRound = visibleRounds[roundIndex];
             if (!targetRound) return;
 
@@ -1625,6 +1624,7 @@
 
             document.getElementById('courseName').value = '';
             document.getElementById('playDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('visibility').value = 'friends';
 
             tempParData = {
                 out: [4, 5, 3, 5, 4, 4, 3, 4, 4],
@@ -2229,6 +2229,8 @@
         async function saveRound() {
             const courseName = document.getElementById('courseName').value.trim();
             const playDate = document.getElementById('playDate').value;
+            const visibilityVal = document.getElementById('visibility').value;
+
             if (!courseName) {
                 await showAppAlert('入力確認', 'ゴルフ場名を入力または選択してください。');
                 return;
@@ -2257,7 +2259,7 @@
                 authorAvatar: myProfile.avatar,
                 courseName: courseName,
                 playDate: playDate,
-                visibility: document.getElementById('visibility').value,
+                visibility: visibilityVal,
                 par: tempParData,
                 players: tempPlayersData,
                 photos: tempPhotos,
@@ -2276,10 +2278,13 @@
                     await db.collection("rounds").doc(targetRoundId).set(roundData);
                     showToast('🎉 ラウンドの想い出をクラウドに保存しました！');
 
-                    const wantShareLine = await showAppConfirm('保存完了！⛳', 'ラウンドの想い出を保存しました！\nLINEでゴルフ仲間にシェアしますか？', '🟢 LINEで送る', 'タイムラインへ');
-                    if (wantShareLine) {
-                        const lineUrl = getLineShareUrl(roundData);
-                        window.open(lineUrl, '_blank');
+                    // 非公開以外の設定の場合のみLINE共有を確認
+                    if (visibilityVal !== 'private') {
+                        const wantShareLine = await showAppConfirm('保存完了！⛳', 'ラウンドの想い出を保存しました！\nLINEでゴルフ仲間にシェアしますか？', '🟢 LINEで送る', 'タイムラインへ');
+                        if (wantShareLine) {
+                            const lineUrl = getLineShareUrl(roundData);
+                            window.open(lineUrl, '_blank');
+                        }
                     }
                 }
 
@@ -2311,7 +2316,7 @@
             const text = input.value.trim();
             if (!text) return;
 
-            const visibleRounds = getVisibleRounds();
+            const visibleRounds = getVisibleTimelineRounds();
             const targetRound = visibleRounds[roundIndex];
             if (!targetRound) return;
 
@@ -2333,7 +2338,11 @@
             }
         }
 
-        function isRoundVisibleToMe(r) {
+        // タイムライン・ギャラリー用：公開範囲判定（private は一切出さない）
+        function isRoundVisibleInTimeline(r) {
+            if (r.visibility === 'private') {
+                return false; // 非公開はタイムライン・ギャラリーに出さない
+            }
             if (r.visibility === 'members_only') {
                 const isAuthor = (r.authorName === myProfile.name);
                 const isPlayer = (r.players || []).some(p => p.cart_name === myProfile.name);
@@ -2342,13 +2351,29 @@
             return true;
         }
 
-        function getVisibleRounds() {
-            return rounds.filter(isRoundVisibleToMe);
+        function getVisibleTimelineRounds() {
+            return rounds.filter(isRoundVisibleInTimeline);
+        }
+
+        // 振り返り・分析・メンバー用：自分のデータが含まれる全ラウンド（非公開含む）
+        function getMyAccessibleRounds() {
+            return rounds.filter(r => {
+                if (r.visibility === 'private') {
+                    // 非公開は投稿者本人（自分）のみ振り返り・分析に反映
+                    return (r.authorName === myProfile.name);
+                }
+                if (r.visibility === 'members_only') {
+                    const isAuthor = (r.authorName === myProfile.name);
+                    const isPlayer = (r.players || []).some(p => p.cart_name === myProfile.name);
+                    return isAuthor || isPlayer;
+                }
+                return true;
+            });
         }
 
         function renderTimeline() {
             const list = document.getElementById('timeline-list');
-            const visibleRounds = getVisibleRounds();
+            const visibleRounds = getVisibleTimelineRounds();
 
             if (visibleRounds.length === 0) {
                 list.innerHTML = '<div style="text-align:center; padding:50px 20px; color:#888;">まだ表示できるラウンド履歴がありません。<br>右下のボタンから想い出を登録してください⛳</div>';
@@ -2373,7 +2398,6 @@
                 const isLikedByMe = likes.includes(myProfile.name);
                 const likeCount = likes.length;
 
-                // 写真リスト構築（カバー写真を先頭にして並べ替え）
                 let photoList = (r.photos && r.photos.length) ? [...r.photos] : ['https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600'];
                 if (r.photos && r.photos.length > 1 && r.bestPhotoIndex > 0 && r.bestPhotoIndex < r.photos.length) {
                     const cover = photoList.splice(r.bestPhotoIndex, 1)[0];
@@ -2411,7 +2435,6 @@
                     `;
                 }
 
-                // LINE風チャット・コメント描画
                 const commentsHtml = (r.comments || []).map(c => {
                     const isMyComment = (c.author === myProfile.name);
                     const timeStr = c.time || '';
@@ -2457,7 +2480,6 @@
                             <div class="card-date">👥 同伴: ${(r.players || []).map(p=>p.cart_name).join(', ')}</div>
                             <div class="score-highlight">${mainScore}</div>
 
-                            <!-- リアクション（いいね）＆ LINEシェアバー -->
                             <div class="card-action-bar">
                                 <button class="btn-like ${isLikedByMe ? 'liked' : ''}" onclick="toggleLike(${idx})">
                                     <span>${isLikedByMe ? '❤️' : '🤍'}</span>
@@ -2485,7 +2507,7 @@
         function renderAllGallery() {
             const container = document.getElementById('allGalleryContainer');
             const allPhotos = [];
-            const visibleRounds = getVisibleRounds();
+            const visibleRounds = getVisibleTimelineRounds();
 
             visibleRounds.forEach(r => {
                 (r.photos || []).forEach(pUrl => {
@@ -2530,11 +2552,11 @@
 
         function renderSummary(type) {
             const container = document.getElementById('summary-content');
-            const visibleRounds = getVisibleRounds();
+            const accessibleRounds = getMyAccessibleRounds();
 
             if (type === 'members') {
                 const memberMap = {};
-                visibleRounds.forEach(r => {
+                accessibleRounds.forEach(r => {
                     (r.players || []).forEach(p => {
                         if (!memberMap[p.cart_name]) {
                             memberMap[p.cart_name] = { count: 0, scores: [], rounds: [] };
@@ -2546,6 +2568,7 @@
                             courseName: r.courseName,
                             playDate: r.playDate,
                             score: p.total_score,
+                            isPrivate: (r.visibility === 'private'),
                             photo: (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
                         });
                     });
@@ -2560,7 +2583,7 @@
                         <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
                             <img src="${rd.photo}" class="drilldown-thumb">
                             <div style="flex:1;">
-                                <div style="font-weight:700; color:var(--primary);">${rd.courseName}</div>
+                                <div style="font-weight:700; color:var(--primary);">${rd.courseName} ${rd.isPrivate ? '<span style="font-size:10px; color:#888;">🔒非公開</span>' : ''}</div>
                                 <div style="color:var(--text-sub); font-size:11px;">📅 ${rd.playDate}</div>
                             </div>
                             <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:15px;">${rd.score}</div>
@@ -2588,7 +2611,7 @@
                 }).join('') || '<p style="color:#888; text-align:center; padding:20px;">データがありません</p>';
             } else {
                 const courseMap = {};
-                visibleRounds.forEach(r => {
+                accessibleRounds.forEach(r => {
                     if (!courseMap[r.courseName]) {
                         courseMap[r.courseName] = { count: 0, bestScore: 999, rounds: [] };
                     }
@@ -2601,6 +2624,7 @@
                         roundId: r.id,
                         playDate: r.playDate,
                         score: myScore,
+                        isPrivate: (r.visibility === 'private'),
                         playersCount: (r.players || []).length,
                         photo: (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
                     });
@@ -2614,7 +2638,7 @@
                         <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
                             <img src="${rd.photo}" class="drilldown-thumb">
                             <div style="flex:1;">
-                                <div style="font-weight:700; color:var(--primary);">📅 ${rd.playDate}</div>
+                                <div style="font-weight:700; color:var(--primary);">📅 ${rd.playDate} ${rd.isPrivate ? '<span style="font-size:10px; color:#888;">🔒非公開</span>' : ''}</div>
                                 <div style="color:var(--text-sub); font-size:11px;">同伴者数: ${rd.playersCount}名</div>
                             </div>
                             <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:15px;">スコア: ${rd.score || '-'}</div>
@@ -2643,9 +2667,9 @@
             }
         }
 
-        // 分析画面 (Analytics) の描画ロジック
+        // 分析画面 (Analytics) の描画ロジック（非公開ラウンドも反映）
         function renderAnalytics() {
-            const visibleRounds = getVisibleRounds();
+            const accessibleRounds = getMyAccessibleRounds();
             const myName = myProfile.name;
 
             const myRoundRecords = [];
@@ -2653,7 +2677,7 @@
             const courseMap = {};
             const h2hMap = {};
 
-            visibleRounds.forEach(r => {
+            accessibleRounds.forEach(r => {
                 const myPlayer = (r.players || []).find(p => p.cart_name === myName || (r.authorName === myName && p === r.players[0]));
                 if (!myPlayer || !myPlayer.total_score) return;
 
@@ -2855,7 +2879,7 @@
                     <div class="card-body">
                         ${editBtnHtml}
 
-                        <h2 style="color:var(--primary); font-size:22px; margin-bottom:4px;">${r.courseName}</h2>
+                        <h2 style="color:var(--primary); font-size:22px; margin-bottom:4px;">${r.courseName} ${r.visibility === 'private' ? '<span style="font-size:12px; color:#888;">🔒 非公開</span>' : ''}</h2>
                         <p style="color:var(--text-sub); font-size:13px; margin-bottom:16px;">プレー日: ${r.playDate}</p>
                         
                         <h4 style="margin-top:18px; border-left:4px solid var(--gold); padding-left:10px; color:var(--primary);">📊 スコア一覧</h4>
