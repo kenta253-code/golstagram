@@ -253,8 +253,8 @@
             flex-shrink: 0;
         }
         .avatar-img-sm {
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             object-fit: cover;
             border: 1px solid var(--gold-border);
@@ -379,36 +379,42 @@
         }
         .btn-card-delete:hover { background: var(--danger); }
 
-        /* リアクション＆共有バー */
+        /* リアクション（いいね＆コメント＆LINE共有）バー */
         .card-action-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 12px;
-            padding-top: 10px;
+            margin-top: 14px;
+            padding-top: 12px;
             border-top: 1px dashed var(--gold-border);
         }
-        .btn-like {
+        .left-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-action {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            background: none;
-            border: 1px solid #e2d7c3;
+            gap: 5px;
+            background: #ffffff;
+            border: 1px solid #dcd3c1;
             border-radius: 20px;
-            padding: 4px 12px;
+            padding: 6px 13px;
             font-size: 12px;
             font-weight: 700;
             color: var(--text-main);
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        .btn-like.liked {
+        .btn-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .btn-action.liked {
             background: #fde8e8;
             border-color: #fca5a5;
             color: #dc2626;
-        }
-        .btn-like:hover {
-            transform: scale(1.04);
         }
 
         /* LINE シェアボタン */
@@ -420,7 +426,7 @@
             color: #ffffff;
             border: none;
             border-radius: 6px;
-            padding: 5px 10px;
+            padding: 6px 11px;
             font-size: 11px;
             font-weight: 700;
             cursor: pointer;
@@ -436,22 +442,83 @@
             fill: #ffffff;
         }
 
-        /* LINE風 チャット・コメントエリア */
-        .comment-section {
-            background: #f4eee2;
-            border-top: 1px solid #e7dfcc;
-            padding: 14px 16px;
+        /* Instagram風 専用コメントボトムシート（モーダル） */
+        .comment-sheet-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(35, 56, 43, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1050;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
         }
-        .comment-list {
-            margin-bottom: 12px;
-            max-height: 180px;
-            overflow-y: auto;
+        .comment-sheet-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .comment-sheet {
+            background: var(--card);
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            border-top: 2px solid var(--gold);
+            width: 100%;
+            max-width: 600px;
+            height: 80vh;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            padding-right: 4px;
+            box-shadow: 0 -8px 32px rgba(45,36,28,0.2);
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .comment-sheet-overlay.active .comment-sheet {
+            transform: translateY(0);
+        }
+        .comment-sheet-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            background: #faf7f0;
+        }
+        .comment-sheet-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-close-sheet {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: var(--text-sub);
+            cursor: pointer;
+            padding: 4px;
+        }
+        .comment-sheet-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #f4eee2;
+        }
+        .comment-sheet-footer {
+            padding: 12px 16px;
+            background: #faf7f0;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
         }
 
+        /* LINE風 吹き出し */
         .chat-row-other {
             display: flex;
             align-items: flex-end;
@@ -465,24 +532,23 @@
             max-width: 78%;
         }
         .chat-author-name {
-            font-size: 10px;
+            font-size: 11px;
             color: var(--text-sub);
             font-weight: 700;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
             margin-left: 2px;
         }
         .chat-bubble-other {
             background: #ffffff;
             border: 1px solid var(--border);
-            border-radius: 12px 12px 12px 2px;
-            padding: 7px 11px;
-            font-size: 12px;
+            border-radius: 14px 14px 14px 2px;
+            padding: 9px 13px;
+            font-size: 13px;
             color: var(--text-main);
             box-shadow: 0 1px 3px rgba(45,36,28,0.04);
             word-break: break-word;
             line-height: 1.4;
         }
-
         .chat-row-my {
             display: flex;
             align-items: flex-end;
@@ -493,9 +559,9 @@
         .chat-bubble-my {
             background: var(--my-bubble-bg);
             color: #ffffff;
-            border-radius: 12px 12px 2px 12px;
-            padding: 7px 11px;
-            font-size: 12px;
+            border-radius: 14px 14px 2px 14px;
+            padding: 9px 13px;
+            font-size: 13px;
             box-shadow: 0 1px 3px rgba(45,36,28,0.08);
             max-width: 78%;
             word-break: break-word;
@@ -508,25 +574,24 @@
             flex-shrink: 0;
         }
 
-        .comment-form { display: flex; gap: 8px; }
-        .comment-input {
+        .comment-input-sheet {
             flex: 1;
-            padding: 8px 12px;
+            padding: 10px 14px;
             border: 1px solid var(--border);
-            border-radius: 20px;
+            border-radius: 24px;
             font-size: 16px;
-            background: #faf7f0;
+            background: #ffffff;
             color: var(--text-main);
             outline: none;
         }
-        .comment-input:focus { border-color: var(--gold); }
+        .comment-input-sheet:focus { border-color: var(--gold); }
         .btn-comment-send {
             background: var(--primary);
             color: white;
             border: none;
             border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 12px;
+            padding: 8px 16px;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             transition: 0.2s;
@@ -1003,7 +1068,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 1100;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.2s ease;
@@ -1058,7 +1123,7 @@
             font-size: 13px;
             font-weight: 700;
             box-shadow: var(--shadow-lg);
-            z-index: 1100;
+            z-index: 1200;
             opacity: 0;
             pointer-events: none;
             transition: all 0.3s ease;
@@ -1327,6 +1392,24 @@
         </button>
     </div>
 
+    <!-- Instagram風 専用コメントボトムシート（モーダル） -->
+    <div id="commentSheetOverlay" class="comment-sheet-overlay" onclick="closeCommentSheet(event)">
+        <div class="comment-sheet" onclick="event.stopPropagation()">
+            <div class="comment-sheet-header">
+                <div class="comment-sheet-title">
+                    <span>💬 コメント</span>
+                    <span id="sheetRoundTitle" style="font-size:12px; color:var(--text-sub); font-weight:normal; margin-left:6px;"></span>
+                </div>
+                <button class="btn-close-sheet" onclick="closeCommentSheet()">✕</button>
+            </div>
+            <div class="comment-sheet-list" id="sheetCommentList"></div>
+            <form class="comment-sheet-footer" onsubmit="submitSheetComment(event)">
+                <input type="text" id="sheetCommentInput" class="comment-input-sheet" placeholder="ナイスバーディー！🏌️‍♂️ ⛳ など一言...">
+                <button type="submit" class="btn-comment-send">送信</button>
+            </form>
+        </div>
+    </div>
+
     <!-- 独自デザインのカスタムモーダル -->
     <div id="customModal" class="app-modal-overlay">
         <div class="app-modal-box">
@@ -1380,6 +1463,8 @@
         let isEditingRound = false;
         let editingRoundId = null;
 
+        let activeCommentRoundId = null; // 現在開いているコメントシートのラウンドID
+
         // カルーセル スクロール連動インジケーター更新
         function handleCarouselScroll(trackEl, roundIdx) {
             const scrollLeft = trackEl.scrollLeft;
@@ -1410,7 +1495,6 @@
             return `https://line.me/R/msg/text/?${encodeURIComponent(text)}`;
         }
 
-        // LINE共有実行
         function shareToLine(roundId) {
             const r = rounds.find(item => item.id === roundId);
             if (!r) return;
@@ -1440,6 +1524,101 @@
                 });
             } catch (err) {
                 console.error("いいね更新エラー:", err);
+            }
+        }
+
+        // Instagram風 専用コメントシートの開閉
+        function openCommentSheet(roundId) {
+            const r = rounds.find(item => item.id === roundId);
+            if (!r) return;
+
+            activeCommentRoundId = roundId;
+            document.getElementById('sheetRoundTitle').innerText = `(${r.courseName})`;
+            renderSheetComments(r);
+
+            const overlay = document.getElementById('commentSheetOverlay');
+            overlay.classList.add('active');
+            setTimeout(() => {
+                document.getElementById('sheetCommentInput').focus();
+            }, 300);
+        }
+
+        function closeCommentSheet(e) {
+            if (e && e.target !== document.getElementById('commentSheetOverlay') && !e.target.classList.contains('btn-close-sheet')) {
+                return;
+            }
+            activeCommentRoundId = null;
+            document.getElementById('commentSheetOverlay').classList.remove('active');
+        }
+
+        function renderSheetComments(targetRound) {
+            const listEl = document.getElementById('sheetCommentList');
+            const comments = targetRound.comments || [];
+
+            if (comments.length === 0) {
+                listEl.innerHTML = '<div style="color:#888; font-size:12px; text-align:center; padding:30px 0;">まだコメントはありません。<br>一番最初にメッセージを送りましょう！🏌️‍♂️</div>';
+                return;
+            }
+
+            listEl.innerHTML = comments.map(c => {
+                const isMyComment = (c.author === myProfile.name);
+                const timeStr = c.time || '';
+
+                if (isMyComment) {
+                    return `
+                        <div class="chat-row-my">
+                            <span class="chat-time">${timeStr}</span>
+                            <div class="chat-bubble-my">${c.text}</div>
+                        </div>
+                    `;
+                } else {
+                    const cAvatar = globalUsersMap[c.author] || c.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150';
+                    return `
+                        <div class="chat-row-other">
+                            <img src="${cAvatar}" class="avatar-img-sm">
+                            <div class="chat-content-other">
+                                <span class="chat-author-name">${c.author}</span>
+                                <div class="chat-bubble-other">${c.text}</div>
+                            </div>
+                            <span class="chat-time">${timeStr}</span>
+                        </div>
+                    `;
+                }
+            }).join('');
+
+            // 最下部まで自動スクロール
+            setTimeout(() => {
+                listEl.scrollTop = listEl.scrollHeight;
+            }, 50);
+        }
+
+        async function submitSheetComment(e) {
+            e.preventDefault();
+            if (!activeCommentRoundId) return;
+
+            const input = document.getElementById('sheetCommentInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const targetRound = rounds.find(r => r.id === activeCommentRoundId);
+            if (!targetRound) return;
+
+            const updatedComments = targetRound.comments || [];
+            updatedComments.push({
+                author: myProfile.name,
+                avatar: myProfile.avatar,
+                text: text,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+
+            try {
+                await db.collection("rounds").doc(activeCommentRoundId).update({
+                    comments: updatedComments
+                });
+                input.value = '';
+                renderSheetComments(targetRound);
+            } catch (err) {
+                await showAppAlert('送信エラー', err.message);
             }
         }
 
@@ -1576,6 +1755,12 @@
             renderTimeline();
             renderAllGallery();
             renderAnalytics();
+
+            // シートが開いている場合はシート内容もリアルタイム同期
+            if (activeCommentRoundId) {
+                const updated = rounds.find(r => r.id === activeCommentRoundId);
+                if (updated) renderSheetComments(updated);
+            }
         }, (err) => {
             console.error("Firestore同期エラー:", err);
         });
@@ -2236,7 +2421,7 @@
                 return;
             }
 
-            // 未登録プレイヤーの自動仲間登録チェック（「追加する」「追加しない」ボタン）
+            // 未登録プレイヤーの自動仲間登録チェック
             const existingNames = [myProfile.name, ...members.map(m => m.name)];
             for (const p of tempPlayersData) {
                 const pName = p.cart_name.trim();
@@ -2315,34 +2500,6 @@
             }
         }
 
-        async function addComment(e, roundIndex) {
-            e.preventDefault();
-            const input = document.getElementById(`comment-input-${roundIndex}`);
-            const text = input.value.trim();
-            if (!text) return;
-
-            const visibleRounds = getVisibleTimelineRounds();
-            const targetRound = visibleRounds[roundIndex];
-            if (!targetRound) return;
-
-            const updatedComments = targetRound.comments || [];
-            updatedComments.push({
-                author: myProfile.name,
-                avatar: myProfile.avatar,
-                text: text,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            });
-
-            try {
-                await db.collection("rounds").doc(targetRound.id).update({
-                    comments: updatedComments
-                });
-                input.value = '';
-            } catch (err) {
-                await showAppAlert('コメント送信エラー', err.message);
-            }
-        }
-
         function isRoundVisibleInTimeline(r) {
             if (r.visibility === 'private') {
                 return false;
@@ -2399,6 +2556,7 @@
                 const likes = r.likes || [];
                 const isLikedByMe = likes.includes(myProfile.name);
                 const likeCount = likes.length;
+                const commentCount = (r.comments || []).length;
 
                 let photoList = (r.photos && r.photos.length) ? [...r.photos] : ['https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600'];
                 if (r.photos && r.photos.length > 1 && r.bestPhotoIndex > 0 && r.bestPhotoIndex < r.photos.length) {
@@ -2437,32 +2595,6 @@
                     `;
                 }
 
-                const commentsHtml = (r.comments || []).map(c => {
-                    const isMyComment = (c.author === myProfile.name);
-                    const timeStr = c.time || '';
-
-                    if (isMyComment) {
-                        return `
-                            <div class="chat-row-my">
-                                <span class="chat-time">${timeStr}</span>
-                                <div class="chat-bubble-my">${c.text}</div>
-                            </div>
-                        `;
-                    } else {
-                        const cAvatar = globalUsersMap[c.author] || c.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150';
-                        return `
-                            <div class="chat-row-other">
-                                <img src="${cAvatar}" class="avatar-img-sm">
-                                <div class="chat-content-other">
-                                    <span class="chat-author-name">${c.author}</span>
-                                    <div class="chat-bubble-other">${c.text}</div>
-                                </div>
-                                <span class="chat-time">${timeStr}</span>
-                            </div>
-                        `;
-                    }
-                }).join('');
-
                 return `
                     <div class="card">
                         ${deleteBtnHtml}
@@ -2482,24 +2614,22 @@
                             <div class="card-date">👥 同伴: ${(r.players || []).map(p=>p.cart_name).join(', ')}</div>
                             <div class="score-highlight">${mainScore}</div>
 
+                            <!-- リアクション（いいね ＆ コメント ＆ LINE共有）バー -->
                             <div class="card-action-bar">
-                                <button class="btn-like ${isLikedByMe ? 'liked' : ''}" onclick="toggleLike(${idx})">
-                                    <span>${isLikedByMe ? '❤️' : '🤍'}</span>
-                                    <span>いいね！</span>
-                                    ${likeCount > 0 ? `<span style="font-weight:700;">${likeCount}</span>` : ''}
-                                </button>
+                                <div class="left-actions">
+                                    <button class="btn-action ${isLikedByMe ? 'liked' : ''}" onclick="toggleLike(${idx})">
+                                        <span>${isLikedByMe ? '❤️' : '🤍'}</span>
+                                        <span>いいね！</span>
+                                        ${likeCount > 0 ? `<span>${likeCount}</span>` : ''}
+                                    </button>
+                                    <button class="btn-action" onclick="openCommentSheet('${r.id}')">
+                                        <span>💬</span>
+                                        <span>コメント</span>
+                                        ${commentCount > 0 ? `<span>${commentCount}</span>` : ''}
+                                    </button>
+                                </div>
                                 ${lineShareBtnHtml}
                             </div>
-                        </div>
-
-                        <div class="comment-section">
-                            <div class="comment-list" id="comment-list-${idx}">
-                                ${commentsHtml || '<div style="color:#aaa; font-size:11px; text-align:center; padding:6px;">コメントはまだありません</div>'}
-                            </div>
-                            <form class="comment-form" onsubmit="addComment(event, ${idx})">
-                                <input type="text" class="comment-input" id="comment-input-${idx}" placeholder="ナイスバーディー！ 🏌️‍♂️ ⛳ など一言...">
-                                <button type="submit" class="btn-comment-send">送信</button>
-                            </form>
                         </div>
                     </div>
                 `;
@@ -2669,7 +2799,7 @@
             }
         }
 
-        // 分析画面 (Analytics) の描画ロジック（非公開ラウンドも反映）
+        // 分析画面 (Analytics) の描画ロジック
         function renderAnalytics() {
             const accessibleRounds = getMyAccessibleRounds();
             const myName = myProfile.name;
