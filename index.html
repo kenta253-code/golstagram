@@ -146,7 +146,7 @@
             margin-bottom: 16px;
         }
 
-        /* 下部タブバー */
+        /* 下部タブバー（5タブ対応） */
         .tab-bar {
             position: fixed;
             bottom: 0;
@@ -165,16 +165,17 @@
         .tab-btn {
             background: none;
             border: none;
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-sub);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
             cursor: pointer;
             transition: all 0.2s ease;
-            padding: 6px 12px;
+            padding: 6px 8px;
             border-radius: 8px;
+            flex: 1;
         }
         .tab-btn.active {
             color: var(--primary);
@@ -184,7 +185,7 @@
             fill: var(--primary);
             filter: drop-shadow(0 2px 4px rgba(35, 56, 43, 0.25));
         }
-        .tab-btn svg { width: 22px; height: 22px; fill: var(--text-sub); transition: 0.2s; }
+        .tab-btn svg { width: 20px; height: 20px; fill: var(--text-sub); transition: 0.2s; }
 
         .container { max-width: 600px; margin: 0 auto; padding: 18px 16px; width: 100%; }
         .screen { display: none; }
@@ -767,6 +768,68 @@
             box-shadow: var(--shadow-sm);
         }
 
+        /* 分析（Analytics）画面スタイル */
+        .analytics-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .analytics-stat-card {
+            background: var(--card);
+            border: 1px solid var(--gold-border);
+            border-radius: 12px;
+            padding: 12px 8px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+        .analytics-stat-label {
+            font-size: 11px;
+            color: var(--text-sub);
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .analytics-stat-value {
+            font-family: 'Cinzel', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .analytics-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-top: 8px;
+            background: #faf7f0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .analytics-table th, .analytics-table td {
+            border: 1px solid #e5dcce;
+            padding: 8px 6px;
+            text-align: center;
+        }
+        .analytics-table th {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
+        }
+        .h2h-badge-win {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+        .h2h-badge-lose {
+            background: #ffebee;
+            color: #c62828;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+
         /* 独自デザインの日本語モーダル＆トースト通知 */
         .app-modal-overlay {
             position: fixed;
@@ -965,7 +1028,7 @@
         </div>
     </div>
 
-    <!-- ⑤ 振り返り画面 -->
+    <!-- ⑤ 振り返り画面 (Memory) -->
     <div id="screen-summary" class="screen">
         <div class="container">
             <div class="section-header-title">
@@ -980,7 +1043,57 @@
         </div>
     </div>
 
-    <!-- ⑥ メンバー・プロフィール管理画面 -->
+    <!-- ★ ⑥ 分析画面 (Analytics) ★ -->
+    <div id="screen-analytics" class="screen">
+        <div class="container">
+            <div class="section-header-title">
+                📈 <span class="font-golsta">Golsta</span> Analytics
+            </div>
+            <div class="section-header-desc">あなた専用のスタッツサマリー・年別推移・対戦成績です</div>
+
+            <!-- 基本サマリー 3連カード -->
+            <div class="analytics-summary-grid">
+                <div class="analytics-stat-card">
+                    <div class="analytics-stat-label">生涯ベスト</div>
+                    <div class="analytics-stat-value" id="stat-best-score">-</div>
+                </div>
+                <div class="analytics-stat-card">
+                    <div class="analytics-stat-label">通算平均</div>
+                    <div class="analytics-stat-value" id="stat-avg-score">-</div>
+                </div>
+                <div class="analytics-stat-card">
+                    <div class="analytics-stat-label">ラウンド数</div>
+                    <div class="analytics-stat-value" id="stat-total-rounds">-</div>
+                </div>
+            </div>
+
+            <!-- 1. 年別平均・実績 -->
+            <div class="card" style="padding: 16px; margin-bottom: 16px;">
+                <h4 style="color: var(--primary); font-size: 14px; margin-bottom: 8px; border-left: 3px solid var(--gold); padding-left: 8px;">
+                    📅 年別パフォーマンス
+                </h4>
+                <div id="analytics-yearly-container"></div>
+            </div>
+
+            <!-- 2. ゴルフ場別実績＆平均 -->
+            <div class="card" style="padding: 16px; margin-bottom: 16px;">
+                <h4 style="color: var(--primary); font-size: 14px; margin-bottom: 8px; border-left: 3px solid var(--gold); padding-left: 8px;">
+                    ⛳ ゴルフ場別 実績＆平均
+                </h4>
+                <div id="analytics-courses-container"></div>
+            </div>
+
+            <!-- 3. 友人との対戦成績 (H2H) -->
+            <div class="card" style="padding: 16px; margin-bottom: 16px;">
+                <h4 style="color: var(--primary); font-size: 14px; margin-bottom: 8px; border-left: 3px solid var(--gold); padding-left: 8px;">
+                    🥊 ゴルフ仲間との対戦成績
+                </h4>
+                <div id="analytics-h2h-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ⑦ メンバー・プロフィール管理画面 -->
     <div id="screen-members" class="screen">
         <div class="container">
             <div class="section-header-title">
@@ -1025,7 +1138,7 @@
         </div>
     </div>
 
-    <!-- 下部タブバー -->
+    <!-- 下部タブバー（5タブ構成） -->
     <div class="tab-bar">
         <button class="tab-btn active" onclick="navigateTab('screen-home')">
             <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
@@ -1039,13 +1152,17 @@
             <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
             振り返り
         </button>
+        <button class="tab-btn" onclick="navigateTab('screen-analytics')">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+            分析
+        </button>
         <button class="tab-btn" onclick="navigateTab('screen-members')">
             <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
             メンバー
         </button>
     </div>
 
-    <!-- 独自デザインのカスタムモーダル（確認・案内用） -->
+    <!-- 独自デザインのカスタムモーダル -->
     <div id="customModal" class="app-modal-overlay">
         <div class="app-modal-box">
             <div id="modalTitle" class="app-modal-title">確認</div>
@@ -1178,6 +1295,7 @@
             });
             renderTimeline();
             renderAllGallery();
+            renderAnalytics();
         }, (err) => {
             console.error("Firestore同期エラー:", err);
         });
@@ -1313,8 +1431,11 @@
             } else if (screenId === 'screen-summary') {
                 document.querySelectorAll('.tab-btn')[2].classList.add('active');
                 renderSummary('members');
-            } else if (screenId === 'screen-members') {
+            } else if (screenId === 'screen-analytics') {
                 document.querySelectorAll('.tab-btn')[3].classList.add('active');
+                renderAnalytics();
+            } else if (screenId === 'screen-members') {
+                document.querySelectorAll('.tab-btn')[4].classList.add('active');
                 initProfileScreen();
             } else if (screenId === 'screen-add') {
                 updateCourseDatalist();
@@ -1801,7 +1922,7 @@
                 return;
             }
 
-            // 未登録プレイヤーの自動仲間登録チェック（カスタム確認モーダル）
+            // 未登録プレイヤーの自動仲間登録チェック
             const existingNames = [myProfile.name, ...members.map(m => m.name)];
             for (const p of tempPlayersData) {
                 const pName = p.cart_name.trim();
@@ -1901,7 +2022,7 @@
                 const isPlayer = (r.players || []).some(p => p.cart_name === myProfile.name);
                 return isAuthor || isPlayer;
             }
-            return true; // friends公開は全員に表示
+            return true;
         }
 
         function getVisibleRounds() {
@@ -2125,6 +2246,177 @@
                         </div>
                     `;
                 }).join('') || '<p style="color:#888; text-align:center; padding:20px;">データがありません</p>';
+            }
+        }
+
+        // ★ 分析画面 (Analytics) の描画ロジック ★
+        function renderAnalytics() {
+            const visibleRounds = getVisibleRounds();
+            const myName = myProfile.name;
+
+            // 1. 自分の全スコアとラウンド履歴を抽出
+            const myRoundRecords = [];
+            const yearlyMap = {};
+            const courseMap = {};
+            const h2hMap = {}; // 友人との対戦成績 { '田中': { rounds: 0, win: 0, lose: 0, draw: 0 } }
+
+            visibleRounds.forEach(r => {
+                const myPlayer = (r.players || []).find(p => p.cart_name === myName || (r.authorName === myName && p === r.players[0]));
+                if (!myPlayer || !myPlayer.total_score) return;
+
+                const myScore = myPlayer.total_score;
+                myRoundRecords.push({
+                    roundId: r.id,
+                    date: r.playDate,
+                    year: (r.playDate || '').substring(0, 4) || '不明',
+                    course: r.courseName,
+                    score: myScore
+                });
+
+                // 年別集計
+                const yr = (r.playDate || '').substring(0, 4) || '不明';
+                if (!yearlyMap[yr]) yearlyMap[yr] = [];
+                yearlyMap[yr].push(myScore);
+
+                // コース別集計
+                if (!courseMap[r.courseName]) courseMap[r.courseName] = [];
+                courseMap[r.courseName].push(myScore);
+
+                // 友人との対戦成績 (H2H)
+                (r.players || []).forEach(p => {
+                    if (p.cart_name !== myPlayer.cart_name && p.total_score) {
+                        const rivalName = p.cart_name;
+                        if (!h2hMap[rivalName]) {
+                            h2hMap[rivalName] = { rounds: 0, win: 0, lose: 0, draw: 0 };
+                        }
+                        h2hMap[rivalName].rounds += 1;
+                        if (myScore < p.total_score) {
+                            h2hMap[rivalName].win += 1;
+                        } else if (myScore > p.total_score) {
+                            h2hMap[rivalName].lose += 1;
+                        } else {
+                            h2hMap[rivalName].draw += 1;
+                        }
+                    }
+                });
+            });
+
+            // 基本サマリー更新
+            const allScores = myRoundRecords.map(r => r.score);
+            const totalRounds = allScores.length;
+            const bestScore = totalRounds ? Math.min(...allScores) : '-';
+            const avgScore = totalRounds ? (allScores.reduce((a, b) => a + b, 0) / totalRounds).toFixed(1) : '-';
+
+            document.getElementById('stat-best-score').innerText = bestScore;
+            document.getElementById('stat-avg-score').innerText = avgScore;
+            document.getElementById('stat-total-rounds').innerText = totalRounds ? `${totalRounds}回` : '-';
+
+            // 1. 年別テーブル描画
+            const yearlyContainer = document.getElementById('analytics-yearly-container');
+            const years = Object.keys(yearlyMap).sort().reverse();
+            if (years.length === 0) {
+                yearlyContainer.innerHTML = '<p style="font-size:12px; color:#888;">データがありません</p>';
+            } else {
+                let yearlyRows = years.map(yr => {
+                    const scs = yearlyMap[yr];
+                    const yBest = Math.min(...scs);
+                    const yAvg = (scs.reduce((a,b)=>a+b,0) / scs.length).toFixed(1);
+                    return `
+                        <tr>
+                            <td style="font-weight:700;">${yr}年</td>
+                            <td>${scs.length}回</td>
+                            <td style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif;">${yBest}</td>
+                            <td style="font-family:'Cinzel',serif;">${yAvg}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                yearlyContainer.innerHTML = `
+                    <table class="analytics-table">
+                        <thead>
+                            <tr>
+                                <th>年</th>
+                                <th>ラウンド数</th>
+                                <th>ベスト</th>
+                                <th>平均スコア</th>
+                            </tr>
+                        </thead>
+                        <tbody>${yearlyRows}</tbody>
+                    </table>
+                `;
+            }
+
+            // 2. コース別テーブル描画
+            const coursesContainer = document.getElementById('analytics-courses-container');
+            const courses = Object.keys(courseMap);
+            if (courses.length === 0) {
+                coursesContainer.innerHTML = '<p style="font-size:12px; color:#888;">データがありません</p>';
+            } else {
+                let courseRows = courses.map(cName => {
+                    const scs = courseMap[cName];
+                    const cBest = Math.min(...scs);
+                    const cAvg = (scs.reduce((a,b)=>a+b,0) / scs.length).toFixed(1);
+                    return `
+                        <tr>
+                            <td style="font-weight:700; text-align:left; padding-left:8px;">${cName}</td>
+                            <td>${scs.length}回</td>
+                            <td style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif;">${cBest}</td>
+                            <td style="font-family:'Cinzel',serif;">${cAvg}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                coursesContainer.innerHTML = `
+                    <table class="analytics-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left; padding-left:8px;">コース名</th>
+                                <th>回数</th>
+                                <th>ベスト</th>
+                                <th>平均</th>
+                            </tr>
+                        </thead>
+                        <tbody>${courseRows}</tbody>
+                    </table>
+                `;
+            }
+
+            // 3. 対戦成績テーブル描画
+            const h2hContainer = document.getElementById('analytics-h2h-container');
+            const rivals = Object.keys(h2hMap);
+            if (rivals.length === 0) {
+                h2hContainer.innerHTML = '<p style="font-size:12px; color:#888;">同伴者との対戦データがありません</p>';
+            } else {
+                let h2hRows = rivals.map(rName => {
+                    const h = h2hMap[rName];
+                    const winRate = ((h.win / h.rounds) * 100).toFixed(0);
+                    return `
+                        <tr>
+                            <td style="font-weight:700; text-align:left; padding-left:8px;">${rName}</td>
+                            <td>${h.rounds}戦</td>
+                            <td>
+                                <span class="h2h-badge-win">${h.win}勝</span>
+                                <span class="h2h-badge-lose">${h.lose}敗</span>
+                                ${h.draw ? `<span style="font-size:10px; color:#888;">${h.draw}分</span>` : ''}
+                            </td>
+                            <td style="font-weight:700; font-family:'Cinzel',serif;">${winRate}%</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                h2hContainer.innerHTML = `
+                    <table class="analytics-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left; padding-left:8px;">ゴルフ仲間</th>
+                                <th>同伴回数</th>
+                                <th>勝敗</th>
+                                <th>勝率</th>
+                            </tr>
+                        </thead>
+                        <tbody>${h2hRows}</tbody>
+                    </table>
+                `;
             }
         }
 
