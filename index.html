@@ -766,6 +766,82 @@
             align-items: center;
             box-shadow: var(--shadow-sm);
         }
+
+        /* 独自デザインの日本語モーダル＆トースト通知 */
+        .app-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(35, 56, 43, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            padding: 20px;
+        }
+        .app-modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .app-modal-box {
+            background: var(--card);
+            border: 2px solid var(--gold-border);
+            border-radius: 16px;
+            padding: 22px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            transform: scale(0.95);
+            transition: transform 0.2s ease;
+        }
+        .app-modal-overlay.active .app-modal-box {
+            transform: scale(1);
+        }
+        .app-modal-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        .app-modal-text {
+            font-size: 13px;
+            color: var(--text-main);
+            line-height: 1.5;
+            margin-bottom: 18px;
+            white-space: pre-wrap;
+        }
+        .app-modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .app-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: linear-gradient(135deg, #23382b 0%, #344d3d 100%);
+            color: #ffffff;
+            border: 1px solid var(--gold);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: var(--shadow-lg);
+            z-index: 1100;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .app-toast.active {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -969,6 +1045,21 @@
         </button>
     </div>
 
+    <!-- 独自デザインのカスタムモーダル（確認・案内用） -->
+    <div id="customModal" class="app-modal-overlay">
+        <div class="app-modal-box">
+            <div id="modalTitle" class="app-modal-title">確認</div>
+            <div id="modalText" class="app-modal-text">メッセージ</div>
+            <div class="app-modal-buttons">
+                <button id="modalBtnCancel" class="btn-cancel" style="margin-top:0; flex:1;">キャンセル</button>
+                <button id="modalBtnOk" class="btn-main" style="padding:10px; font-size:13px; flex:1;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 独自デザインのトースト通知 -->
+    <div id="customToast" class="app-toast"></div>
+
     <script>
         const GEMINI_API_KEY = 'AQ.Ab8RN6JP-oM5a54UjwIpM8lLKu5v0gMk5XUePUMukE4wOZQxYw';
 
@@ -1004,13 +1095,77 @@
         let isEditingRound = false;
         let editingRoundId = null;
 
-        // Firestore リアルタイム同期（最新のラウンドが一番上に来るようソート）
+        // UI通知・モーダルヘルパー
+        function showToast(msg) {
+            const toast = document.getElementById('customToast');
+            toast.innerText = msg;
+            toast.classList.add('active');
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 3000);
+        }
+
+        function showAppConfirm(title, message) {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('customModal');
+                const titleEl = document.getElementById('modalTitle');
+                const textEl = document.getElementById('modalText');
+                const btnOk = document.getElementById('modalBtnOk');
+                const btnCancel = document.getElementById('modalBtnCancel');
+
+                titleEl.innerText = title;
+                textEl.innerText = message;
+                btnCancel.style.display = 'block';
+
+                const handleOk = () => {
+                    cleanup();
+                    resolve(true);
+                };
+                const handleCancel = () => {
+                    cleanup();
+                    resolve(false);
+                };
+                const cleanup = () => {
+                    overlay.classList.remove('active');
+                    btnOk.removeEventListener('click', handleOk);
+                    btnCancel.removeEventListener('click', handleCancel);
+                };
+
+                btnOk.addEventListener('click', handleOk);
+                btnCancel.addEventListener('click', handleCancel);
+                overlay.classList.add('active');
+            });
+        }
+
+        function showAppAlert(title, message) {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('customModal');
+                const titleEl = document.getElementById('modalTitle');
+                const textEl = document.getElementById('modalText');
+                const btnOk = document.getElementById('modalBtnOk');
+                const btnCancel = document.getElementById('modalBtnCancel');
+
+                titleEl.innerText = title;
+                textEl.innerText = message;
+                btnCancel.style.display = 'none';
+
+                const handleOk = () => {
+                    overlay.classList.remove('active');
+                    btnOk.removeEventListener('click', handleOk);
+                    resolve(true);
+                };
+
+                btnOk.addEventListener('click', handleOk);
+                overlay.classList.add('active');
+            });
+        }
+
+        // Firestore リアルタイム同期
         db.collection("rounds").onSnapshot((snapshot) => {
             rounds = [];
             snapshot.forEach((doc) => {
                 rounds.push({ id: doc.id, ...doc.data() });
             });
-            // プレー日(playDate)降順、同じ場合は作成日時(createdAt)降順でソート
             rounds.sort((a, b) => {
                 const dateA = a.playDate || '';
                 const dateB = b.playDate || '';
@@ -1029,7 +1184,8 @@
 
         // 全データリセット
         async function resetAllData() {
-            if (confirm('すべてのラウンド情報と登録仲間データを完全に消去しますか？\n（この操作は元に戻せません）')) {
+            const ok = await showAppConfirm('全データ初期化', 'すべてのラウンド情報と登録仲間データを完全に消去しますか？\n（この操作は元に戻せません）');
+            if (ok) {
                 try {
                     const snap = await db.collection("rounds").get();
                     const batch = db.batch();
@@ -1042,8 +1198,8 @@
                 localStorage.removeItem('golf_members');
                 rounds = [];
                 members = [];
-                alert('データをリセットしました。');
-                location.reload();
+                showToast('データをリセットしました');
+                setTimeout(() => location.reload(), 1000);
             }
         }
 
@@ -1099,13 +1255,12 @@
             isEditingRound = true;
         }
 
-        function openEditRegistration(roundId) {
+        async function openEditRegistration(roundId) {
             const r = rounds.find(item => item.id === roundId);
             if (!r) return;
 
-            // 投稿者本人以外の編集を防止
             if (r.authorName && r.authorName !== myProfile.name) {
-                alert('他のユーザーが登録したラウンドは編集できません。');
+                await showAppAlert('閲覧専用', '他のユーザーが登録したラウンドは編集できません。');
                 return;
             }
 
@@ -1131,10 +1286,11 @@
             showScreen('screen-add');
         }
 
-        function navigateTab(targetScreenId) {
+        async function navigateTab(targetScreenId) {
             const currentActive = document.querySelector('.screen.active');
             if (currentActive && currentActive.id === 'screen-add' && isEditingRound) {
-                if (confirm('入力内容が破棄されますが、画面を移動してもよろしいですか？')) {
+                const ok = await showAppConfirm('確認', '入力内容が破棄されますが、画面を移動してもよろしいですか？');
+                if (ok) {
                     resetAddForm();
                     showScreen(targetScreenId);
                 }
@@ -1166,9 +1322,10 @@
             window.scrollTo(0, 0);
         }
 
-        function cancelAndBackToHome() {
+        async function cancelAndBackToHome() {
             if (isEditingRound) {
-                if (confirm('入力内容を破棄してタイムラインに戻りますか？')) {
+                const ok = await showAppConfirm('確認', '入力内容を破棄してタイムラインに戻りますか？');
+                if (ok) {
                     resetAddForm();
                     showScreen('screen-home');
                 }
@@ -1248,7 +1405,7 @@
                     myProfile.avatar = compressed;
                     document.getElementById('myAvatarImg').src = compressed;
                 } catch (e) {
-                    alert(e.message);
+                    await showAppAlert('エラー', e.message);
                 }
             }
         }
@@ -1256,7 +1413,7 @@
         function saveMyProfile() {
             myProfile.name = document.getElementById('myProfileName').value.trim() || '長原 健太';
             localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
-            alert('プロフィールを保存しました！');
+            showToast('👤 プロフィールを保存しました！');
         }
 
         function renderMemberList() {
@@ -1276,10 +1433,10 @@
             `).join('');
         }
 
-        function addNewMember() {
+        async function addNewMember() {
             const name = document.getElementById('newMemberName').value.trim();
             if (!name) {
-                alert('仲間のお名前を入力してください。');
+                await showAppAlert('入力確認', '仲間のお名前を入力してください。');
                 return;
             }
             members.push({
@@ -1290,11 +1447,12 @@
             localStorage.setItem('golf_members', JSON.stringify(members));
             document.getElementById('newMemberName').value = '';
             renderMemberList();
-            alert(`「${name}」さんを追加しました！`);
+            showToast(`👥 「${name}」さんを追加しました！`);
         }
 
-        function deleteMember(index) {
-            if (confirm(`「${members[index].name}」さんを削除しますか？`)) {
+        async function deleteMember(index) {
+            const ok = await showAppConfirm('メンバー削除', `「${members[index].name}」さんを削除しますか？`);
+            if (ok) {
                 members.splice(index, 1);
                 localStorage.setItem('golf_members', JSON.stringify(members));
                 renderMemberList();
@@ -1308,14 +1466,14 @@
             isEditingRound = true;
             const remainingSlots = 5 - tempPhotos.length;
             if (remainingSlots <= 0) {
-                alert('写真は最大5枚まで登録できます。不要な写真を削除してください。');
+                await showAppAlert('写真枚数上限', '写真は最大5枚まで登録できます。不要な写真を削除してください。');
                 input.value = '';
                 return;
             }
 
             const filesToProcess = files.slice(0, remainingSlots);
             if (files.length > remainingSlots) {
-                alert(`上限（5枚）を超えたため、最初の${remainingSlots}枚のみ追加します。`);
+                await showAppAlert('お知らせ', `上限（5枚）を超えたため、最初の${remainingSlots}枚のみ追加します。`);
             }
 
             document.getElementById('photoCountLabel').innerText = '圧縮中...';
@@ -1325,7 +1483,7 @@
                     const compressed = await compressImageFile(file, 600, 0.6);
                     tempPhotos.push(compressed);
                 } catch (e) {
-                    alert('写真「' + file.name + '」: ' + e.message);
+                    await showAppAlert('エラー', '写真「' + file.name + '」: ' + e.message);
                 }
             }
 
@@ -1480,9 +1638,9 @@
             renderScorecardEditor();
         }
 
-        function addNewPlayerRow() {
+        async function addNewPlayerRow() {
             if (tempPlayersData.length >= 4) {
-                alert('プレイヤーは最大4名まで登録できます。');
+                await showAppAlert('上限到達', 'プレイヤーは最大4名まで登録できます。');
                 return;
             }
             isEditingRound = true;
@@ -1498,9 +1656,9 @@
             renderScorecardEditor();
         }
 
-        function removePlayerRow(playerIndex) {
+        async function removePlayerRow(playerIndex) {
             if (tempPlayersData.length <= 1) {
-                alert('最低1名のプレイヤーが必要です。');
+                await showAppAlert('確認', '最低1名のプレイヤーが必要です。');
                 return;
             }
             tempPlayersData.splice(playerIndex, 1);
@@ -1639,16 +1797,17 @@
             const courseName = document.getElementById('courseName').value.trim();
             const playDate = document.getElementById('playDate').value;
             if (!courseName) {
-                alert('ゴルフ場名を入力または選択してください。');
+                await showAppAlert('入力確認', 'ゴルフ場名を入力または選択してください。');
                 return;
             }
 
-            // 未登録プレイヤーの自動仲間登録チェック
+            // 未登録プレイヤーの自動仲間登録チェック（カスタム確認モーダル）
             const existingNames = [myProfile.name, ...members.map(m => m.name)];
             for (const p of tempPlayersData) {
                 const pName = p.cart_name.trim();
                 if (pName && !existingNames.includes(pName) && !pName.startsWith('プレイヤー')) {
-                    if (confirm(`「${pName}」さんはゴルフ仲間に未登録です。\nメンバーリストに新しく追加しますか？`)) {
+                    const ok = await showAppConfirm('新しいゴルフ仲間', `「${pName}」さんはゴルフ仲間に未登録です。\nメンバーリストに追加しますか？`);
+                    if (ok) {
                         members.push({
                             id: 'm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
                             name: pName,
@@ -1677,12 +1836,12 @@
             try {
                 if (editingRoundId) {
                     await db.collection("rounds").doc(editingRoundId).update(roundData);
-                    alert('🎉 ラウンド情報をクラウドに更新しました！');
+                    showToast('🎉 ラウンド情報を更新しました！');
                 } else {
                     roundData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                     roundData.comments = [];
                     await db.collection("rounds").doc(targetRoundId).set(roundData);
-                    alert('🎉 ラウンドの想い出をクラウドに保存・共有しました！');
+                    showToast('🎉 ラウンドの想い出をクラウドに保存しました！');
                 }
 
                 isEditingRound = false;
@@ -1690,17 +1849,19 @@
                 resetAddForm();
                 showScreen('screen-home');
             } catch (err) {
-                alert('クラウド保存エラー: ' + err.message);
+                await showAppAlert('クラウド保存エラー', err.message);
             }
         }
 
         async function deleteRound(e, roundId) {
             e.stopPropagation();
-            if (confirm('このラウンド記録を削除してもよろしいですか？（全員の画面から削除されます）')) {
+            const ok = await showAppConfirm('ラウンド削除', 'このラウンド記録を削除してもよろしいですか？（全員の画面から削除されます）');
+            if (ok) {
                 try {
                     await db.collection("rounds").doc(roundId).delete();
+                    showToast('🗑️ ラウンドを削除しました');
                 } catch (err) {
-                    alert('削除エラー: ' + err.message);
+                    await showAppAlert('削除エラー', err.message);
                 }
             }
         }
@@ -1711,7 +1872,10 @@
             const text = input.value.trim();
             if (!text) return;
 
-            const targetRound = rounds[roundIndex];
+            const visibleRounds = getVisibleRounds();
+            const targetRound = visibleRounds[roundIndex];
+            if (!targetRound) return;
+
             const updatedComments = targetRound.comments || [];
             updatedComments.push({
                 author: myProfile.name,
@@ -1726,23 +1890,38 @@
                 });
                 input.value = '';
             } catch (err) {
-                alert('コメント送信エラー: ' + err.message);
+                await showAppAlert('コメント送信エラー', err.message);
             }
+        }
+
+        // 公開範囲（visibility）による表示判定
+        function isRoundVisibleToMe(r) {
+            if (r.visibility === 'members_only') {
+                const isAuthor = (r.authorName === myProfile.name);
+                const isPlayer = (r.players || []).some(p => p.cart_name === myProfile.name);
+                return isAuthor || isPlayer;
+            }
+            return true; // friends公開は全員に表示
+        }
+
+        function getVisibleRounds() {
+            return rounds.filter(isRoundVisibleToMe);
         }
 
         function renderTimeline() {
             const list = document.getElementById('timeline-list');
-            if (rounds.length === 0) {
-                list.innerHTML = '<div style="text-align:center; padding:50px 20px; color:#888;">まだラウンド履歴がありません。<br>右下のボタンから想い出を登録してください⛳</div>';
+            const visibleRounds = getVisibleRounds();
+
+            if (visibleRounds.length === 0) {
+                list.innerHTML = '<div style="text-align:center; padding:50px 20px; color:#888;">まだ表示できるラウンド履歴がありません。<br>右下のボタンから想い出を登録してください⛳</div>';
                 return;
             }
-            list.innerHTML = rounds.map((r, idx) => {
+            list.innerHTML = visibleRounds.map((r, idx) => {
                 const cover = (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600');
                 const mainScore = (r.players && r.players[0]) ? `${r.players[0].cart_name}: ${r.players[0].total_score}` : '';
                 const authorAvatar = r.authorAvatar || myProfile.avatar;
                 const authorName = r.authorName || myProfile.name;
                 
-                // 本人の投稿のみ削除ボタンを表示
                 const isMyPost = (authorName === myProfile.name);
                 const deleteBtnHtml = isMyPost ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ 削除</button>` : '';
 
@@ -1791,8 +1970,9 @@
         function renderAllGallery() {
             const container = document.getElementById('allGalleryContainer');
             const allPhotos = [];
+            const visibleRounds = getVisibleRounds();
 
-            rounds.forEach(r => {
+            visibleRounds.forEach(r => {
                 (r.photos || []).forEach(pUrl => {
                     allPhotos.push({
                         photoUrl: pUrl,
@@ -1805,7 +1985,7 @@
             });
 
             if (allPhotos.length === 0) {
-                container.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; padding:40px; color:#888;">登録された写真がありません。<br><span class="font-golsta">Golsta</span> 登録から写真を追加してください📷</div>';
+                container.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; padding:40px; color:#888;">表示できる写真がありません。<br><span class="font-golsta">Golsta</span> 登録から写真を追加してください📷</div>';
                 return;
             }
 
@@ -1835,9 +2015,11 @@
 
         function renderSummary(type) {
             const container = document.getElementById('summary-content');
+            const visibleRounds = getVisibleRounds();
+
             if (type === 'members') {
                 const memberMap = {};
-                rounds.forEach(r => {
+                visibleRounds.forEach(r => {
                     (r.players || []).forEach(p => {
                         if (!memberMap[p.cart_name]) {
                             memberMap[p.cart_name] = { count: 0, scores: [], rounds: [] };
@@ -1891,7 +2073,7 @@
                 }).join('') || '<p style="color:#888; text-align:center; padding:20px;">データがありません</p>';
             } else {
                 const courseMap = {};
-                rounds.forEach(r => {
+                visibleRounds.forEach(r => {
                     if (!courseMap[r.courseName]) {
                         courseMap[r.courseName] = { count: 0, bestScore: 999, rounds: [] };
                     }
@@ -1965,7 +2147,6 @@
                 backBtn.innerHTML = '← タイムラインに戻る';
             }
             
-            // 本人の投稿のみ編集ボタンを表示
             const isMyPost = (r.authorName === myProfile.name);
             const editBtnHtml = isMyPost ? `<button class="btn-edit" onclick="openEditRegistration('${r.id}')">✏️ このラウンドを編集する</button>` : '';
 
