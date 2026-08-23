@@ -277,29 +277,33 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* フローティングボタン */
+        /* ★ 大型＆ピンクカラーのフローティング「＋Golsta登録」ボタン ★ */
         .fab {
             position: fixed;
-            right: 20px;
-            bottom: calc(82px + env(safe-area-inset-bottom));
-            background: linear-gradient(135deg, #23382b 0%, #344d3d 100%);
+            right: 18px;
+            bottom: calc(84px + env(safe-area-inset-bottom));
+            background: linear-gradient(135deg, #ff4081 0%, #e91e63 100%);
             color: #ffffff;
-            border: 1px solid var(--gold);
-            border-radius: 30px;
-            padding: 14px 22px;
-            font-size: 14px;
-            font-weight: 700;
-            box-shadow: var(--shadow-md);
+            border: 2px solid #ff80ab;
+            border-radius: 34px;
+            padding: 16px 26px;
+            font-size: 16px;
+            font-weight: 800;
+            box-shadow: 0 8px 24px rgba(233, 30, 99, 0.45);
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
-            z-index: 90;
-            transition: all 0.2s ease;
+            gap: 7px;
+            z-index: 95;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            letter-spacing: 0.04em;
         }
         .fab:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 12px 28px rgba(233, 30, 99, 0.55);
+        }
+        .fab:active {
+            transform: translateY(0) scale(0.97);
         }
 
         /* カードデザイン */
@@ -1286,6 +1290,7 @@
         <div class="container">
             <div id="timeline-list"></div>
         </div>
+        <!-- 大型＆ピンクの目立つGolsta登録ボタン -->
         <button class="fab" onclick="openNewRegistration()">
             <span>＋ <span class="font-golsta">Golsta</span> 登録</span>
         </button>
