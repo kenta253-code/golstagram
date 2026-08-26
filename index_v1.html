@@ -1186,13 +1186,17 @@
             try {
                 const userDoc = await db.collection("users").doc(rawId).get();
 
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    myProfile = {
-                        id: rawId,
-                        name: userData.name || rawName || '長原 健太',
-                        avatar: userData.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
-                    };
+               if (userDoc.exists) {
+                const userData = userDoc.data();
+                myProfile = {
+                    id: rawId,
+                    name: userData.name || rawName || '長原 健太',
+                    avatar: userData.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
+                };
+                // 画面上のアイコン写真も即座に更新
+                const avatarEl = document.getElementById('myAvatarImg');
+                if (avatarEl) avatarEl.src = myProfile.avatar;
+                   
                     showToast(`🎉 「${myProfile.name}」としてログインしました！`);
                 } else {
                     const name = rawName || '長原 健太';
@@ -1490,12 +1494,19 @@
             });
         }
 
-        db.collection("users").onSnapshot((snapshot) => {
+       db.collection("users").onSnapshot((snapshot) => {
             globalUsersMap = {};
             snapshot.forEach((doc) => {
                 const d = doc.data();
                 if (d.name && d.avatar) {
                     globalUsersMap[d.name] = d.avatar;
+                }
+                // クラウド側に自分の最新アイコンがあれば端末側にも自動同期
+                if (myProfile && (doc.id === myProfile.id || d.name === myProfile.name) && d.avatar) {
+                    myProfile.avatar = d.avatar;
+                    localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
+                    const avatarEl = document.getElementById('myAvatarImg');
+                    if (avatarEl) avatarEl.src = d.avatar;
                 }
             });
             renderMemberList();
