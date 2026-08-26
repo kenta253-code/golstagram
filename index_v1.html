@@ -2214,10 +2214,11 @@
             }
 
             const targetRoundId = editingRoundId || ('round_' + Date.now());
+            // 変更後
             const roundData = {
                 authorId: myProfile.id || 'usr_nagahara',
                 authorName: myProfile.name,
-                authorAvatar: myProfile.avatar,
+                authorAvatar: myProfile.avatar || globalUsersMap[myProfile.name] || '',
                 courseName: courseName,
                 playDate: playDate,
                 visibility: visibilityVal,
@@ -2594,7 +2595,11 @@
 
                 // 通常のラウンド投稿
                 const mainScore = (r.players && r.players[0]) ? `${r.players[0].cart_name}: ${r.players[0].total_score}` : '';
-                const authorAvatar = globalUsersMap[r.authorName] || r.authorAvatar || myProfile.avatar;
+                // 変更後
+                const isMyPost = (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
+                const authorAvatar = isMyPost 
+                    ? (myProfile.avatar || globalUsersMap[myProfile.name] || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150')
+                    : (globalUsersMap[r.authorName] || r.authorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150');
                 const authorName = r.authorName || myProfile.name;
                 
                 const isMyPost = (r.authorId && r.authorId === myProfile.id) || (authorName === myProfile.name);
