@@ -2,316 +2,1040 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Golstagram - No Golf, No Life</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- Google Fonts -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Golstagram">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="./icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="./icon.png">
+    
+    <title>Golstagram - ゴルフ想い出＆スコア共有</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@500;700&family=Comfortaa:wght@700&family=Noto+Sans+JP:wght@400;500;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDK (v8) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <!-- Firebase SDK (v9 compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <style>
-        :root {
-            --primary: #1b382b;
-            --primary-light: #2c5442;
-            --gold: #c5a059;
-            --gold-light: #e5c887;
-            --gold-border: rgba(197, 160, 89, 0.4);
-            --bg: #f4f6f4;
-            --card-bg: #ffffff;
-            --card-sub-bg: #f8faf8;
-            --text-main: #222222;
-            --text-sub: #666666;
-            --border: #e2e8e0;
-            --danger: #d9534f;
-            --nav-height: 60px;
-            --header-height: 54px;
+        :root, body[data-theme="sepia"] {
+            --primary: #23382b;
+            --primary-light: #e4dcce;
+            --primary-hover: #17261d;
+            --gold: #b38743;
+            --gold-light: #ece3d0;
+            --gold-border: #d5c7ab;
+            --bg: #efe8db;
+            --card: #faf7f0;
+            --text-main: #332b24;
+            --text-sub: #7a7064;
+            --border: #ddd4c1;
+            --danger: #b84343;
+            --line-green: #06c755;
+            --my-bubble-bg: #2b4534;
+            --header-bg: linear-gradient(135deg, #253328 0%, #1a241c 100%);
+            --header-text: #f7f4ee;
+            --tab-bg: rgba(250, 247, 240, 0.98);
+            --comment-bg: #f4eee2;
+            --shadow-sm: 0 2px 8px rgba(60, 48, 36, 0.05);
+            --shadow-md: 0 8px 24px rgba(60, 48, 36, 0.08);
+            --shadow-lg: 0 12px 32px rgba(60, 48, 36, 0.12);
         }
 
-        body.theme-dark {
-            --primary: #2d5a45;
-            --primary-light: #3d755b;
-            --gold: #d4af37;
-            --gold-light: #f3e5ab;
-            --gold-border: rgba(212, 175, 55, 0.3);
-            --bg: #121815;
-            --card-bg: #1a231f;
-            --card-sub-bg: #222e29;
-            --text-main: #e8ebe9;
-            --text-sub: #9eaba3;
-            --border: #2c3b34;
+        body[data-theme="light"] {
+            --primary: #1e4620;
+            --primary-light: #e8f5e9;
+            --primary-hover: #143216;
+            --gold: #c59b27;
+            --gold-light: #fff8e1;
+            --gold-border: #ffe082;
+            --bg: #f4f6f8;
+            --card: #ffffff;
+            --text-main: #1f2937;
+            --text-sub: #6b7280;
+            --border: #e5e7eb;
+            --danger: #ef4444;
+            --line-green: #06c755;
+            --my-bubble-bg: #1e4620;
+            --header-bg: linear-gradient(135deg, #1e4620 0%, #143216 100%);
+            --header-text: #ffffff;
+            --tab-bg: rgba(255, 255, 255, 0.98);
+            --comment-bg: #f9fafb;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.1);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
+        body[data-theme="dark"] {
+            --primary: #4ade80;
+            --primary-light: #1e293b;
+            --primary-hover: #22c55e;
+            --gold: #facc15;
+            --gold-light: #332a14;
+            --gold-border: #715814;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text-main: #f1f5f9;
+            --text-sub: #94a3b8;
+            --border: #334155;
+            --danger: #f87171;
+            --line-green: #06c755;
+            --my-bubble-bg: #15803d;
+            --header-bg: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+            --header-text: #f8fafc;
+            --tab-bg: rgba(30, 41, 59, 0.98);
+            --comment-bg: #0f172a;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4);
         }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html, body { width: 100%; overflow-x: hidden; touch-action: pan-y; }
         body {
-            font-family: 'Noto Sans JP', sans-serif;
             background-color: var(--bg);
             color: var(--text-main);
-            padding-top: var(--header-height);
-            padding-bottom: calc(var(--nav-height) + 20px);
-            min-height: 100vh;
+            font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+            padding-bottom: calc(90px + env(safe-area-inset-bottom));
+            letter-spacing: 0.02em;
+            transition: background-color 0.25s ease, color 0.25s ease;
         }
 
-        .font-golsta {
-            font-family: 'Cinzel', serif;
-            letter-spacing: 0.5px;
-        }
+        .font-golsta { font-family: 'Outfit', 'Comfortaa', sans-serif; font-weight: 800; letter-spacing: -0.02em; }
 
-        /* ヘッダー */
-        .app-header {
-            position: fixed;
+        header {
+            background: var(--header-bg);
+            color: var(--header-text);
+            padding-top: max(14px, env(safe-area-inset-top));
+            padding-bottom: 12px;
+            padding-left: max(16px, env(safe-area-inset-left));
+            padding-right: max(16px, env(safe-area-inset-right));
+            position: sticky;
             top: 0;
-            left: 0;
-            width: 100%;
-            height: var(--header-height);
-            background: var(--primary);
-            color: #fff;
+            z-index: 100;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 16px;
-            z-index: 1000;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            border-bottom: 2px solid var(--gold);
         }
-
-        .header-title {
-            font-size: 19px;
-            font-weight: 700;
-            color: #fff;
+        .logo-container { display: flex; align-items: baseline; gap: 8px; }
+        .golstagram-logo {
+            font-family: 'Outfit', 'Comfortaa', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            line-height: 1;
+        }
+        .golstagram-logo span.gold-dot { color: var(--gold); font-size: 28px; line-height: 0; margin-left: 1px; }
+        .header-tagline {
+            font-family: 'Alex Brush', cursive;
+            font-size: 15px;
+            color: #ffffff;
+            letter-spacing: 0.03em;
+            font-weight: 400;
+            line-height: 1;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .header-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+        .btn-settings-gear {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
             display: flex;
-            align-items: baseline;
-            gap: 6px;
-        }
-
-        .header-sub {
-            font-size: 10px;
-            color: var(--gold-light);
-            font-style: italic;
-            font-family: 'Cinzel', serif;
-        }
-
-        .header-btn {
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 18px;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            padding: 6px;
+            color: #ffffff;
+            transition: all 0.2s ease;
         }
+        .btn-settings-gear:hover { background: rgba(255, 255, 255, 0.22); transform: rotate(30deg); }
+        .btn-settings-gear svg { width: 18px; height: 18px; fill: #ffffff; }
 
-        /* メインコンテナ */
-        .app-container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 12px 14px;
-        }
+        .section-header-title { font-size: 20px; font-weight: 700; color: var(--primary); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+        .section-header-desc { font-size: 12px; color: var(--text-sub); margin-bottom: 16px; }
 
-        /* 画面タブ */
-        .screen {
-            display: none;
-        }
-        .screen.active {
-            display: block;
-        }
-
-        /* 下部ナビゲーション */
-        .bottom-nav {
+        .tab-bar {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: var(--nav-height);
-            background: var(--card-bg);
+            bottom: 0; left: 0; right: 0;
+            height: calc(68px + env(safe-area-inset-bottom));
+            padding-bottom: env(safe-area-inset-bottom);
+            background: var(--tab-bg);
+            backdrop-filter: blur(12px);
             border-top: 1px solid var(--border);
             display: flex;
             justify-content: space-around;
             align-items: center;
-            z-index: 1000;
-            box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+            z-index: 100;
+            box-shadow: 0 -4px 18px rgba(0,0,0,0.08);
+            transition: background 0.25s ease;
         }
-
-        .nav-item {
-            flex: 1;
+        .tab-btn {
+            background: none;
+            border: none;
+            font-size: 11px;
+            color: var(--text-sub);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 8px 4px;
+            border-radius: 10px;
+            flex: 1;
             height: 100%;
-            color: var(--text-sub);
-            font-size: 10px;
-            cursor: pointer;
-            border: none;
-            background: none;
-            gap: 3px;
         }
+        .tab-btn.active { color: var(--primary); font-weight: 700; }
+        .tab-btn.active svg { fill: var(--primary); filter: drop-shadow(0 2px 4px rgba(35, 56, 43, 0.25)); transform: translateY(-1px); }
+        .tab-btn svg { width: 24px; height: 24px; fill: var(--text-sub); transition: 0.2s; }
 
-        .nav-item.active {
-            color: var(--gold);
-            font-weight: 700;
-        }
+        .container { max-width: 600px; margin: 0 auto; padding: 18px 16px; width: 100%; }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.25s ease-out; }
 
-        .nav-item i {
-            font-size: 17px;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* カード */
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            margin-bottom: 14px;
-            overflow: hidden;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-        }
-
-        /* フォーム部品 */
-        .form-group {
-            margin-bottom: 12px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 12px;
-            font-weight: 700;
-            margin-bottom: 5px;
-            color: var(--primary);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 9px 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--bg);
-            color: var(--text-main);
-            font-size: 14px;
-            font-family: inherit;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--gold);
-        }
-
-        /* ボタン */
-        .btn-main {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 16px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            width: 100%;
-        }
-
-        .btn-sub {
-            background: var(--card-sub-bg);
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        /* トースト通知 */
-        #toast {
+        .fab {
             position: fixed;
-            bottom: 75px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(20, 35, 27, 0.95);
-            color: #fff;
-            padding: 9px 18px;
-            border-radius: 20px;
-            font-size: 13px;
-            z-index: 999999;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            border: 1px solid var(--gold);
-            text-align: center;
-            max-width: 85%;
-        }
-        #toast.show {
-            opacity: 1;
-        }
-
-        /* ドリルダウン用 */
-        .drilldown-container {
-            display: none;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed var(--border);
-        }
-        .drilldown-container.open {
-            display: block;
-        }
-        .drilldown-item {
+            right: 18px;
+            bottom: calc(84px + env(safe-area-inset-bottom));
+            background: linear-gradient(135deg, #ff4081 0%, #e91e63 100%);
+            color: #ffffff;
+            border: 2px solid #ff80ab;
+            border-radius: 34px;
+            padding: 16px 26px;
+            font-size: 16px;
+            font-weight: 800;
+            box-shadow: 0 8px 24px rgba(233, 30, 99, 0.45);
+            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 8px;
-            border-radius: 6px;
-            background: var(--card-sub-bg);
-            margin-bottom: 6px;
-            cursor: pointer;
+            gap: 7px;
+            z-index: 95;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            letter-spacing: 0.04em;
         }
-        .drilldown-thumb {
-            width: 44px;
-            height: 44px;
-            border-radius: 6px;
-            object-fit: cover;
+        .fab:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 12px 28px rgba(233, 30, 99, 0.55); }
+        .fab:active { transform: translateY(0) scale(0.97); }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.25s;
         }
+
+        .card-header-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+        }
+        .avatar-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold-border); background: #e6dfd1; flex-shrink: 0; }
+        .avatar-img-sm { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold-border); flex-shrink: 0; background: #ded5c2; }
+        .user-name-text { font-size: 14px; font-weight: 700; color: var(--text-main); }
+        
+        .carousel-wrapper { position: relative; width: 100%; background: #000; }
+        .carousel-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .carousel-track::-webkit-scrollbar { display: none; }
+        .carousel-slide { flex: 0 0 100%; width: 100%; height: 260px; scroll-snap-align: start; position: relative; }
+        .carousel-img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: pointer; }
+        .carousel-count-badge {
+            position: absolute; top: 12px; right: 12px;
+            background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(4px);
+            color: #ffffff; font-size: 11px; font-weight: 700;
+            padding: 3px 8px; border-radius: 12px; z-index: 5; letter-spacing: 0.05em;
+        }
+        .carousel-dots { position: absolute; bottom: 10px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; z-index: 5; pointer-events: none; }
+        .carousel-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, 0.45); transition: all 0.2s ease; }
+        .carousel-dot.active { background: var(--gold); width: 14px; border-radius: 4px; }
+
+        .card-body { padding: 16px; }
+        .card-title { font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+        .card-date { font-size: 12px; color: var(--text-sub); margin-bottom: 10px; display: flex; align-items: center; gap: 4px; }
+        .score-highlight {
+            font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700;
+            color: var(--primary); background: var(--gold-light);
+            border: 1px solid var(--gold-border); padding: 4px 10px;
+            border-radius: 6px; display: inline-block;
+        }
+
+        .btn-card-delete {
+            position: absolute; top: 12px; right: 12px;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+            color: white; border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px; padding: 4px 10px; font-size: 11px;
+            cursor: pointer; z-index: 10; transition: 0.2s;
+        }
+        .btn-card-delete:hover { background: var(--danger); }
+
+        .card-action-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border);
+        }
+        .left-actions { display: flex; align-items: center; gap: 8px; }
+        .btn-action {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 6px 13px; font-size: 12px;
+            font-weight: 700; color: var(--text-main); cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-action:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+        .btn-action.liked { background: #fde8e8; border-color: #fca5a5; color: #dc2626; }
+
+        .btn-line-share {
+            display: inline-flex; align-items: center; gap: 5px;
+            background-color: var(--line-green); color: #ffffff;
+            border: none; border-radius: 6px; padding: 6px 11px;
+            font-size: 11px; font-weight: 700; cursor: pointer;
+            transition: 0.2s; text-decoration: none;
+        }
+        .btn-line-share:hover { opacity: 0.9; }
+        .btn-line-share svg { width: 14px; height: 14px; fill: #ffffff; }
+
+        /* ========= 🌟 AI映えアワード専用カードデザイン ========= */
+        .award-banner-card {
+            background: linear-gradient(135deg, #fffdf8 0%, #faf3e0 100%);
+            border: 2px solid #e2bc58;
+            box-shadow: 0 10px 25px rgba(226, 188, 88, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        body[data-theme="dark"] .award-banner-card {
+            background: linear-gradient(135deg, #1e2530 0%, #151d27 100%);
+            border-color: #facc15;
+        }
+        .award-badge-header {
+            background: linear-gradient(135deg, #dfa938 0%, #c48b17 100%);
+            color: #ffffff;
+            padding: 10px 16px;
+            font-weight: 800;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            letter-spacing: 0.05em;
+        }
+        .award-item-block {
+            border-top: 1px dashed var(--gold-border);
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .award-item-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 800;
+            font-size: 13px;
+            border-radius: 20px;
+            padding: 4px 12px;
+            width: fit-content;
+        }
+        .badge-grand { background: #fff3c4; color: #9a6500; border: 1px solid #ffd166; }
+        .badge-excellence { background: #e6f4ea; color: #137333; border: 1px solid #a8dab5; }
+        .badge-booby { background: #fce8e6; color: #c5221f; border: 1px solid #f6aea9; }
+
+        .award-photo-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 6px 0;
+            border: 1px solid var(--border);
+        }
+        .award-photo-container img { width: 100%; height: 100%; object-fit: cover; }
+        .award-judge-bubble {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--gold);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--text-main);
+        }
+        .award-judge-name {
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 11px;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* コメントボトムシート */
+        .comment-sheet-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1050;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .comment-sheet-overlay.active { opacity: 1; pointer-events: auto; }
+        .comment-sheet {
+            background: var(--card);
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            border-top: 2px solid var(--gold);
+            width: 100%;
+            max-width: 600px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 -8px 32px rgba(0,0,0,0.25);
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .comment-sheet-overlay.active .comment-sheet { transform: translateY(0); }
+        .comment-sheet-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--card);
+        }
+        .comment-sheet-title { font-size: 15px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 6px; }
+        .btn-close-sheet { background: none; border: none; font-size: 18px; color: var(--text-sub); cursor: pointer; padding: 4px; }
+        .comment-sheet-list {
+            flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: var(--comment-bg);
+        }
+        .comment-sheet-footer {
+            padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+            background: var(--card); border-top: 1px solid var(--border); display: flex; gap: 8px;
+        }
+
+        .chat-row-other { display: flex; align-items: flex-end; gap: 8px; width: 100%; }
+        .chat-content-other { display: flex; flex-direction: column; align-items: flex-start; max-width: 78%; }
+        .chat-author-name { font-size: 11px; color: var(--text-sub); font-weight: 700; margin-bottom: 3px; margin-left: 2px; }
+        .chat-bubble-other {
+            background: var(--card); border: 1px solid var(--border); border-radius: 14px 14px 14px 2px;
+            padding: 9px 13px; font-size: 13px; color: var(--text-main); box-shadow: var(--shadow-sm);
+            word-break: break-word; line-height: 1.4;
+        }
+        .chat-row-my { display: flex; align-items: flex-end; justify-content: flex-end; gap: 6px; width: 100%; }
+        .chat-bubble-my {
+            background: var(--my-bubble-bg); color: #ffffff; border-radius: 14px 14px 2px 14px;
+            padding: 9px 13px; font-size: 13px; box-shadow: var(--shadow-sm); max-width: 78%;
+            word-break: break-word; line-height: 1.4;
+        }
+        .chat-time { font-size: 9px; color: var(--text-sub); margin-bottom: 2px; flex-shrink: 0; }
+        .comment-input-sheet {
+            flex: 1; padding: 10px 14px; border: 1px solid var(--border);
+            border-radius: 24px; font-size: 16px; background: var(--bg);
+            color: var(--text-main); outline: none;
+        }
+        .comment-input-sheet:focus { border-color: var(--gold); }
+        .btn-comment-send {
+            background: var(--primary); color: white; border: none;
+            border-radius: 20px; padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;
+        }
+
+        .form-group { margin-bottom: 18px; }
+        .form-label { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 6px; display: block; }
+        .form-control {
+            width: 100%; padding: 11px 13px; border: 1px solid var(--border);
+            border-radius: 8px; font-size: 16px; background: var(--card);
+            color: var(--text-main); outline: none; transition: 0.2s;
+        }
+        .form-control:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(179, 135, 67, 0.15); }
+
+        .btn-main {
+            width: 100%; background: linear-gradient(135deg, #23382b 0%, #344d3d 100%);
+            color: white; border: 1px solid var(--gold); padding: 14px;
+            font-size: 15px; font-weight: 700; border-radius: 10px;
+            cursor: pointer; box-shadow: var(--shadow-sm); transition: 0.2s;
+        }
+        .btn-main:hover { opacity: 0.95; box-shadow: var(--shadow-md); }
+        .btn-cancel {
+            width: 100%; background: var(--card); color: var(--text-sub);
+            border: 1px solid var(--border); padding: 12px; font-size: 13px;
+            font-weight: 700; border-radius: 10px; cursor: pointer; margin-top: 10px; transition: 0.2s;
+        }
+        .btn-cancel:hover { color: var(--danger); }
+        .btn-sub {
+            background: var(--card); border: 1px solid var(--gold-border);
+            color: var(--primary); padding: 7px 14px; border-radius: 8px;
+            font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s;
+        }
+        .btn-sub:hover { background: var(--gold-light); }
+        .btn-edit {
+            background: var(--card); color: var(--primary); border: 1px solid var(--gold-border);
+            padding: 9px 16px; font-size: 13px; font-weight: 700; border-radius: 8px;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+            margin-bottom: 16px; box-shadow: var(--shadow-sm);
+        }
+        .btn-back {
+            background: none; border: none; color: var(--primary);
+            font-weight: 700; cursor: pointer; margin-bottom: 14px; font-size: 14px;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+
+        .score-editor-wrapper {
+            overflow-x: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x;
+            margin: 10px 0 18px; border: 1px solid var(--gold-border); border-radius: 8px; background: var(--card);
+        }
+        .scorecard-table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+        .scorecard-table th, .scorecard-table td { border: 1px solid var(--border); padding: 7px 5px; text-align: center; }
+        .scorecard-table thead th { background: #23382b; color: #f7f4ee; font-weight: 700; font-family: 'Cinzel', serif; }
+        .scorecard-table tr.par-row { background: var(--gold-light); font-weight: 700; color: #7a5823; }
+        .scorecard-table td.player-name-cell {
+            position: sticky; left: 0; background: var(--card); z-index: 2;
+            border-right: 2px solid var(--gold-border); min-width: 155px; max-width: 170px; text-align: left; padding: 5px;
+        }
+        .scorecard-table thead th.player-name-cell {
+            position: sticky; left: 0; background: #23382b; z-index: 3; border-right: 2px solid var(--gold-border);
+        }
+        .scorecard-table td.total-cell {
+            background: var(--gold-light); font-weight: 700; color: #9c6010; font-family: 'Cinzel', serif; font-size: 13px; min-width: 46px;
+        }
+        .score-input {
+            width: 34px; height: 30px; text-align: center; border: 1px solid var(--border);
+            border-radius: 4px; font-size: 16px; font-weight: 700; font-family: 'Cinzel', serif;
+            background: var(--card); color: var(--text-main); outline: none;
+        }
+        .score-input:focus { border-color: var(--gold); }
+        
+        .player-name-input-box { display: flex; flex-direction: column; gap: 3px; }
+        .name-text-input {
+            width: 100%; padding: 5px 6px; font-size: 13px; font-weight: 700;
+            border: 1px solid var(--border); border-radius: 4px; background: var(--card); color: var(--text-main); outline: none;
+        }
+        .name-text-input:focus { border-color: var(--gold); }
+        .name-select-quick {
+            width: 100%; padding: 2px 4px; font-size: 10px; color: var(--text-sub);
+            border: 1px dashed var(--border); border-radius: 4px; background: var(--card); cursor: pointer;
+        }
+
+        .half-toggle-bar { display: flex; gap: 6px; margin-bottom: 8px; }
+        .half-btn {
+            padding: 6px 14px; font-size: 12px; font-weight: 700; border: 1px solid var(--border);
+            background: var(--card); color: var(--text-main); border-radius: 6px; cursor: pointer; transition: 0.2s;
+        }
+        .half-btn.active { background: var(--primary); color: #ffffff; border-color: var(--primary); }
+
+        .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+        .photo-item {
+            position: relative; height: 110px; border-radius: 10px;
+            overflow: hidden; border: 2px solid var(--border); cursor: pointer; background: #000; box-shadow: var(--shadow-sm);
+        }
+        .photo-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .photo-item.best { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(179, 135, 67, 0.4); }
+        .best-badge {
+            position: absolute; top: 4px; left: 4px; background: var(--gold);
+            color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+        }
+        .btn-remove-photo {
+            position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.65);
+            color: white; border: none; border-radius: 50%; width: 22px; height: 22px;
+            font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5;
+        }
+
+        .toggle-group { display: flex; background: var(--border); border-radius: 10px; padding: 4px; margin-bottom: 18px; }
+        .toggle-btn {
+            flex: 1; border: none; padding: 9px; border-radius: 8px;
+            background: none; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text-sub); transition: 0.2s;
+        }
+        .toggle-btn.active { background: var(--card); color: var(--primary); box-shadow: var(--shadow-sm); }
+
+        .all-gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+        .gallery-card {
+            background: var(--card); border-radius: 12px; overflow: hidden;
+            border: 1px solid var(--border); cursor: pointer; box-shadow: var(--shadow-sm); transition: transform 0.2s;
+        }
+        .gallery-card:hover { transform: translateY(-2px); }
+        .gallery-card img { width: 100%; height: 140px; object-fit: cover; display: block; }
+        .gallery-card-info { padding: 10px; font-size: 11px; }
+        .gallery-card-title {
+            font-weight: 700; color: var(--primary); white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;
+        }
+
+        .drilldown-container { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); display: none; }
+        .drilldown-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 12px; }
+        .drilldown-thumb { width: 38px; height: 38px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+
+        .score-table {
+            width: 100%; border-collapse: collapse; font-size: 13px;
+            margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: var(--card);
+        }
+        .score-table th, .score-table td { border: 1px solid var(--border); padding: 9px 6px; text-align: center; }
+        .score-table th { background: var(--primary-light); color: var(--primary); font-weight: 700; }
+        .accordion-btn {
+            background: var(--card); border: 1px solid var(--border); color: var(--primary);
+            padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; margin: 4px 2px; font-weight: 700;
+        }
+        .detail-row { display: none; background: var(--bg); }
+        .detail-row.open { display: table-row; }
+
+        .profile-edit-box { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+        .avatar-preview {
+            width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
+            border: 3px solid var(--gold); background: #ded5c2; flex-shrink: 0; box-shadow: var(--shadow-sm);
+        }
+        .member-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+            padding: 12px 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-sm);
+        }
+
+        .analytics-summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+        .analytics-stat-card {
+            background: var(--card); border: 1px solid var(--gold-border);
+            border-radius: 12px; padding: 12px 8px; text-align: center; box-shadow: var(--shadow-sm);
+        }
+        .analytics-stat-label { font-size: 11px; color: var(--text-sub); font-weight: 700; margin-bottom: 4px; }
+        .analytics-stat-value { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700; color: var(--primary); }
+        .analytics-table {
+            width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px;
+            background: var(--card); border-radius: 8px; overflow: hidden; border: 1px solid var(--border);
+        }
+        .analytics-table th, .analytics-table td { border: 1px solid var(--border); padding: 8px 6px; text-align: center; }
+        .analytics-table th { background: var(--primary-light); color: var(--primary); font-weight: 700; }
+        .h2h-badge-win { background: #e8f5e9; color: #2e7d32; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+        .h2h-badge-lose { background: #ffebee; color: #c62828; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+
+        .theme-select-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0 16px; }
+        .theme-btn-card {
+            border: 2px solid var(--border); border-radius: 10px; padding: 10px 4px;
+            text-align: center; cursor: pointer; font-size: 11px; font-weight: 700;
+            background: var(--card); color: var(--text-main); transition: all 0.2s ease;
+        }
+        .theme-btn-card.active { border-color: var(--gold); background: var(--gold-light); color: #9c6010; }
+        .theme-btn-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+
+        .manual-section-box {
+            background: var(--bg); border-radius: 10px; padding: 14px; margin-top: 14px;
+            font-size: 12px; line-height: 1.6; max-height: 240px; overflow-y: auto; border: 1px solid var(--border);
+        }
+        .manual-hero-catch {
+            text-align: center; padding: 8px 6px; margin-bottom: 12px;
+            border-bottom: 1px dashed var(--gold-border); background: var(--card); border-radius: 8px;
+        }
+        .manual-hero-catch h4 { font-size: 13px; color: var(--primary); font-weight: 700; margin-bottom: 3px; }
+        .manual-hero-catch p { font-family: 'Alex Brush', cursive; font-size: 14px; color: var(--gold); }
+        .manual-step-title { font-weight: 700; color: var(--primary); margin: 10px 0 4px; display: flex; align-items: center; gap: 4px; }
+        .manual-trademark-footer {
+            margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border);
+            text-align: center; font-size: 10px; color: var(--text-sub); letter-spacing: 0.05em;
+        }
+
+        .app-modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1100; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; padding: 20px;
+        }
+        .app-modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .app-modal-box {
+            background: var(--card); border: 2px solid var(--gold-border);
+            border-radius: 16px; padding: 20px; width: 100%; max-width: 420px;
+            max-height: 85vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg);
+            transform: scale(0.95); transition: transform 0.2s ease;
+        }
+        .app-modal-overlay.active .app-modal-box { transform: scale(1); }
+        .app-modal-title { font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+        .app-modal-text { font-size: 13px; color: var(--text-main); line-height: 1.5; margin-bottom: 18px; white-space: pre-wrap; }
+        .app-modal-buttons { display: flex; gap: 10px; }
+        .app-toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
+            background: linear-gradient(135deg, #23382b 0%, #344d3d 100%);
+            color: #ffffff; border: 1px solid var(--gold); padding: 12px 24px;
+            border-radius: 30px; font-size: 13px; font-weight: 700; box-shadow: var(--shadow-lg);
+            z-index: 1200; opacity: 0; pointer-events: none; transition: all 0.3s ease; text-align: center; white-space: nowrap;
+        }
+        .app-toast.active { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
 </head>
-<body>
+<body data-theme="sepia">
 
-    <!-- ヘッダー -->
-    <header class="app-header">
-        <div class="header-title">
-            <span class="font-golsta">Golstagram</span>
-            <span class="header-sub">No Golf, No Life</span>
+    <!-- Golstagram ヘッダー -->
+    <header>
+        <div class="logo-container">
+            <span class="golstagram-logo">Golstagram<span class="gold-dot">.</span></span>
+            <span class="header-tagline">No Golf no Life</span>
         </div>
-        <button class="header-btn" onclick="openSettingsModal()"><i class="fa-solid fa-gear"></i></button>
+        <div class="header-right">
+            <button class="btn-settings-gear" onclick="openSettingsModal()" aria-label="設定">
+                <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            </button>
+        </div>
     </header>
 
+    <!-- ① タイムライン画面 (Home) -->
+    <div id="screen-home" class="screen active">
+        <div class="container">
+            <div id="timeline-list"></div>
+        </div>
+        <button class="fab" onclick="openNewRegistration()">
+            <span>＋ <span class="font-golsta">Golsta</span> 登録</span>
+        </button>
+    </div>
+
+    <!-- ② スコア＆写真登録・編集画面 -->
+    <div id="screen-add" class="screen">
+        <div class="container">
+            <div class="card" style="padding: 18px;">
+                <h3 id="formTitle" style="margin-bottom: 4px; color: var(--primary); font-size: 18px;">
+                    <span class="font-golsta">Golsta</span> 登録
+                </h3>
+                <p id="formSubTitle" style="font-size: 12px; color: var(--text-sub); margin-bottom: 14px;">スコアカード画面の写真をセットしてAI解析を行うか、手動で入力してください。</p>
+                
+                <div id="aiUploadSection">
+                    <div class="form-group">
+                        <label class="form-label">スコア画面画像 1 (必須)</label>
+                        <input type="file" id="scoreImageInput1" accept="image/*" class="form-control" onchange="checkScoreButtonState()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">スコア画面画像 2 (任意・ハーフ別など)</label>
+                        <input type="file" id="scoreImageInput2" accept="image/*" class="form-control" onchange="checkScoreButtonState()">
+                    </div>
+                    
+                    <button class="btn-main" id="aiAnalyzeBtn" onclick="processScoreImagesSafe()" style="background:#b0bec5; cursor:not-allowed;" disabled>AIでスコアを解析する</button>
+                    <div id="aiStatus" style="font-size: 13px; color: var(--primary); font-weight: 700; margin-top: 10px;"></div>
+
+                    <div style="text-align: center; margin-top: 16px;">
+                        <button type="button" class="btn-sub" onclick="openManualInput()">手動でスコア・写真を入力する →</button>
+                    </div>
+                </div>
+
+                <div id="parsedResultSection" style="display:none; margin-top: 18px; border-top: 1px solid var(--border); padding-top: 18px;">
+                    <div class="form-group">
+                        <label class="form-label">ゴルフ場・コース名</label>
+                        <input type="text" id="courseName" class="form-control" placeholder="例: 熱海ゴルフ倶楽部" style="margin-bottom:6px;">
+                        <!-- スマホで確実に選べるクイックセレクトボックス -->
+                        <select id="quickCourseSelect" class="form-control" style="font-size:12px; padding:6px 10px; color:var(--text-sub); border:1px dashed var(--gold-border);" onchange="applyQuickCourseName(this)">
+                            <option value="">▼ 過去のコース履歴から選ぶ</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">プレー日</label>
+                        <input type="date" id="playDate" class="form-control">
+                    </div>
+
+                    <div style="margin: 18px 0 8px; display:flex; justify-content:space-between; align-items:center;">
+                        <h4 style="color: var(--primary);">📊 スコアカード確認・編集</h4>
+                        <button class="btn-sub" id="btnAddPlayer" onclick="addNewPlayerRow()">＋ プレイヤー追加 (<span id="playerCountLabel">1</span>/4)</button>
+                    </div>
+
+                    <div class="half-toggle-bar">
+                        <button class="half-btn active" id="btn-view-out" onclick="setScoreViewMode('out')">OUT (1-9H)</button>
+                        <button class="half-btn" id="btn-view-in" onclick="setScoreViewMode('in')">IN (10-18H)</button>
+                        <button class="half-btn" id="btn-view-all" onclick="setScoreViewMode('all')">全18H表示</button>
+                    </div>
+
+                    <div class="score-editor-wrapper">
+                        <table class="scorecard-table" id="scoreEditorTable"></table>
+                    </div>
+                    
+                    <h3 style="margin: 20px 0 6px; color: var(--primary); font-size: 15px;">2. 想い出写真を追加 (<span id="photoCountLabel">0</span> / 5枚)</h3>
+                    <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 8px;">写真をタップすると「★ カバー写真」に設定できます（JPEG/PNG形式）</p>
+                    
+                    <input type="file" id="photoGalleryInput" accept="image/jpeg,image/png,image/webp" multiple class="form-control" onchange="addGalleryPhotos(this)">
+                    <div id="photoPreviewGrid" class="photo-grid"></div>
+
+                    <div class="form-group" style="margin-top: 18px;">
+                        <label class="form-label">公開範囲</label>
+                        <select id="visibility" class="form-control">
+                            <option value="friends">ゴルフ仲間に公開 (タイムライン)</option>
+                            <option value="members_only">同伴者のみに公開</option>
+                            <option value="private">🔒 非公開 (自分のみ・タイムライン非表示)</option>
+                        </select>
+                    </div>
+
+                    <button class="btn-main" onclick="saveRound()">この内容でラウンドを保存する</button>
+                    <button class="btn-cancel" onclick="cancelAndBackToHome()">タイムラインに戻る（入力を破棄）</button>
+                </div>
+
+                <div id="initialCancelSection" style="margin-top: 12px;">
+                    <button class="btn-cancel" onclick="cancelAndBackToHome()">タイムラインに戻る</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ③ ラウンド詳細画面 -->
+    <div id="screen-detail" class="screen">
+        <div class="container">
+            <button class="btn-back" id="detailBackBtn" onclick="showScreen('screen-home')">← 戻る</button>
+            <div id="detail-content"></div>
+        </div>
+    </div>
+
+    <!-- ④ ギャラリー画面 -->
+    <div id="screen-gallery" class="screen">
+        <div class="container">
+            <div class="section-header-title">
+                📷 <span class="font-golsta">Golsta</span> Gallery
+            </div>
+            <div class="section-header-desc">メンバーが登録したすべてのラウンド写真です（タップで詳細を表示）</div>
+            <div id="allGalleryContainer" class="all-gallery-grid"></div>
+        </div>
+    </div>
+
+    <!-- ⑤ 振り返り画面 (Memory) -->
+    <div id="screen-summary" class="screen">
+        <div class="container">
+            <div class="section-header-title">
+                🏌️‍♂️ <span class="font-golsta">Golsta</span> Memory
+            </div>
+            <div class="section-header-desc">過去の対戦履歴やゴルフ場ごとの記録を振り返ります</div>
+            <div class="toggle-group">
+                <button class="toggle-btn active" id="btn-toggle-members" onclick="switchSummaryTab('members')">メンバー別</button>
+                <button class="toggle-btn" id="btn-toggle-courses" onclick="switchSummaryTab('courses')">ゴルフ場別</button>
+            </div>
+            <div id="summary-content"></div>
+        </div>
+    </div>
+
+    <!-- ⑥ 分析画面 (Analytics) -->
+    <div id="screen-analytics" class="screen">
+        <div class="container">
+            <div class="section-header-title">
+                📈 <span class="font-golsta">Golsta</span> Analytics
+            </div>
+            <div class="section-header-desc">あなた専用のスタッツサマリー・年別推移・対戦成績です</div>
+
+            <div class="analytics-summary-grid">
+                <div class="analytics-stat-card">
+                    <div class="analytics-stat-label">生涯ベスト</div>
+                    <div class="analytics-stat-value" id="stat-best-score">-</div>
+                </div>
+                <div class="analytics-stat-card">
+                    <div class="analytics-stat-label">通算平均</div>
+                    <div class="analytics-stat-value" id="stat-avg-score">-</div>
+                </div>
+                <div class="analytics-stat-card">
+                    <div class="analytics-stat-label">ラウンド数</div>
+                    <div class="analytics-stat-value" id="stat-total-rounds">-</div>
+                </div>
+            </div>
+
+            <div class="card" style="padding: 16px; margin-bottom: 16px;">
+                <h4 style="color: var(--primary); font-size: 14px; margin-bottom: 8px; border-left: 3px solid var(--gold); padding-left: 8px;">
+                    📅 年別パフォーマンス
+                </h4>
+                <div id="analytics-yearly-container"></div>
+            </div>
+
+            <div class="card" style="padding: 16px; margin-bottom: 16px;">
+                <h4 style="color: var(--primary); font-size: 14px; margin-bottom: 8px; border-left: 3px solid var(--gold); padding-left: 8px;">
+                    ⛳ ゴルフ場別 実績＆平均
+                </h4>
+                <div id="analytics-courses-container"></div>
+            </div>
+
+            <div class="card" style="padding: 16px; margin-bottom: 16px;">
+                <h4 style="color: var(--primary); font-size: 14px; margin-bottom: 8px; border-left: 3px solid var(--gold); padding-left: 8px;">
+                    🥊 ゴルフ仲間との対戦成績
+                </h4>
+                <div id="analytics-h2h-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ⑦ メンバー・プロフィール管理画面 -->
+    <div id="screen-members" class="screen">
+        <div class="container">
+            <div class="section-header-title">
+                👥 <span class="font-golsta">Golsta</span> Friend
+            </div>
+            <div class="section-header-desc">あなたのプロフィールとゴルフ仲間の登録・管理を行います</div>
+
+            <div class="card" style="padding: 18px; border: 2px solid var(--gold-border);">
+                <h3 style="margin-bottom: 14px; color: var(--primary); font-size: 16px;">👤 あなたのプロフィール</h3>
+                <div class="profile-edit-box">
+                    <img id="myAvatarImg" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" class="avatar-preview">
+                    <div style="flex: 1;">
+                        <label class="form-label" style="font-size: 11px;">アイコン写真／イラストを変更</label>
+                        <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp" class="form-control" style="padding: 6px; font-size: 11px;" onchange="updateProfileAvatar(this)">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" style="color:var(--text-sub); font-size:12px;">ユーザーID（他端末同期用）</label>
+                    <input type="text" id="myProfileId" class="form-control" style="background:var(--bg); color:var(--text-sub);" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">氏名（表示名）</label>
+                    <input type="text" id="myProfileName" class="form-control" value="長原 健太">
+                </div>
+                <button class="btn-main" onclick="saveMyProfile()">プロフィールを更新保存</button>
+                <button type="button" class="btn-sub" style="width:100%; margin-top:10px; background:none; border:1px dashed var(--gold-border);" onclick="openSwitchAccountModal()">🔑 別IDでログイン / アカウント切替</button>
+            </div>
+
+            <div class="card" style="padding: 18px;">
+                <h3 style="margin-bottom: 14px; color: var(--primary); font-size: 16px;">👥 ゴルフ仲間の登録</h3>
+                <div class="form-group">
+                    <label class="form-label">仲間のお名前</label>
+                    <input type="text" id="newMemberName" class="form-control" placeholder="例: 田中 太郎">
+                </div>
+                <button class="btn-sub" style="width: 100%; padding: 11px;" onclick="addNewMember()">仲間をリストに追加</button>
+            </div>
+
+            <h4 style="margin: 18px 0 10px; color: var(--primary); font-size: 15px;">📋 登録済みゴルフ仲間一覧</h4>
+            <div id="memberListContainer"></div>
+        </div>
+    </div>
+
+    <!-- 下部タブバー -->
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="navigateTab('screen-home')">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            タイムライン
+        </button>
+        <button class="tab-btn" onclick="navigateTab('screen-gallery')">
+            <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+            ギャラリー
+        </button>
+        <button class="tab-btn" onclick="navigateTab('screen-summary')">
+            <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            振り返り
+        </button>
+        <button class="tab-btn" onclick="navigateTab('screen-analytics')">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+            分析
+        </button>
+        <button class="tab-btn" onclick="navigateTab('screen-members')">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            メンバー
+        </button>
+    </div>
+
+    <!-- Instagram風 専用コメントボトムシート -->
+    <div id="commentSheetOverlay" class="comment-sheet-overlay" onclick="closeCommentSheet(event)">
+        <div class="comment-sheet" onclick="event.stopPropagation()">
+            <div class="comment-sheet-header">
+                <div class="comment-sheet-title">
+                    <span>💬 コメント</span>
+                    <span id="sheetRoundTitle" style="font-size:12px; color:var(--text-sub); font-weight:normal; margin-left:6px;"></span>
+                </div>
+                <button class="btn-close-sheet" onclick="closeCommentSheet()">✕</button>
+            </div>
+            <div class="comment-sheet-list" id="sheetCommentList"></div>
+            <form class="comment-sheet-footer" onsubmit="submitSheetComment(event)">
+                <input type="text" id="sheetCommentInput" class="comment-input-sheet" placeholder="ナイスバーディー！🏌️‍♂️ ⛳ など一言...">
+                <button type="submit" class="btn-comment-send">送信</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 設定モーダル（テーマ切り替え ＆ 🌟AIアワード手動実行 ＆ ガイド） -->
+    <div id="settingsModal" class="app-modal-overlay">
+        <div class="app-modal-box" style="text-align: left; overflow-y: auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                <h3 style="color:var(--primary); font-size:16px;">⚙️ 設定 ＆ ガイド</h3>
+                <button onclick="closeSettingsModal()" style="background:none; border:none; font-size:18px; color:var(--text-sub); cursor:pointer;">✕</button>
+            </div>
+
+            <!-- 🌟 管理者テスト用: 月間AI映えアワード手動実行セクション -->
+            <div style="background: var(--gold-light); border: 2px solid var(--gold-border); border-radius: 10px; padding: 12px; margin-bottom: 16px;">
+                <h4 style="color: var(--primary); font-size: 13px; font-weight: 700; margin-bottom: 4px; display:flex; align-items:center; gap:4px;">
+                    🏆 月間AI映えアワード審査 (テスト実行)
+                </h4>
+                <p style="font-size: 11px; color: var(--text-sub); margin-bottom: 10px;">
+                    対象月のカバー写真を集計し、芝山キシン・泉ピンそば・ドンマイ小西が審査・講評を行います。
+                </p>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <input type="month" id="awardTargetMonth" class="form-control" style="padding:6px 10px; font-size:13px; flex:1;">
+                    <button class="btn-main" id="btnRunAward" onclick="triggerManualAiAward()" style="width:auto; padding:8px 14px; font-size:12px; white-space:nowrap;">審査を実行</button>
+                </div>
+                <div id="awardStatusMsg" style="font-size:11px; color:var(--primary); font-weight:700; margin-top:6px;"></div>
+            </div>
+
+            <!-- テーマ切り替えセクション -->
+            <label class="form-label" style="font-size:12px; margin-bottom:2px;">🎨 テーマカラー選択</label>
+            <div class="theme-select-grid">
+                <div class="theme-btn-card active" id="btn-theme-sepia" onclick="changeAppTheme('sepia')">
+                    <span class="theme-btn-icon">📜</span>
+                    セピア
+                </div>
+                <div class="theme-btn-card" id="btn-theme-light" onclick="changeAppTheme('light')">
+                    <span class="theme-btn-icon">☀️</span>
+                    ライト
+                </div>
+                <div class="theme-btn-card" id="btn-theme-dark" onclick="changeAppTheme('dark')">
+                    <span class="theme-btn-icon">🌙</span>
+                    ダーク
+                </div>
+            </div>
+
+            <!-- 📖 使い方ガイド -->
+            <label class="form-label" style="font-size:12px; margin-top:8px; margin-bottom:4px;">📖 Golstagram クイックガイド</label>
+            <div class="manual-section-box">
+                <div class="manual-hero-catch">
+                    <h4>スコアカードを撮るだけ。仲間との最高の1日を、ずっと色あせない想い出に。</h4>
+                    <p>〜 No Golf no Life 〜</p>
+                </div>
+
+                <div class="manual-step-title">1. スコア＆想い出の登録（Golsta登録）</div>
+                <p>・<strong>AI自動入力</strong>: カート画面やスコアカードを撮影するだけで、ゴルフ場名・プレー日・PAR・全員のスコアを瞬時に読み取ります。<br>
+                ・<strong>想い出写真</strong>: 最大5枚まで登録可能。タップで「★ カバー写真」を設定できます。<br>
+                ・<strong>公開範囲</strong>: 仲間全体／同伴者のみ／非公開（会社コンペや練習用）から選べます。</p>
+
+                <div class="manual-step-title">2. タイムラインで仲間と楽しむ</div>
+                <p>・<strong>横スワイプ</strong>: 複数写真は指で左右にスライドしてインスタ感覚で閲覧。<br>
+                ・<strong>リアクション</strong>: 「❤️ いいね！」や「💬 コメント」でチャット。<br>
+                ・<strong>月間AI映えアワード</strong>: 3人の個性的なAI審査員が毎月の映え写真を絶賛＆愛ある毒舌ツッコミ！</p>
+
+                <div class="manual-step-title">3. 振り返り ＆ スタッツ分析</div>
+                <p>・<strong>Golsta Memory</strong>: 仲間別・ゴルフ場別の過去履歴をドリルダウン。<br>
+                ・<strong>Golsta Analytics</strong>: 生涯ベスト・通算平均・年別推移・仲間との対戦勝敗を自動集計。</p>
+
+                <div class="manual-trademark-footer">
+                    Produced by <strong>Long Field LLC ®</strong><br>
+                    All Rights Reserved.
+                </div>
+            </div>
+
+            <button class="btn-main" style="margin-top: 14px;" onclick="closeSettingsModal()">閉じる</button>
+        </div>
+    </div>
+
     <!-- 🔑 初回ログイン・登録モーダル -->
-    <div id="authModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.75); z-index: 999999; align-items: center; justify-content: center; padding: 16px;">
-        <div style="background: var(--card-bg); width: 100%; max-width: 360px; border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: left; border: 2px solid var(--gold);">
-            <h3 style="color: var(--primary); font-size: 18px; margin-bottom: 6px; text-align: center; font-weight: 700;">
-                ⛳ <span class="font-golsta">Golstagram</span>
+    <div id="authModal" class="app-modal-overlay">
+        <div class="app-modal-box" style="text-align: left;">
+            <h3 style="color:var(--primary); font-size:18px; margin-bottom:6px; text-align:center;">
+                ⛳ <span class="font-golsta">Golstagram</span> へようこそ
             </h3>
-            <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 18px; text-align: center; line-height: 1.4;">
-                ユーザーIDを設定すると、PCやスマホ間で同じデータを引き継いで利用できます。
+            <p style="font-size:12px; color:var(--text-sub); margin-bottom:16px; text-align:center; line-height:1.4;">
+                ユーザーIDを設定すると、PCや別端末でも同じデータを引き継いで利用できます。
             </p>
 
-            <div class="form-group" style="margin-bottom: 14px;">
-                <label class="form-label">ユーザーID（半角英数字・変更不可）</label>
+            <div class="form-group" style="margin-bottom:12px;">
+                <label class="form-label" style="font-size:12px;">ユーザーID（半角英数字・変更不可）</label>
                 <input type="text" id="authUserIdInput" class="form-control" placeholder="例: kenta1971" style="text-transform: lowercase;">
             </div>
 
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label class="form-label">お名前（表示名）</label>
+            <div class="form-group" style="margin-bottom:18px;">
+                <label class="form-label" style="font-size:12px;">お名前・ニックネーム（表示名）</label>
                 <input type="text" id="authUserNameInput" class="form-control" placeholder="例: 長原 健太">
             </div>
 
@@ -319,224 +1043,99 @@
         </div>
     </div>
 
-    <!-- メインコンテンツ -->
-    <main class="app-container">
-        
-        <!-- タイムライン画面 -->
-        <section id="screen-timeline" class="screen active">
-            <button class="btn-main" style="margin-bottom: 14px; padding: 12px;" onclick="openNewRegistration()">
-                <i class="fa-solid fa-plus"></i> 新しいラウンドを記録する
-            </button>
-            <div id="timeline-list">
-                <p style="text-align: center; color: var(--text-sub); padding: 30px 0;">ラウンド履歴を読み込み中...</p>
-            </div>
-        </section>
-
-        <!-- ギャラリー画面 -->
-        <section id="screen-gallery" class="screen">
-            <div id="gallery-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;"></div>
-        </section>
-
-        <!-- 振り返り画面 (Memory) -->
-        <section id="screen-summary" class="screen">
-            <div style="display: flex; gap: 8px; margin-bottom: 14px;">
-                <button class="btn-sub" id="btn-sum-members" style="flex:1; font-weight:700;" onclick="switchSummaryTab('members')">👤 メンバー別対戦</button>
-                <button class="btn-sub" id="btn-sum-courses" style="flex:1;" onclick="switchSummaryTab('courses')">⛳ ゴルフ場別履歴</button>
-            </div>
-            <div id="summary-content"></div>
-        </section>
-
-        <!-- 分析画面 (Analytics) -->
-        <section id="screen-analytics" class="screen">
-            <div class="card" style="padding: 16px;" id="analytics-content">
-                <p style="text-align: center; color: var(--text-sub);">分析データを読み込み中...</p>
-            </div>
-        </section>
-
-        <!-- メンバー・プロフィール画面 -->
-        <section id="screen-members" class="screen">
-            <!-- ユーザー自身のプロフィール -->
-            <div class="card" style="padding: 18px; border: 2px solid var(--gold-border);">
-                <h3 style="margin-bottom: 14px; color: var(--primary); font-size: 16px;">👤 あなたのプロフィール</h3>
-                <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
-                    <img id="myAvatarImg" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" style="width: 54px; height: 54px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold);">
-                    <div style="flex: 1;">
-                        <label class="form-label" style="margin-bottom: 2px;">アイコン画像</label>
-                        <input type="file" id="myAvatarFile" accept="image/*" class="form-control" style="font-size: 11px; padding: 5px;">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" style="color: var(--text-sub);">ユーザーID（他端末同期用）</label>
-                    <input type="text" id="myProfileId" class="form-control" style="background: var(--card-sub-bg); color: var(--text-sub);" readonly>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">氏名（表示名）</label>
-                    <input type="text" id="myProfileName" class="form-control" value="長原 健太">
-                </div>
-
-                <button class="btn-main" onclick="saveMyProfile()">プロフィールを更新保存</button>
-                <button type="button" class="btn-sub" style="width: 100%; margin-top: 10px; background: none; border: 1px dashed var(--gold-border);" onclick="openSwitchAccountModal()">🔑 別IDでログイン / アカウント切替</button>
-            </div>
-
-            <!-- ゴルフ仲間の登録 -->
-            <div class="card" style="padding: 18px;">
-                <h3 style="margin-bottom: 14px; color: var(--primary); font-size: 16px;">👥 ゴルフ仲間の登録</h3>
-                <div class="form-group">
-                    <label class="form-label">仲間のお名前</label>
-                    <input type="text" id="newFriendName" class="form-control" placeholder="例: 田中 太郎">
-                </div>
-                <button class="btn-sub" style="width: 100%;" onclick="addFriend()">仲間をリストに追加</button>
-                
-                <h4 style="margin-top: 16px; margin-bottom: 8px; font-size: 13px; color: var(--text-sub);">📋 登録済みゴルフ仲間一覧</h4>
-                <div id="friendsList" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- ラウンド新規登録・編集モーダル -->
-    <div id="recordModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 10000; overflow-y: auto; padding: 16px 12px 60px;">
-        <div class="card" style="max-width: 560px; margin: 0 auto; padding: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h3 id="recordModalTitle" style="color: var(--primary); font-size: 17px; font-weight: 700;">⛳ ラウンド記録</h3>
-                <button onclick="closeRecordModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub);">&times;</button>
-            </div>
-
-            <input type="hidden" id="editRoundId" value="">
-
-            <div class="form-group">
-                <label class="form-label">プレー日</label>
-                <input type="date" id="playDate" class="form-control">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">ゴルフ場・コース名</label>
-                <input type="text" id="courseName" class="form-control" placeholder="例: 熱海ゴルフ倶楽部" style="margin-bottom: 6px;">
-                <select id="quickCourseSelect" class="form-control" style="font-size: 12px; padding: 6px 10px; color: var(--text-sub); border: 1px dashed var(--gold-border);" onchange="applyQuickCourseName(this)">
-                    <option value="">▼ 過去のコース履歴から選ぶ</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">公開設定</label>
-                <select id="visibility" class="form-control">
-                    <option value="public">🌐 全体公開（タイムラインに表示）</option>
-                    <option value="private">🔒 非公開（自分と同伴者のみ）</option>
-                </select>
-            </div>
-
-            <!-- スコア入力エリア（最大4名） -->
-            <div style="margin-top: 16px; margin-bottom: 12px;">
-                <label class="form-label">スコア入力（最大4名）</label>
-                <div id="playersInputArea"></div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">思い出・メモ</label>
-                <textarea id="roundMemo" class="form-control" rows="3" placeholder="天気、バーディ数、ランチなど"></textarea>
-            </div>
-
-            <div style="display: flex; gap: 8px; margin-top: 18px;">
-                <button class="btn-sub" style="flex: 1;" onclick="closeRecordModal()">キャンセル</button>
-                <button class="btn-main" style="flex: 2;" onclick="saveRound()">ラウンドを保存する</button>
+    <!-- 汎用カスタムモーダル -->
+    <div id="customModal" class="app-modal-overlay">
+        <div class="app-modal-box">
+            <div id="modalTitle" class="app-modal-title">確認</div>
+            <div id="modalText" class="app-modal-text">メッセージ</div>
+            <input type="text" id="modalInputText" class="form-control" style="display:none; margin-bottom:14px; text-align:center;">
+            <div class="app-modal-buttons">
+                <button id="modalBtnCancel" class="btn-cancel" style="margin-top:0; flex:1;">キャンセル</button>
+                <button id="modalBtnOk" class="btn-main" style="padding:10px; font-size:13px; flex:1;">OK</button>
             </div>
         </div>
     </div>
-
-    <!-- 詳細表示モーダル -->
-    <div id="detailModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 10000; overflow-y: auto; padding: 16px 12px 60px;">
-        <div class="card" style="max-width: 560px; margin: 0 auto; padding: 20px;" id="detailContent"></div>
-    </div>
-
-    <!-- 設定・アワード審査モーダル -->
-    <div id="settingsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center; padding: 16px;">
-        <div class="card" style="width: 100%; max-width: 380px; padding: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h3 style="color: var(--primary); font-size: 16px;">⚙️ 設定・管理</h3>
-                <button onclick="closeSettingsModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub);">&times;</button>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">外観テーマ</label>
-                <button class="btn-sub" style="width: 100%;" onclick="toggleTheme()">🌓 ダーク / ライトモード切替</button>
-            </div>
-
-            <hr style="border: none; border-top: 1px solid var(--border); margin: 16px 0;">
-
-            <div class="form-group">
-                <label class="form-label">🏆 月間AIアワード手動審査</label>
-                <input type="month" id="awardTargetMonth" class="form-control" style="margin-bottom: 8px;">
-                <button class="btn-main" onclick="triggerManualAward()">AI審査員を招集して審査実行</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 下部ナビゲーションバー -->
-    <nav class="bottom-nav">
-        <button class="nav-item active" onclick="switchNav('timeline')"><i class="fa-solid fa-house"></i><span>タイムライン</span></button>
-        <button class="nav-item" onclick="switchNav('gallery')"><i class="fa-solid fa-images"></i><span>ギャラリー</span></button>
-        <button class="nav-item" onclick="switchNav('summary')"><i class="fa-solid fa-users"></i><span>振り返り</span></button>
-        <button class="nav-item" onclick="switchNav('analytics')"><i class="fa-solid fa-chart-line"></i><span>分析</span></button>
-        <button class="nav-item" onclick="switchNav('members')"><i class="fa-solid fa-user"></i><span>メンバー</span></button>
-    </nav>
 
     <!-- トースト通知 -->
-    <div id="toast"></div>
+    <div id="customToast" class="app-toast"></div>
 
-    <!-- Firebase設定 & アプリロジック -->
     <script>
-        // -------------------------------------------------------------
+        const GEMINI_API_KEY = 'AQ.Ab8RN6JP-oM5a54UjwIpM8lLKu5v0gMk5XUePUMukE4wOZQxYw';
+
         // Firebase 初期化
-        // -------------------------------------------------------------
         const firebaseConfig = {
-            apiKey: "AIzaSyDummyKey_ReplaceWithYourOwn",
+            apiKey: "AIzaSyDNcoTrSOG5vVKHW3EU71EET19D367QNIY",
             authDomain: "golstagram-app.firebaseapp.com",
             projectId: "golstagram-app",
-            storageBucket: "golstagram-app.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:abcdef"
+            storageBucket: "golstagram-app.firebasestorage.app",
+            messagingSenderId: "491482806133",
+            appId: "1:491482806133:web:00a6bdba4f23cfbee1453c",
+            measurementId: "G-CPCVK5G7N0"
         };
-        
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // -------------------------------------------------------------
-        // グローバル変数
-        // -------------------------------------------------------------
+        let rounds = [];
+        let globalUsersMap = {};
+
         let myProfile = {
             id: '',
             name: '長原 健太',
             avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
         };
 
-        let myFriends = JSON.parse(localStorage.getItem('golf_friends') || '["天笠","風間","幸四郎","滋賀秀達","樋山","リエ","レナ"]');
-        let rounds = [];
-        let currentSummaryTab = 'members';
+        let members = JSON.parse(localStorage.getItem('golf_members') || '[]');
 
-        // -------------------------------------------------------------
-        // トースト & アラート
-        // -------------------------------------------------------------
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            if (!t) return;
-            t.textContent = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
+        let tempPlayersData = [];
+        let tempParData = {
+            out: [4, 5, 3, 5, 4, 4, 3, 4, 4],
+            in:  [5, 4, 5, 4, 3, 4, 3, 4, 4]
+        };
+        let scoreViewMode = 'out';
+        let tempPhotos = [];
+        let bestPhotoIndex = 0;
+        let isEditingRound = false;
+        let editingRoundId = null;
+
+        let activeCommentRoundId = null;
+
+        function initAppTheme() {
+            const savedTheme = localStorage.getItem('golf_app_theme') || 'sepia';
+            changeAppTheme(savedTheme, false);
+            
+            const now = new Date();
+            const ymStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            const awardMonthInput = document.getElementById('awardTargetMonth');
+            if (awardMonthInput) awardMonthInput.value = ymStr;
         }
 
-        function showAppAlert(title, text) {
-            return new Promise(resolve => {
-                alert(`${title}\n\n${text}`);
-                resolve(true);
+        function changeAppTheme(themeName, showToastMsg = true) {
+            document.body.setAttribute('data-theme', themeName);
+            localStorage.setItem('golf_app_theme', themeName);
+
+            ['sepia', 'light', 'dark'].forEach(t => {
+                const btn = document.getElementById(`btn-theme-${t}`);
+                if (btn) btn.classList.toggle('active', t === themeName);
             });
+
+            if (showToastMsg) {
+                const names = { sepia: '📜 セピアモード', light: '☀️ ライトモード', dark: '🌙 ダークモード' };
+                showToast(`${names[themeName]} に変更しました`);
+            }
         }
 
+        function openSettingsModal() {
+            document.getElementById('settingsModal').classList.add('active');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        initAppTheme();
+
         // -------------------------------------------------------------
-        // 🔑 認証 & ログイン管理
+        // 🔑 ユーザー認証チェック & ログイン処理
         // -------------------------------------------------------------
         function checkUserAuth() {
             const savedProfileStr = localStorage.getItem('golf_my_profile');
@@ -559,9 +1158,9 @@
 
             const modal = document.getElementById('authModal');
             if (needsAuth && modal) {
-                modal.style.display = 'flex';
+                modal.classList.add('active');
             } else if (modal) {
-                modal.style.display = 'none';
+                modal.classList.remove('active');
                 initProfileScreen();
             }
         }
@@ -571,7 +1170,7 @@
             if (modal) {
                 document.getElementById('authUserIdInput').value = myProfile.id || '';
                 document.getElementById('authUserNameInput').value = myProfile.name || '';
-                modal.style.display = 'flex';
+                modal.classList.add('active');
             }
         }
 
@@ -612,205 +1211,484 @@
                 }
 
                 localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
-                document.getElementById('authModal').style.display = 'none';
+                document.getElementById('authModal').classList.remove('active');
                 initProfileScreen();
                 renderTimeline();
-                if (currentSummaryTab) renderSummary(currentSummaryTab);
             } catch (err) {
                 await showAppAlert('エラー', 'ログイン処理に失敗しました: ' + err.message);
             }
         }
 
-        function initProfileScreen() {
-            const idInput = document.getElementById('myProfileId');
-            if (idInput) idInput.value = myProfile.id || '';
-            const nameInput = document.getElementById('myProfileName');
-            if (nameInput) nameInput.value = myProfile.name || '長原 健太';
-            const avatarImg = document.getElementById('myAvatarImg');
-            if (avatarImg && myProfile.avatar) avatarImg.src = myProfile.avatar;
-            renderFriendsList();
-        }
+        function handleCarouselScroll(trackEl, roundIdx) {
+            const scrollLeft = trackEl.scrollLeft;
+            const slideWidth = trackEl.clientWidth;
+            if (!slideWidth) return;
 
-        async function saveMyProfile() {
-            const newName = document.getElementById('myProfileName').value.trim() || '長原 健太';
-            myProfile.name = newName;
-
-            const avatarFile = document.getElementById('myAvatarFile').files[0];
-            if (avatarFile) {
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    myProfile.avatar = e.target.result;
-                    await syncProfileToCloud();
-                };
-                reader.readAsDataURL(avatarFile);
-            } else {
-                await syncProfileToCloud();
-            }
-        }
-
-        async function syncProfileToCloud() {
-            localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
-            if (myProfile.id) {
-                try {
-                    await db.collection("users").doc(myProfile.id).set({
-                        id: myProfile.id,
-                        name: myProfile.name,
-                        avatar: myProfile.avatar,
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    showToast('✅ プロフィールを保存しました');
-                    initProfileScreen();
-                } catch (e) {
-                    showToast('ローカルに保存しました');
-                }
-            }
-        }
-
-        // -------------------------------------------------------------
-        // ゴルフ仲間管理
-        // -------------------------------------------------------------
-        function renderFriendsList() {
-            const container = document.getElementById('friendsList');
-            if (!container) return;
-            container.innerHTML = myFriends.map((f, idx) => `
-                <span style="background:var(--card-sub-bg); padding:4px 10px; border-radius:15px; font-size:12px; border:1px solid var(--border); display:inline-flex; align-items:center; gap:6px;">
-                    ${f}
-                    <i class="fa-solid fa-xmark" style="cursor:pointer; color:var(--text-sub);" onclick="removeFriend(${idx})"></i>
-                </span>
-            `).join('') || '<span style="color:var(--text-sub); font-size:12px;">登録された仲間はいません</span>';
-        }
-
-        function addFriend() {
-            const input = document.getElementById('newFriendName');
-            const name = input.value.trim();
-            if (!name) return;
-            if (!myFriends.includes(name)) {
-                myFriends.push(name);
-                localStorage.setItem('golf_friends', JSON.stringify(myFriends));
-                renderFriendsList();
-                input.value = '';
-                showToast(`👥 ${name} さんを仲間に追加しました`);
-            }
-        }
-
-        function removeFriend(idx) {
-            myFriends.splice(idx, 1);
-            localStorage.setItem('golf_friends', JSON.stringify(myFriends));
-            renderFriendsList();
-        }
-
-        // -------------------------------------------------------------
-        // ナビゲーション切り替え
-        // -------------------------------------------------------------
-        function switchNav(tabName) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-
-            const targetScreen = document.getElementById(`screen-${tabName}`);
-            if (targetScreen) targetScreen.classList.add('active');
-
-            const navBtns = document.querySelectorAll('.nav-item');
-            const map = { 'timeline': 0, 'gallery': 1, 'summary': 2, 'analytics': 3, 'members': 4 };
-            if (map[tabName] !== undefined && navBtns[map[tabName]]) {
-                navBtns[map[tabName]].classList.add('active');
+            const currentIndex = Math.round(scrollLeft / slideWidth);
+            const badge = document.getElementById(`carousel-badge-${roundIdx}`);
+            const total = trackEl.children.length;
+            if (badge) {
+                badge.innerText = `${currentIndex + 1}/${total}`;
             }
 
-            if (tabName === 'gallery') renderGallery();
-            if (tabName === 'summary') renderSummary(currentSummaryTab);
-            if (tabName === 'analytics') renderAnalytics();
-        }
-
-        // -------------------------------------------------------------
-        // Firestore リアルタイムリスナー
-        // -------------------------------------------------------------
-        function initFirestoreListener() {
-            db.collection("rounds").orderBy("playDate", "desc").onSnapshot((snapshot) => {
-                rounds = [];
-                snapshot.forEach(doc => {
-                    rounds.push({ id: doc.id, ...doc.data() });
-                });
-                renderTimeline();
-                updateCourseDatalist();
-                if (document.getElementById('screen-summary').classList.contains('active')) {
-                    renderSummary(currentSummaryTab);
-                }
-            }, (error) => {
-                console.error("Firestore Listen error:", error);
+            const dots = document.querySelectorAll(`.dot-round-${roundIdx}`);
+            dots.forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === currentIndex);
             });
         }
 
-        // -------------------------------------------------------------
-        // タイムライン描画
-        // -------------------------------------------------------------
-        function renderTimeline() {
-            const listEl = document.getElementById('timeline-list');
-            if (!listEl) return;
+        function getLineShareUrl(roundData) {
+            const myScore = roundData.players && roundData.players[0] ? roundData.players[0].total_score : '-';
+            const companionNames = (roundData.players || []).map(p => p.cart_name).join(', ');
+            const appUrl = window.location.origin + window.location.pathname;
 
-            if (rounds.length === 0) {
-                listEl.innerHTML = '<p style="text-align:center; color:var(--text-sub); padding:40px 0;">まだラウンド記録がありません。<br>「新しいラウンドを記録する」から登録してみましょう！</p>';
+            const text = `⛳【Golstagram】\n${roundData.authorName}さんが「${roundData.courseName}」のラウンドを投稿しました！\n📅 プレー日: ${roundData.playDate}\n📊 スコア: ${myScore}\n👥 同伴: ${companionNames}\n\n👇 アプリで想い出と写真を見る\n${appUrl}`;
+            return `https://line.me/R/msg/text/?${encodeURIComponent(text)}`;
+        }
+
+        function shareToLine(roundId) {
+            const r = rounds.find(item => item.id === roundId);
+            if (!r) return;
+            const url = getLineShareUrl(r);
+            window.open(url, '_blank');
+        }
+
+        function shareAwardToLine(roundId) {
+            const r = rounds.find(item => item.id === roundId);
+            if (!r || !r.awardData) return;
+            const awards = r.awardData.awards || [];
+            const grand = awards.find(a => a.award_type === 'grand_prize');
+            const booby = awards.find(a => a.award_type === 'booby_prize');
+            const appUrl = window.location.origin + window.location.pathname;
+
+            let text = `👑【Golstagram 月間AI映えアワード発表！】\n📅 対象月: ${r.awardData.targetMonth}\n\n`;
+            if (grand) {
+                text += `🏆 最優秀賞: 「${grand.award_name}」\n受賞者: ${grand.target_user_name}さん\n審査員: ${grand.judge}\n\n`;
+            }
+            if (booby) {
+                text += `😂 ブービー賞: 「${booby.award_name}」\n受賞者: ${booby.target_user_name}さん\nコメント: ${booby.comment}\n\n`;
+            }
+            text += `👇 全ての審査結果と写真はこちら\n${appUrl}`;
+            const url = `https://line.me/R/msg/text/?${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+
+        async function toggleLike(roundIndex) {
+            const visibleRounds = getVisibleTimelineRounds();
+            const targetRound = visibleRounds[roundIndex];
+            if (!targetRound) return;
+
+            let likes = targetRound.likes || [];
+            const myName = myProfile.name;
+            const index = likes.indexOf(myName);
+
+            if (index > -1) {
+                likes.splice(index, 1);
+            } else {
+                likes.push(myName);
+            }
+
+            try {
+                await db.collection("rounds").doc(targetRound.id).update({
+                    likes: likes
+                });
+            } catch (err) {
+                console.error("いいね更新エラー:", err);
+            }
+        }
+
+        function openCommentSheet(roundId) {
+            const r = rounds.find(item => item.id === roundId);
+            if (!r) return;
+
+            activeCommentRoundId = roundId;
+            document.getElementById('sheetRoundTitle').innerText = r.isAwardPost ? `(🏆 ${r.awardData.targetMonth} アワード)` : `(${r.courseName})`;
+            renderSheetComments(r);
+
+            const overlay = document.getElementById('commentSheetOverlay');
+            overlay.classList.add('active');
+            setTimeout(() => {
+                document.getElementById('sheetCommentInput').focus();
+            }, 300);
+        }
+
+        function closeCommentSheet(e) {
+            if (e && e.target !== document.getElementById('commentSheetOverlay') && !e.target.classList.contains('btn-close-sheet')) {
+                return;
+            }
+            activeCommentRoundId = null;
+            document.getElementById('commentSheetOverlay').classList.remove('active');
+        }
+
+        function renderSheetComments(targetRound) {
+            const listEl = document.getElementById('sheetCommentList');
+            const comments = targetRound.comments || [];
+
+            if (comments.length === 0) {
+                listEl.innerHTML = '<div style="color:var(--text-sub); font-size:12px; text-align:center; padding:30px 0;">まだコメントはありません。<br>一番最初にメッセージを送りましょう！🏌️‍♂️</div>';
                 return;
             }
 
-            listEl.innerHTML = rounds.map(r => {
-                if (r.isAwardPost) {
-                    // アワード投稿カード
+            listEl.innerHTML = comments.map(c => {
+                const isMyComment = (c.author === myProfile.name);
+                const timeStr = c.time || '';
+
+                if (isMyComment) {
                     return `
-                        <div class="card" style="border:2px solid var(--gold); background:linear-gradient(180deg, var(--card-bg) 0%, var(--card-sub-bg) 100%);">
-                            <div style="padding:14px 16px; border-bottom:1px solid var(--gold-border); display:flex; justify-content:space-between; align-items:center;">
-                                <div style="font-weight:700; color:var(--gold); font-size:15px;">🏆 ${r.title || '月間AIアワード'}</div>
-                                <span style="font-size:11px; color:var(--text-sub);">${r.playDate || ''}</span>
+                        <div class="chat-row-my">
+                            <span class="chat-time">${timeStr}</span>
+                            <div class="chat-bubble-my">${c.text}</div>
+                        </div>
+                    `;
+                } else {
+                    const cAvatar = globalUsersMap[c.author] || c.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150';
+                    return `
+                        <div class="chat-row-other">
+                            <img src="${cAvatar}" class="avatar-img-sm">
+                            <div class="chat-content-other">
+                                <span class="chat-author-name">${c.author}</span>
+                                <div class="chat-bubble-other">${c.text}</div>
                             </div>
-                            <div style="padding:16px;">
-                                <p style="font-size:13px; line-height:1.6; white-space:pre-wrap;">${r.memo || ''}</p>
-                            </div>
+                            <span class="chat-time">${timeStr}</span>
                         </div>
                     `;
                 }
-
-                // 通常ラウンドカード
-                const photoUrl = (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos[0]) || 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600';
-                const isMyPost = (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
-
-                const playersHtml = (r.players || []).map(p => `
-                    <div style="display:flex; justify-content:space-between; font-size:13px; padding:3px 0; border-bottom:1px dashed var(--border);">
-                        <span>👤 <strong>${p.cart_name}</strong></span>
-                        <span style="font-family:'Cinzel',serif; font-weight:700; color:var(--primary);">${p.total_score || '-'} <small style="font-size:10px; color:var(--text-sub); font-family:sans-serif;">(${p.putts || '-'}pt)</small></span>
-                    </div>
-                `).join('');
-
-                return `
-                    <div class="card">
-                        <div style="padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <img src="${r.authorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}" style="width:34px; height:34px; border-radius:50%; object-fit:cover;">
-                                <div>
-                                    <div style="font-size:13px; font-weight:700;">${r.authorName || 'ゴルファー'}</div>
-                                    <div style="font-size:11px; color:var(--text-sub);">📅 ${r.playDate} ｜ ⛳ ${r.courseName}</div>
-                                </div>
-                            </div>
-                            ${isMyPost ? `
-                                <button class="btn-sub" style="padding:4px 8px; font-size:11px;" onclick="openEditRegistration('${r.id}')">✏️ 編集</button>
-                            ` : ''}
-                        </div>
-
-                        <img src="${photoUrl}" style="width:100%; height:240px; object-fit:cover; cursor:pointer;" onclick="showDetail('${r.id}')">
-
-                        <div style="padding:14px;">
-                            <div style="margin-bottom:10px;">${playersHtml}</div>
-                            ${r.memo ? `<p style="font-size:13px; color:var(--text-sub); line-height:1.5; margin-top:8px;">${r.memo}</p>` : ''}
-                        </div>
-                    </div>
-                `;
             }).join('');
+
+            setTimeout(() => {
+                listEl.scrollTop = listEl.scrollHeight;
+            }, 50);
         }
 
-        // -------------------------------------------------------------
-        // コース名クイック選択
-        // -------------------------------------------------------------
+        async function submitSheetComment(e) {
+            e.preventDefault();
+            if (!activeCommentRoundId) return;
+
+            const input = document.getElementById('sheetCommentInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const targetRound = rounds.find(r => r.id === activeCommentRoundId);
+            if (!targetRound) return;
+
+            const updatedComments = targetRound.comments || [];
+            updatedComments.push({
+                author: myProfile.name,
+                avatar: myProfile.avatar,
+                text: text,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+
+            try {
+                await db.collection("rounds").doc(activeCommentRoundId).update({
+                    comments: updatedComments
+                });
+                input.value = '';
+                renderSheetComments(targetRound);
+            } catch (err) {
+                await showAppAlert('送信エラー', err.message);
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('customToast');
+            toast.innerText = msg;
+            toast.classList.add('active');
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 3000);
+        }
+
+        function showAppConfirm(title, message, okText = 'OK', cancelText = 'キャンセル') {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('customModal');
+                const titleEl = document.getElementById('modalTitle');
+                const textEl = document.getElementById('modalText');
+                const inputEl = document.getElementById('modalInputText');
+                const btnOk = document.getElementById('modalBtnOk');
+                const btnCancel = document.getElementById('modalBtnCancel');
+
+                titleEl.innerText = title;
+                textEl.innerText = message;
+                inputEl.style.display = 'none';
+                btnCancel.style.display = 'block';
+                btnOk.innerText = okText;
+                btnCancel.innerText = cancelText;
+
+                const handleOk = () => { cleanup(); resolve(true); };
+                const handleCancel = () => { cleanup(); resolve(false); };
+                const cleanup = () => {
+                    overlay.classList.remove('active');
+                    btnOk.removeEventListener('click', handleOk);
+                    btnCancel.removeEventListener('click', handleCancel);
+                    btnOk.innerText = 'OK';
+                    btnCancel.innerText = 'キャンセル';
+                };
+
+                btnOk.addEventListener('click', handleOk);
+                btnCancel.addEventListener('click', handleCancel);
+                overlay.classList.add('active');
+            });
+        }
+
+        function showAppPrompt(title, message, defaultValue = '') {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('customModal');
+                const titleEl = document.getElementById('modalTitle');
+                const textEl = document.getElementById('modalText');
+                const inputEl = document.getElementById('modalInputText');
+                const btnOk = document.getElementById('modalBtnOk');
+                const btnCancel = document.getElementById('modalBtnCancel');
+
+                titleEl.innerText = title;
+                textEl.innerText = message;
+                inputEl.style.display = 'block';
+                inputEl.value = defaultValue;
+                btnCancel.style.display = 'block';
+
+                const handleOk = () => {
+                    const val = inputEl.value.trim();
+                    cleanup();
+                    resolve(val);
+                };
+                const handleCancel = () => { cleanup(); resolve(null); };
+                const cleanup = () => {
+                    overlay.classList.remove('active');
+                    btnOk.removeEventListener('click', handleOk);
+                    btnCancel.removeEventListener('click', handleCancel);
+                };
+
+                btnOk.addEventListener('click', handleOk);
+                btnCancel.addEventListener('click', handleCancel);
+                overlay.classList.add('active');
+                inputEl.focus();
+            });
+        }
+
+        function showAppAlert(title, message) {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('customModal');
+                const titleEl = document.getElementById('modalTitle');
+                const textEl = document.getElementById('modalText');
+                const inputEl = document.getElementById('modalInputText');
+                const btnOk = document.getElementById('modalBtnOk');
+                const btnCancel = document.getElementById('modalBtnCancel');
+
+                titleEl.innerText = title;
+                textEl.innerText = message;
+                inputEl.style.display = 'none';
+                btnCancel.style.display = 'none';
+
+                const handleOk = () => {
+                    overlay.classList.remove('active');
+                    btnOk.removeEventListener('click', handleOk);
+                    resolve(true);
+                };
+
+                btnOk.addEventListener('click', handleOk);
+                overlay.classList.add('active');
+            });
+        }
+
+        db.collection("users").onSnapshot((snapshot) => {
+            globalUsersMap = {};
+            snapshot.forEach((doc) => {
+                const d = doc.data();
+                if (d.name && d.avatar) {
+                    globalUsersMap[d.name] = d.avatar;
+                }
+            });
+            renderMemberList();
+            renderTimeline();
+        });
+
+        db.collection("rounds").onSnapshot((snapshot) => {
+            rounds = [];
+            snapshot.forEach((doc) => {
+                rounds.push({ id: doc.id, ...doc.data() });
+            });
+            rounds.sort((a, b) => {
+                const dateA = a.playDate || '';
+                const dateB = b.playDate || '';
+                if (dateA !== dateB) {
+                    return dateB.localeCompare(dateA);
+                }
+                const timeA = a.createdAt?.seconds || 0;
+                const timeB = b.createdAt?.seconds || 0;
+                return timeB - timeA;
+            });
+            renderTimeline();
+            renderAllGallery();
+            renderAnalytics();
+            updateCourseDatalist();
+
+            if (activeCommentRoundId) {
+                const updated = rounds.find(r => r.id === activeCommentRoundId);
+                if (updated) renderSheetComments(updated);
+            }
+        }, (err) => {
+            console.error("Firestore同期エラー:", err);
+        });
+
+        function checkScoreButtonState() {
+            const file1 = document.getElementById('scoreImageInput1').files[0];
+            const btn = document.getElementById('aiAnalyzeBtn');
+            if (file1) {
+                btn.style.background = 'linear-gradient(135deg, #23382b 0%, #344d3d 100%)';
+                btn.style.cursor = 'pointer';
+                btn.disabled = false;
+            } else {
+                btn.style.background = '#b0bec5';
+                btn.style.cursor = 'not-allowed';
+                btn.disabled = true;
+            }
+        }
+
+        function openNewRegistration() {
+            editingRoundId = null;
+            document.getElementById('formTitle').innerHTML = '<span class="font-golsta">Golsta</span> 登録';
+            document.getElementById('aiUploadSection').style.display = 'block';
+            document.getElementById('parsedResultSection').style.display = 'none';
+            document.getElementById('initialCancelSection').style.display = 'block';
+
+            document.getElementById('courseName').value = '';
+            document.getElementById('playDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('visibility').value = 'friends';
+
+            tempParData = {
+                out: [4, 5, 3, 5, 4, 4, 3, 4, 4],
+                in:  [5, 4, 5, 4, 3, 4, 3, 4, 4]
+            };
+            tempPlayersData = [{
+                cart_name: myProfile.name,
+                out_scores: Array(9).fill(4),
+                in_scores: Array(9).fill(4),
+                out_total: 36,
+                in_total: 36,
+                total_score: 72
+            }];
+            tempPhotos = [];
+            bestPhotoIndex = 0;
+
+            renderScorecardEditor();
+            renderPhotoGrid();
+            isEditingRound = false;
+
+            showScreen('screen-add');
+        }
+
+        function openManualInput() {
+            document.getElementById('parsedResultSection').style.display = 'block';
+            document.getElementById('initialCancelSection').style.display = 'none';
+            isEditingRound = true;
+        }
+
+        async function openEditRegistration(roundId) {
+            const r = rounds.find(item => item.id === roundId);
+            if (!r) return;
+
+            const isAuthor = (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
+            if (!isAuthor) {
+                await showAppAlert('閲覧専用', '他のユーザーが登録したラウンドは編集できません。');
+                return;
+            }
+
+            editingRoundId = r.id;
+            document.getElementById('formTitle').innerText = `✏️ ラウンド情報の編集 (${r.courseName})`;
+            document.getElementById('aiUploadSection').style.display = 'none';
+
+            document.getElementById('courseName').value = r.courseName;
+            document.getElementById('playDate').value = r.playDate;
+            document.getElementById('visibility').value = r.visibility || 'friends';
+
+            tempParData = r.par || tempParData;
+            tempPlayersData = JSON.parse(JSON.stringify(r.players || []));
+            tempPhotos = JSON.parse(JSON.stringify(r.photos || []));
+            bestPhotoIndex = r.bestPhotoIndex || 0;
+
+            renderScorecardEditor();
+            renderPhotoGrid();
+            document.getElementById('parsedResultSection').style.display = 'block';
+            document.getElementById('initialCancelSection').style.display = 'none';
+            isEditingRound = true;
+
+            showScreen('screen-add');
+        }
+
+        async function navigateTab(targetScreenId) {
+            const currentActive = document.querySelector('.screen.active');
+            if (currentActive && currentActive.id === 'screen-add' && isEditingRound) {
+                const ok = await showAppConfirm('確認', '入力内容が破棄されますが、画面を移動してもよろしいですか？');
+                if (ok) {
+                    resetAddForm();
+                    showScreen(targetScreenId);
+                }
+            } else {
+                showScreen(targetScreenId);
+            }
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(screenId).classList.add('active');
+            if (screenId === 'screen-home') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                renderTimeline();
+            } else if (screenId === 'screen-gallery') {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                renderAllGallery();
+            } else if (screenId === 'screen-summary') {
+                document.querySelectorAll('.tab-btn')[2].classList.add('active');
+                renderSummary('members');
+            } else if (screenId === 'screen-analytics') {
+                document.querySelectorAll('.tab-btn')[3].classList.add('active');
+                renderAnalytics();
+            } else if (screenId === 'screen-members') {
+                document.querySelectorAll('.tab-btn')[4].classList.add('active');
+                initProfileScreen();
+            } else if (screenId === 'screen-add') {
+                updateCourseDatalist();
+            }
+            window.scrollTo(0, 0);
+        }
+
+        async function cancelAndBackToHome() {
+            if (isEditingRound) {
+                const ok = await showAppConfirm('確認', '入力内容を破棄してタイムラインに戻りますか？');
+                if (ok) {
+                    resetAddForm();
+                    showScreen('screen-home');
+                }
+            } else {
+                showScreen('screen-home');
+            }
+        }
+
+        function resetAddForm() {
+            document.getElementById('scoreImageInput1').value = '';
+            document.getElementById('scoreImageInput2').value = '';
+            document.getElementById('photoGalleryInput').value = '';
+            document.getElementById('aiStatus').innerText = '';
+            document.getElementById('parsedResultSection').style.display = 'none';
+            document.getElementById('initialCancelSection').style.display = 'block';
+            checkScoreButtonState();
+            tempPlayersData = [];
+            tempPhotos = [];
+            bestPhotoIndex = 0;
+            isEditingRound = false;
+            editingRoundId = null;
+            renderPhotoGrid();
+        }
+
         function updateCourseDatalist() {
             const selectEl = document.getElementById('quickCourseSelect');
             if (!selectEl) return;
-            const pastCourses = rounds.filter(r => !r.isAwardPost && r.courseName).map(r => r.courseName.trim());
+            
+            const pastCourses = rounds
+                .filter(r => !r.isAwardPost && r.courseName)
+                .map(r => r.courseName.trim());
             const uniqueCourses = Array.from(new Set(pastCourses)).filter(Boolean);
 
             let optionsHtml = '<option value="">▼ 過去のコース履歴から選ぶ</option>';
@@ -826,238 +1704,1023 @@
             selectEl.value = '';
         }
 
-        // -------------------------------------------------------------
-        // ラウンド新規登録 & 編集
-        // -------------------------------------------------------------
-        function openNewRegistration() {
-            document.getElementById('editRoundId').value = '';
-            document.getElementById('recordModalTitle').textContent = '⛳ 新規ラウンド記録';
-            document.getElementById('playDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('courseName').value = '';
-            document.getElementById('roundMemo').value = '';
-            renderPlayerInputs();
-            document.getElementById('recordModal').style.display = 'block';
+        function initProfileScreen() {
+            const idInput = document.getElementById('myProfileId');
+            if (idInput) idInput.value = myProfile.id || '';
+            const nameInput = document.getElementById('myProfileName');
+            if (nameInput) nameInput.value = myProfile.name || '長原 健太';
+            const avatarImg = document.getElementById('myAvatarImg');
+            if (avatarImg) avatarImg.src = myProfile.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150';
+            renderMemberList();
         }
 
-        function openEditRegistration(roundId) {
-            const r = rounds.find(item => item.id === roundId);
-            if (!r) return;
-            document.getElementById('editRoundId').value = r.id;
-            document.getElementById('recordModalTitle').textContent = '✏️ ラウンド記録の編集';
-            document.getElementById('playDate').value = r.playDate || '';
-            document.getElementById('courseName').value = r.courseName || '';
-            document.getElementById('visibility').value = r.visibility || 'public';
-            document.getElementById('roundMemo').value = r.memo || '';
-            renderPlayerInputs(r.players);
-            document.getElementById('recordModal').style.display = 'block';
+        function compressImageFile(file, maxWidth = 600, quality = 0.6) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.naturalWidth || img.width;
+                        let height = img.naturalHeight || img.height;
+                        
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        
+                        ctx.fillStyle = "#faf7f0";
+                        ctx.fillRect(0, 0, width, height);
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.onerror = () => reject(new Error('画像の展開に失敗しました（JPEGまたはPNG形式の写真をお使いください）'));
+                    img.src = e.target.result;
+                };
+                reader.onerror = () => reject(new Error('ファイルの読み込みに失敗しました'));
+                reader.readAsDataURL(file);
+            });
         }
 
-        function closeRecordModal() {
-            document.getElementById('recordModal').style.display = 'none';
+        async function updateProfileAvatar(input) {
+            if (input.files && input.files[0]) {
+                try {
+                    const compressed = await compressImageFile(input.files[0], 200, 0.8);
+                    myProfile.avatar = compressed;
+                    document.getElementById('myAvatarImg').src = compressed;
+                } catch (e) {
+                    await showAppAlert('エラー', e.message);
+                }
+            }
         }
 
-        function renderPlayerInputs(existingPlayers = null) {
-            const area = document.getElementById('playersInputArea');
-            if (!area) return;
-
-            let players = existingPlayers || [
-                { cart_name: myProfile.name || '長原 健太', out_score: '', in_score: '', total_score: '', putts: '' },
-                { cart_name: '', out_score: '', in_score: '', total_score: '', putts: '' },
-                { cart_name: '', out_score: '', in_score: '', total_score: '', putts: '' },
-                { cart_name: '', out_score: '', in_score: '', total_score: '', putts: '' }
-            ];
-
-            while (players.length < 4) {
-                players.push({ cart_name: '', out_score: '', in_score: '', total_score: '', putts: '' });
+        async function saveMyProfile() {
+            myProfile.name = document.getElementById('myProfileName').value.trim() || '長原 健太';
+            localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
+            
+            if (myProfile.id) {
+                try {
+                    await db.collection("users").doc(myProfile.id).set({
+                        id: myProfile.id,
+                        name: myProfile.name,
+                        avatar: myProfile.avatar,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } catch (e) {
+                    console.error("プロフィール同期エラー:", e);
+                }
             }
 
-            area.innerHTML = players.map((p, idx) => `
-                <div style="background:var(--card-sub-bg); padding:10px; border-radius:8px; margin-bottom:8px; border:1px solid var(--border);">
-                    <div style="display:flex; gap:6px; margin-bottom:6px;">
-                        <input type="text" id="p_name_${idx}" class="form-control" style="flex:2;" placeholder="プレイヤー${idx+1} 氏名" value="${p.cart_name || ''}">
-                        <select class="form-control" style="flex:1.2; font-size:11px;" onchange="if(this.value){ document.getElementById('p_name_${idx}').value = this.value; this.value=''; }">
-                            <option value="">▼ 呼出</option>
-                            <option value="${myProfile.name}">${myProfile.name}</option>
-                            ${myFriends.map(f => `<option value="${f}">${f}</option>`).join('')}
+            showToast('👤 プロフィールをクラウドに保存しました！');
+        }
+
+        function renderMemberList() {
+            const container = document.getElementById('memberListContainer');
+            if (members.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-sub); font-size:12px; padding:10px 0;">登録されている仲間はいません。</p>';
+                return;
+            }
+            container.innerHTML = members.map((m, idx) => {
+                const memberAvatar = globalUsersMap[m.name] || m.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150';
+                return `
+                    <div class="member-card">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <img src="${memberAvatar}" class="avatar-img-sm">
+                            <div style="font-weight:700; font-size:14px; color:var(--text-main);">${m.name}</div>
+                        </div>
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn-sub" style="padding:4px 10px; font-size:11px;" onclick="editMember(${idx})">✏️ 編集</button>
+                            <button class="btn-cancel" style="width:auto; margin:0; padding:4px 10px; font-size:11px; border-radius:6px;" onclick="deleteMember(${idx})">削除</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function addNewMember() {
+            const name = document.getElementById('newMemberName').value.trim();
+            if (!name) {
+                await showAppAlert('入力確認', '仲間のお名前を入力してください。');
+                return;
+            }
+            members.push({
+                id: 'm_' + Date.now(),
+                name: name,
+                avatar: globalUsersMap[name] || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
+            });
+            localStorage.setItem('golf_members', JSON.stringify(members));
+            document.getElementById('newMemberName').value = '';
+            renderMemberList();
+            showToast(`👥 「${name}」さんを追加しました！`);
+        }
+
+        async function editMember(index) {
+            const currentMember = members[index];
+            const newName = await showAppPrompt('仲間の名前を編集', '新しいお名前を入力してください:', currentMember.name);
+            if (newName && newName !== currentMember.name) {
+                members[index].name = newName;
+                if (globalUsersMap[newName]) {
+                    members[index].avatar = globalUsersMap[newName];
+                }
+                localStorage.setItem('golf_members', JSON.stringify(members));
+                renderMemberList();
+                showToast(`✏️ 「${newName}」さんに変更しました`);
+            }
+        }
+
+        async function deleteMember(index) {
+            const ok = await showAppConfirm('メンバー削除', `「${members[index].name}」さんを削除しますか？`);
+            if (ok) {
+                members.splice(index, 1);
+                localStorage.setItem('golf_members', JSON.stringify(members));
+                renderMemberList();
+            }
+        }
+
+        async function addGalleryPhotos(input) {
+            const files = Array.from(input.files);
+            if (!files.length) return;
+
+            isEditingRound = true;
+            const remainingSlots = 5 - tempPhotos.length;
+            if (remainingSlots <= 0) {
+                await showAppAlert('写真枚数上限', '写真は最大5枚まで登録できます。不要な写真を削除してください。');
+                input.value = '';
+                return;
+            }
+
+            const filesToProcess = files.slice(0, remainingSlots);
+            if (files.length > remainingSlots) {
+                await showAppAlert('お知らせ', `上限（5枚）を超えたため、最初の${remainingSlots}枚のみ追加します。`);
+            }
+
+            document.getElementById('photoCountLabel').innerText = '圧縮中...';
+
+            for (const file of filesToProcess) {
+                try {
+                    const compressed = await compressImageFile(file, 600, 0.6);
+                    tempPhotos.push(compressed);
+                } catch (e) {
+                    await showAppAlert('エラー', '写真「' + file.name + '」: ' + e.message);
+                }
+            }
+
+            renderPhotoGrid();
+            input.value = '';
+        }
+
+        function removePhoto(e, index) {
+            e.stopPropagation();
+            isEditingRound = true;
+            tempPhotos.splice(index, 1);
+            if (bestPhotoIndex >= tempPhotos.length) {
+                bestPhotoIndex = Math.max(0, tempPhotos.length - 1);
+            }
+            renderPhotoGrid();
+        }
+
+        function renderPhotoGrid() {
+            const grid = document.getElementById('photoPreviewGrid');
+            const countLabel = document.getElementById('photoCountLabel');
+            countLabel.innerText = tempPhotos.length;
+            grid.innerHTML = '';
+
+            tempPhotos.forEach((src, idx) => {
+                const div = document.createElement('div');
+                div.className = `photo-item ${idx === bestPhotoIndex ? 'best' : ''}`;
+                div.onclick = () => { bestPhotoIndex = idx; renderPhotoGrid(); };
+                div.innerHTML = `
+                    <img src="${src}">
+                    <button class="btn-remove-photo" onclick="removePhoto(event, ${idx})">✕</button>
+                    ${idx === bestPhotoIndex ? '<span class="best-badge">★ カバー</span>' : ''}
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        async function processScoreImagesSafe() {
+            const file1 = document.getElementById('scoreImageInput1').files[0];
+            const file2 = document.getElementById('scoreImageInput2').files[0];
+            const status = document.getElementById('aiStatus');
+            if (!file1) return;
+
+            isEditingRound = true;
+            status.innerText = 'AIがスコア画像を解析中...⛳';
+
+            try {
+                const base641 = (await compressImageFile(file1, 1024, 0.8)).split(',')[1];
+                let base642 = file2 ? (await compressImageFile(file2, 1024, 0.8)).split(',')[1] : null;
+
+                const promptText = `提供されたスコアカード（またはカート画面）の画像を解析し、ゴルフ場名・プレー日・各ホールのPAR・各プレイヤー打数（1〜18H、OUT計、IN計、TOTAL）を抽出してください。
+2枚ある場合はOUTとINを統合してください。プレイヤー数は最大4名までとします。
+必ず以下のJSON形式のみを出力してください。挨拶やMarkdown等の装飾は不要です。
+{
+  "course_name": "ゴルフ場名",
+  "play_date": "YYYY-MM-DD",
+  "par": {
+    "out": [4,5,3,5,4,4,3,4,4],
+    "in": [5,4,5,4,3,4,3,4,4]
+  },
+  "players": [
+    {
+      "cart_name": "氏名",
+      "out_scores": [0,0,0,0,0,0,0,0,0],
+      "in_scores": [0,0,0,0,0,0,0,0,0],
+      "out_total": 0,
+      "in_total": 0,
+      "total_score": 0
+    }
+  ]
+}`;
+
+                const parts = [
+                    { text: promptText },
+                    { inlineData: { mimeType: "image/jpeg", data: base641 } }
+                ];
+                if (base642) {
+                    parts.push({ inlineData: { mimeType: "image/jpeg", data: base642 } });
+                }
+
+                const mRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
+                const mData = await mRes.json();
+                
+                if (!mData.models || mData.models.length === 0) {
+                    throw new Error('利用可能なモデルが見つかりません。APIキーを確認してください。');
+                }
+
+                const candidateModels = mData.models.filter(m => 
+                    m.supportedGenerationMethods && 
+                    m.supportedGenerationMethods.includes('generateContent') && 
+                    !m.name.includes('embedding')
+                );
+
+                let parsedJSON = null;
+
+                for (const model of candidateModels) {
+                    try {
+                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model.name}:generateContent?key=${GEMINI_API_KEY}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ contents: [{ parts: parts }] })
+                        });
+                        const resData = await res.json();
+
+                        if (res.ok && resData.candidates?.[0]?.content?.parts?.[0]?.text) {
+                            let rawText = resData.candidates[0].content.parts[0].text;
+                            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+                            if (jsonMatch) {
+                                parsedJSON = JSON.parse(jsonMatch[0]);
+                                break;
+                            }
+                        }
+                    } catch (err) {
+                        continue;
+                    }
+                }
+
+                if (parsedJSON) {
+                    tempPlayersData = (parsedJSON.players || []).slice(0, 4);
+                    const allRegistered = [myProfile, ...members];
+                    tempPlayersData.forEach(p => {
+                        const matched = allRegistered.find(m => m.name === p.cart_name || p.cart_name.includes(m.name));
+                        if (matched) p.cart_name = matched.name;
+                    });
+
+                    if (parsedJSON.par && parsedJSON.par.out) {
+                        tempParData = parsedJSON.par;
+                    }
+                    
+                    document.getElementById('courseName').value = parsedJSON.course_name || '';
+                    document.getElementById('playDate').value = parsedJSON.play_date || new Date().toISOString().split('T')[0];
+                    renderScorecardEditor();
+                    document.getElementById('parsedResultSection').style.display = 'block';
+                    document.getElementById('initialCancelSection').style.display = 'none';
+                    status.innerText = `✅ AI解析完了（${tempPlayersData.length}名分のスコアを読み込みました）`;
+                } else {
+                    status.innerText = '⚠️ 自動解析できませんでした。手動で入力してください。';
+                    document.getElementById('parsedResultSection').style.display = 'block';
+                    document.getElementById('initialCancelSection').style.display = 'none';
+                }
+            } catch (e) {
+                status.innerText = '解析エラー: ' + e.message;
+                document.getElementById('parsedResultSection').style.display = 'block';
+                document.getElementById('initialCancelSection').style.display = 'none';
+            }
+        }
+
+        function setScoreViewMode(mode) {
+            scoreViewMode = mode;
+            document.getElementById('btn-view-out').classList.toggle('active', mode === 'out');
+            document.getElementById('btn-view-in').classList.toggle('active', mode === 'in');
+            document.getElementById('btn-view-all').classList.toggle('active', mode === 'all');
+            renderScorecardEditor();
+        }
+
+        async function addNewPlayerRow() {
+            if (tempPlayersData.length >= 4) {
+                await showAppAlert('上限到達', 'プレイヤーは最大4名まで登録できます。');
+                return;
+            }
+            isEditingRound = true;
+            const newIndex = tempPlayersData.length + 1;
+            tempPlayersData.push({
+                cart_name: `プレイヤー${newIndex}`,
+                out_scores: Array(9).fill(4),
+                in_scores: Array(9).fill(4),
+                out_total: 36,
+                in_total: 36,
+                total_score: 72
+            });
+            renderScorecardEditor();
+        }
+
+        async function removePlayerRow(playerIndex) {
+            if (tempPlayersData.length <= 1) {
+                await showAppAlert('確認', '最低1名のプレイヤーが必要です。');
+                return;
+            }
+            tempPlayersData.splice(playerIndex, 1);
+            renderScorecardEditor();
+        }
+
+        function updatePlayerNameDirect(playerIndex, newName) {
+            isEditingRound = true;
+            tempPlayersData[playerIndex].cart_name = newName.trim() || `プレイヤー${playerIndex + 1}`;
+        }
+
+        function applyQuickMemberName(playerIndex, selectEl) {
+            if (!selectEl.value) return;
+            isEditingRound = true;
+            tempPlayersData[playerIndex].cart_name = selectEl.value;
+            renderScorecardEditor();
+        }
+
+        function renderScorecardEditor() {
+            const table = document.getElementById('scoreEditorTable');
+            const showOut = (scoreViewMode === 'out' || scoreViewMode === 'all');
+            const showIn = (scoreViewMode === 'in' || scoreViewMode === 'all');
+
+            const btnAdd = document.getElementById('btnAddPlayer');
+            const countLabel = document.getElementById('playerCountLabel');
+            if (countLabel) countLabel.innerText = tempPlayersData.length;
+            if (btnAdd) btnAdd.disabled = (tempPlayersData.length >= 4);
+
+            let headerHoles = '<th class="player-name-cell">PLAYER (名前編集)</th>';
+            let parRow = '<td class="player-name-cell"><strong>PAR</strong></td>';
+
+            let outParTotal = tempParData.out.reduce((a,b)=>a+b, 0);
+            let inParTotal = tempParData.in.reduce((a,b)=>a+b, 0);
+
+            if (showOut) {
+                for (let i = 1; i <= 9; i++) {
+                    headerHoles += `<th>${i}</th>`;
+                    parRow += `<td>${tempParData.out[i-1]}</td>`;
+                }
+                headerHoles += `<th>OUT</th>`;
+                parRow += `<td><strong>${outParTotal}</strong></td>`;
+            }
+
+            if (showIn) {
+                for (let i = 10; i <= 18; i++) {
+                    headerHoles += `<th>${i}</th>`;
+                    parRow += `<td>${tempParData.in[i-10]}</td>`;
+                }
+                headerHoles += `<th>IN</th>`;
+                parRow += `<td><strong>${inParTotal}</strong></td>`;
+            }
+
+            headerHoles += `<th>TOTAL</th><th>削除</th>`;
+            parRow += `<td><strong>${outParTotal + inParTotal}</strong></td><td>-</td>`;
+
+            const allRegistered = [myProfile, ...members];
+
+            let playersRows = tempPlayersData.map((p, pIdx) => {
+                let memberOptions = allRegistered.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+
+                let row = `<td class="player-name-cell">
+                    <div class="player-name-input-box">
+                        <input type="text" class="name-text-input" value="${p.cart_name}" placeholder="プレイヤー名"
+                            onchange="updatePlayerNameDirect(${pIdx}, this.value)"
+                            oninput="tempPlayersData[${pIdx}].cart_name = this.value">
+                        <select class="name-select-quick" onchange="applyQuickMemberName(${pIdx}, this)">
+                            <option value="">▼ 登録仲間から呼出</option>
+                            ${memberOptions}
                         </select>
                     </div>
-                    <div style="display:flex; gap:6px;">
-                        <input type="number" id="p_out_${idx}" class="form-control" placeholder="OUT" value="${p.out_score || ''}" oninput="calcTotal(${idx})">
-                        <input type="number" id="p_in_${idx}" class="form-control" placeholder="IN" value="${p.in_score || ''}" oninput="calcTotal(${idx})">
-                        <input type="number" id="p_total_${idx}" class="form-control" placeholder="合計" value="${p.total_score || ''}" style="font-weight:700;">
-                        <input type="number" id="p_putts_${idx}" class="form-control" placeholder="PT" value="${p.putts || ''}">
+                </td>`;
+
+                if (showOut) {
+                    for (let i = 0; i < 9; i++) {
+                        row += `<td>
+                            <input type="number" class="score-input" value="${p.out_scores[i] || 0}" min="1" max="20"
+                                onchange="updateTableScore(${pIdx}, 'out', ${i}, this.value)">
+                        </td>`;
+                    }
+                    row += `<td style="font-weight:700; background:var(--gold-light); font-family:'Cinzel',serif;" id="out-total-${pIdx}">${p.out_total}</td>`;
+                }
+
+                if (showIn) {
+                    for (let i = 0; i < 9; i++) {
+                        row += `<td>
+                            <input type="number" class="score-input" value="${p.in_scores[i] || 0}" min="1" max="20"
+                                onchange="updateTableScore(${pIdx}, 'in', ${i}, this.value)">
+                        </td>`;
+                    }
+                    row += `<td style="font-weight:700; background:var(--gold-light); font-family:'Cinzel',serif;" id="in-total-${pIdx}">${p.in_total}</td>`;
+                }
+
+                row += `<td class="total-cell" id="grand-total-${pIdx}">${p.total_score}</td>`;
+                row += `<td><button onclick="removePlayerRow(${pIdx})" style="border:none; background:none; color:var(--danger); font-weight:700; cursor:pointer; padding:6px;">✕</button></td>`;
+                return `<tr>${row}</tr>`;
+            }).join('');
+
+            table.innerHTML = `
+                <thead><tr>${headerHoles}</tr></thead>
+                <tbody>
+                    <tr class="par-row">${parRow}</tr>
+                    ${playersRows}
+                </tbody>
+            `;
+        }
+
+        function updateTableScore(playerIndex, type, holeIndex, val) {
+            isEditingRound = true;
+            const num = parseInt(val, 10) || 0;
+            const player = tempPlayersData[playerIndex];
+            if (type === 'out') {
+                player.out_scores[holeIndex] = num;
+                player.out_total = player.out_scores.reduce((a, b) => a + b, 0);
+            } else {
+                player.in_scores[holeIndex] = num;
+                player.in_total = player.in_scores.reduce((a, b) => a + b, 0);
+            }
+            player.total_score = player.out_total + player.in_total;
+
+            const outEl = document.getElementById(`out-total-${playerIndex}`);
+            const inEl = document.getElementById(`in-total-${playerIndex}`);
+            const grandEl = document.getElementById(`grand-total-${playerIndex}`);
+
+            if (outEl) outEl.innerText = player.out_total;
+            if (inEl) inEl.innerText = player.in_total;
+            if (grandEl) grandEl.innerText = player.total_score;
+        }
+
+        async function saveRound() {
+            const courseName = document.getElementById('courseName').value.trim();
+            const playDate = document.getElementById('playDate').value;
+            const visibilityVal = document.getElementById('visibility').value;
+
+            if (!courseName) {
+                await showAppAlert('入力確認', 'ゴルフ場名を入力または選択してください。');
+                return;
+            }
+
+            const existingNames = [myProfile.name, ...members.map(m => m.name)];
+            for (const p of tempPlayersData) {
+                const pName = p.cart_name.trim();
+                if (pName && !existingNames.includes(pName) && !pName.startsWith('プレイヤー')) {
+                    const ok = await showAppConfirm(
+                        '新しいゴルフ仲間',
+                        `「${pName}」さんはゴルフ仲間に未登録です。\nメンバーリストに追加しますか？`,
+                        '追加する',
+                        '追加しない'
+                    );
+                    if (ok) {
+                        members.push({
+                            id: 'm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                            name: pName,
+                            avatar: globalUsersMap[pName] || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
+                        });
+                        localStorage.setItem('golf_members', JSON.stringify(members));
+                        existingNames.push(pName);
+                    }
+                }
+            }
+
+            const targetRoundId = editingRoundId || ('round_' + Date.now());
+            const roundData = {
+                authorId: myProfile.id || 'usr_nagahara',
+                authorName: myProfile.name,
+                authorAvatar: myProfile.avatar,
+                courseName: courseName,
+                playDate: playDate,
+                visibility: visibilityVal,
+                par: tempParData,
+                players: tempPlayersData,
+                photos: tempPhotos,
+                bestPhotoIndex: bestPhotoIndex,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                if (editingRoundId) {
+                    await db.collection("rounds").doc(editingRoundId).update(roundData);
+                    showToast('🎉 ラウンド情報を更新しました！');
+                } else {
+                    roundData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    roundData.comments = [];
+                    roundData.likes = [];
+                    await db.collection("rounds").doc(targetRoundId).set(roundData);
+                    showToast('🎉 ラウンドの想い出をクラウドに保存しました！');
+
+                    if (visibilityVal !== 'private') {
+                        const wantShareLine = await showAppConfirm('保存完了！⛳', 'ラウンドの想い出を保存しました！\nLINEでゴルフ仲間にシェアしますか？', '🟢 LINEで送る', 'タイムラインへ');
+                        if (wantShareLine) {
+                            const lineUrl = getLineShareUrl(roundData);
+                            window.open(lineUrl, '_blank');
+                        }
+                    }
+                }
+
+                isEditingRound = false;
+                editingRoundId = null;
+                resetAddForm();
+                showScreen('screen-home');
+            } catch (err) {
+                await showAppAlert('クラウド保存エラー', err.message);
+            }
+        }
+
+        async function deleteRound(e, roundId) {
+            e.stopPropagation();
+            const ok = await showAppConfirm('削除の確認', 'この投稿・アワード記録を削除してもよろしいですか？');
+            if (ok) {
+                try {
+                    await db.collection("rounds").doc(roundId).delete();
+                    showToast('🗑️ 削除しました');
+                } catch (err) {
+                    await showAppAlert('削除エラー', err.message);
+                }
+            }
+        }
+
+        function isRoundVisibleInTimeline(r) {
+            if (r.isAwardPost) return true;
+            if (r.visibility === 'private') return false;
+            if (r.visibility === 'members_only') {
+                const isAuthor = (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
+                const isPlayer = (r.players || []).some(p => p.cart_name === myProfile.name);
+                return isAuthor || isPlayer;
+            }
+            return true;
+        }
+
+        function getVisibleTimelineRounds() {
+            return rounds.filter(isRoundVisibleInTimeline);
+        }
+
+        function getMyAccessibleRounds() {
+            return rounds.filter(r => {
+                if (r.isAwardPost) return false;
+                if (r.visibility === 'private') {
+                    return (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
+                }
+                if (r.visibility === 'members_only') {
+                    const isAuthor = (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
+                    const isPlayer = (r.players || []).some(p => p.cart_name === myProfile.name);
+                    return isAuthor || isPlayer;
+                }
+                return true;
+            });
+        }
+
+        // ==========================================
+        // 🌟 月間AI映えアワード 審査実行エンジン (Gemini API)
+        // ==========================================
+        async function triggerManualAiAward() {
+            const targetMonth = document.getElementById('awardTargetMonth').value;
+            const statusEl = document.getElementById('awardStatusMsg');
+            const btnRun = document.getElementById('btnRunAward');
+
+            if (!targetMonth) {
+                await showAppAlert('確認', '審査対象の年月を選択してください。');
+                return;
+            }
+
+            const targetCandidates = [];
+            rounds.forEach(r => {
+                if (r.isAwardPost) return;
+                const rMonth = (r.playDate || '').substring(0, 7);
+                if (rMonth === targetMonth && r.photos && r.photos.length > 0) {
+                    const coverIdx = r.bestPhotoIndex || 0;
+                    const coverPhoto = r.photos[coverIdx] || r.photos[0];
+                    if (coverPhoto) {
+                        targetCandidates.push({
+                            roundId: r.id,
+                            userName: r.authorName || 'メンバー',
+                            courseName: r.courseName || '',
+                            playDate: r.playDate,
+                            photoUrl: coverPhoto
+                        });
+                    }
+                }
+            });
+
+            if (targetCandidates.length === 0) {
+                await showAppAlert('審査対象なし', `${targetMonth} に投稿されたカバー写真付きのラウンド記録がありませんでした。`);
+                return;
+            }
+
+            const ok = await showAppConfirm(
+                'AIアワード審査の開始',
+                `${targetMonth} のカバー写真 ${targetCandidates.length} 枚をAI審査員（芝山キシン・泉ピンそば・ドンマイ小西）に提出します。\n審査を実行しますか？`,
+                '審査開始！',
+                'キャンセル'
+            );
+            if (!ok) return;
+
+            btnRun.disabled = true;
+            statusEl.innerText = 'AI審査員が写真を選考中...📸';
+
+            try {
+                const parts = [
+                    {
+                        text: `あなたはゴルフ思い出共有アプリ「Golstagram」の月間AI映えアワード審査委員会です。
+対象月: ${targetMonth}。提供された ${targetCandidates.length} 枚のゴルフ写真から、以下の3人の審査員キャラクターとして「最優秀賞」「優秀賞」「ブービー賞」の計3つの賞を選出・講評してください。
+
+【審査員設定と選考基準】
+1. 芝山キシン（ロマン派プロカメラマン）
+   - トーン：情熱的、ドラマチック、カメラや構図の専門用語を交える。
+   - 最優秀賞：躍動感、光の美しさ、ゴルフ場の美しい借景などを絶賛。
+   - ブービー賞：ピンボケ、変なシャッタータイミング、傾いた構図などをプロ目線で愛を込めてイジる。
+
+2. 泉ピンそば（関西弁のお茶目なベテランキャディ）
+   - トーン：親しみやすいコテコテの関西弁、ゴルフ歴40年のオカン口調。
+   - 最優秀/優秀賞：ナイスショットの気配、プレイヤーの満面の笑顔、楽しそうな雰囲気を豪快に褒める。
+   - ブービー賞：バンカー脱出の苦闘、深いラフ、OBの哀愁など「ゴルフあるある」を大笑いしながら励ます。
+
+3. ドンマイ小西（辛口ファッション＆映え評論家）
+   - トーン：美意識が高い、独自のファッション哲学、口癖は「ドンマイ！」「〜でしょ！」。
+   - 最優秀/優秀賞：ウェアの色使い、芝とのコントラスト、スタイリッシュな着こなしを絶賛。
+   - ブービー賞：地味すぎるコーデ、上下の柄の衝突、汗だくでヨレヨレな姿など、思わず「ドンマイ！」と言いたくなるポイントをユーモアたっぷりに愛ある毒舌でバッサリ斬る。
+
+【ルール】
+- 3人の審査員がそれぞれ1つずつ異なる賞を担当してください（例：芝山＝最優秀賞、泉＝優秀賞、ドンマイ＝ブービー賞）。
+- 各賞にはユニークでキャッチーな賞の名称（award_name）を付けてください。
+- 必ず以下のJSONフォーマットのみを出力してください。Markdown等の装飾は不要です。
+
+{
+  "awards": [
+    {
+      "judge": "芝山キシン",
+      "award_type": "grand_prize",
+      "award_name": "賞の名前",
+      "target_photo_id": "対象となった写真のインデックス番号 (0から始まる連番)",
+      "target_user_name": "受賞したメンバー名",
+      "comment": "審査員の熱い/面白い受賞コメント"
+    },
+    {
+      "judge": "泉ピンそば",
+      "award_type": "excellence_prize",
+      "award_name": "賞の名前",
+      "target_photo_id": "対象となった写真のインデックス番号",
+      "target_user_name": "受賞したメンバー名",
+      "comment": "審査員の受賞コメント"
+    },
+    {
+      "judge": "ドンマイ小西",
+      "award_type": "booby_prize",
+      "award_name": "賞の名前",
+      "target_photo_id": "対象となった写真のインデックス番号",
+      "target_user_name": "受賞したメンバー名",
+      "comment": "審査員の受賞コメント"
+    }
+  ]
+}`
+                    }
+                ];
+
+                targetCandidates.forEach((c, cIdx) => {
+                    const base64Data = c.photoUrl.split(',')[1] || c.photoUrl;
+                    parts.push({ text: `【写真インデックス: ${cIdx}】 撮影/投稿: ${c.userName}（${c.courseName}）` });
+                    if (c.photoUrl.startsWith('data:image')) {
+                        parts.push({ inlineData: { mimeType: "image/jpeg", data: base64Data } });
+                    }
+                });
+
+                const mRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
+                const mData = await mRes.json();
+                const candidateModels = (mData.models || []).filter(m => 
+                    m.supportedGenerationMethods && 
+                    m.supportedGenerationMethods.includes('generateContent') && 
+                    !m.name.includes('embedding')
+                );
+
+                let parsedAwardJSON = null;
+                for (const model of candidateModels) {
+                    try {
+                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model.name}:generateContent?key=${GEMINI_API_KEY}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ contents: [{ parts: parts }] })
+                        });
+                        const resData = await res.json();
+                        if (res.ok && resData.candidates?.[0]?.content?.parts?.[0]?.text) {
+                            let raw = resData.candidates[0].content.parts[0].text;
+                            const match = raw.match(/\{[\s\S]*\}/);
+                            if (match) {
+                                parsedAwardJSON = JSON.parse(match[0]);
+                                break;
+                            }
+                        }
+                    } catch (e) {
+                        continue;
+                    }
+                }
+
+                if (!parsedAwardJSON || !parsedAwardJSON.awards) {
+                    throw new Error('審査結果のJSON生成に失敗しました。もう一度お試しください。');
+                }
+
+                parsedAwardJSON.awards.forEach(a => {
+                    const idxNum = parseInt(a.target_photo_id, 10) || 0;
+                    const matchedCandidate = targetCandidates[idxNum] || targetCandidates[0];
+                    a.photoUrl = matchedCandidate.photoUrl;
+                    a.courseName = matchedCandidate.courseName;
+                    a.playDate = matchedCandidate.playDate;
+                    if (!a.target_user_name || a.target_user_name === 'メンバー') {
+                        a.target_user_name = matchedCandidate.userName;
+                    }
+                });
+
+                const awardPostId = `award_${targetMonth.replace('-', '_')}_${Date.now()}`;
+                const awardPostData = {
+                    isAwardPost: true,
+                    authorName: 'Golstagram AI審査委員会',
+                    authorAvatar: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=150',
+                    playDate: `${targetMonth}-28`,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    visibility: 'friends',
+                    awardData: {
+                        targetMonth: targetMonth,
+                        awards: parsedAwardJSON.awards
+                    },
+                    likes: [],
+                    comments: []
+                };
+
+                await db.collection("rounds").doc(awardPostId).set(awardPostData);
+                
+                statusEl.innerText = `🎉 ${targetMonth} AI映えアワードの選出とタイムライン投稿が完了しました！`;
+                showToast(`🏆 ${targetMonth} 月間AIアワードを発表しました！`);
+                closeSettingsModal();
+                showScreen('screen-home');
+
+            } catch (err) {
+                console.error("アワード審査エラー:", err);
+                statusEl.innerText = '審査エラー: ' + err.message;
+                await showAppAlert('AI審査エラー', err.message);
+            } finally {
+                btnRun.disabled = false;
+            }
+        }
+
+        // ==========================================
+        // タイムライン描画 (通常投稿 ＆ 🌟AIアワード特別カード)
+        // ==========================================
+        function renderTimeline() {
+            const list = document.getElementById('timeline-list');
+            const visibleRounds = getVisibleTimelineRounds();
+
+            if (visibleRounds.length === 0) {
+                list.innerHTML = '<div style="text-align:center; padding:50px 20px; color:var(--text-sub);">まだ表示できるラウンド履歴がありません。<br>右下のボタンから想い出を登録してください⛳</div>';
+                return;
+            }
+
+            list.innerHTML = visibleRounds.map((r, idx) => {
+                const likes = r.likes || [];
+                const isLikedByMe = likes.includes(myProfile.name);
+                const likeCount = likes.length;
+                const commentCount = (r.comments || []).length;
+
+                // 🌟 AIアワード特別カード
+                if (r.isAwardPost && r.awardData) {
+                    const awards = r.awardData.awards || [];
+                    const deleteBtnHtml = (myProfile.name === '長原 健太') ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ アワード削除</button>` : '';
+
+                    const awardsHtml = awards.map(a => {
+                        let badgeClass = 'badge-excellence';
+                        let awardLabel = '🥈 優秀賞';
+                        let judgeIcon = '⛳';
+
+                        if (a.award_type === 'grand_prize') {
+                            badgeClass = 'badge-grand';
+                            awardLabel = '🏆 最優秀賞';
+                            judgeIcon = '📷';
+                        } else if (a.award_type === 'booby_prize') {
+                            badgeClass = 'badge-booby';
+                            awardLabel = '😂 ブービー賞';
+                            judgeIcon = '🕶️';
+                        }
+
+                        return `
+                            <div class="award-item-block">
+                                <div class="award-item-badge ${badgeClass}">
+                                    <span>${awardLabel}</span>
+                                    <span style="font-weight:700;">「${a.award_name}」</span>
+                                </div>
+                                
+                                <div style="font-size:12px; font-weight:700; color:var(--primary); margin-top:2px;">
+                                    👤 受賞者: <strong>${a.target_user_name}</strong> さん （${a.courseName || ''}）
+                                </div>
+
+                                <div class="award-photo-container">
+                                    <img src="${a.photoUrl}">
+                                </div>
+
+                                <div class="award-judge-bubble">
+                                    <div class="award-judge-name">${judgeIcon} 審査員：${a.judge} の講評</div>
+                                    <div>${a.comment}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div class="card award-banner-card">
+                            ${deleteBtnHtml}
+                            <div class="award-badge-header">
+                                <span>👑 月間AI映えアワード【${r.awardData.targetMonth}】</span>
+                                <span style="font-size:11px; font-weight:normal; opacity:0.9;">公式審査発表</span>
+                            </div>
+
+                            <div style="padding: 12px 16px 6px;">
+                                <p style="font-size:12px; color:var(--text-sub);">
+                                    芝山キシン・泉ピンそば・ドンマイ小西による厳正なるAI写真審査結果です！🏌️‍♂️✨
+                                </p>
+                            </div>
+
+                            ${awardsHtml}
+
+                            <div class="card-body" style="padding-top:6px;">
+                                <div class="card-action-bar">
+                                    <div class="left-actions">
+                                        <button class="btn-action ${isLikedByMe ? 'liked' : ''}" onclick="toggleLike(${idx})">
+                                            <span>${isLikedByMe ? '❤️' : '🤍'}</span>
+                                            <span>いいね！</span>
+                                            ${likeCount > 0 ? `<span>${likeCount}</span>` : ''}
+                                        </button>
+                                        <button class="btn-action" onclick="openCommentSheet('${r.id}')">
+                                            <span>💬</span>
+                                            <span>コメント</span>
+                                            ${commentCount > 0 ? `<span>${commentCount}</span>` : ''}
+                                        </button>
+                                    </div>
+                                    <button class="btn-line-share" onclick="shareAwardToLine('${r.id}')">
+                                        <svg viewBox="0 0 24 24"><path d="M24 10.3c0-4.6-4.9-8.3-11-8.3S2 5.7 2 10.3c0 4.1 3.6 7.6 8.6 8.2.3.1.8.2.9.6.1.3.1.8 0 1.1-.1.4-.4 1.5-.5 1.8-.1.6-.6 2.3 2 1.3 2.6-1.1 7-4.1 9.6-7 1.4-1.6 2.4-3.4 2.4-5z"/></svg>
+                                        LINEで結果をシェア
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // 通常のラウンド投稿
+                const mainScore = (r.players && r.players[0]) ? `${r.players[0].cart_name}: ${r.players[0].total_score}` : '';
+                const authorAvatar = globalUsersMap[r.authorName] || r.authorAvatar || myProfile.avatar;
+                const authorName = r.authorName || myProfile.name;
+                
+                const isMyPost = (r.authorId && r.authorId === myProfile.id) || (authorName === myProfile.name);
+                const deleteBtnHtml = isMyPost ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ 削除</button>` : '';
+
+                const lineShareBtnHtml = isMyPost ? `
+                    <button class="btn-line-share" onclick="shareToLine('${r.id}')">
+                        <svg viewBox="0 0 24 24"><path d="M24 10.3c0-4.6-4.9-8.3-11-8.3S2 5.7 2 10.3c0 4.1 3.6 7.6 8.6 8.2.3.1.8.2.9.6.1.3.1.8 0 1.1-.1.4-.4 1.5-.5 1.8-.1.6-.6 2.3 2 1.3 2.6-1.1 7-4.1 9.6-7 1.4-1.6 2.4-3.4 2.4-5z"/></svg>
+                        LINEでシェア
+                    </button>
+                ` : '';
+
+                let photoList = (r.photos && r.photos.length) ? [...r.photos] : ['https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600'];
+                if (r.photos && r.photos.length > 1 && r.bestPhotoIndex > 0 && r.bestPhotoIndex < r.photos.length) {
+                    const cover = photoList.splice(r.bestPhotoIndex, 1)[0];
+                    photoList.unshift(cover);
+                }
+
+                const totalPhotos = photoList.length;
+                let carouselHtml = '';
+
+                if (totalPhotos > 1) {
+                    const slidesHtml = photoList.map(pUrl => `
+                        <div class="carousel-slide">
+                            <img src="${pUrl}" class="carousel-img" onclick="showDetail('${r.id}', 'home')">
+                        </div>
+                    `).join('');
+
+                    const dotsHtml = photoList.map((_, pIdx) => `
+                        <div class="carousel-dot dot-round-${idx} ${pIdx === 0 ? 'active' : ''}"></div>
+                    `).join('');
+
+                    carouselHtml = `
+                        <div class="carousel-wrapper">
+                            <span class="carousel-count-badge" id="carousel-badge-${idx}">1/${totalPhotos}</span>
+                            <div class="carousel-track" onscroll="handleCarouselScroll(this, ${idx})">
+                                ${slidesHtml}
+                            </div>
+                            <div class="carousel-dots">
+                                ${dotsHtml}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    carouselHtml = `
+                        <img src="${photoList[0]}" class="card-img" onclick="showDetail('${r.id}', 'home')" style="cursor:pointer; width:100%; height:260px; object-fit:cover; display:block;">
+                    `;
+                }
+
+                return `
+                    <div class="card">
+                        ${deleteBtnHtml}
+                        
+                        <div class="card-header-user">
+                            <img src="${authorAvatar}" class="avatar-img">
+                            <div>
+                                <div class="user-name-text">${authorName}</div>
+                                <div style="font-size:11px; color:var(--text-sub);">📅 ${r.playDate} プレー</div>
+                            </div>
+                        </div>
+
+                        ${carouselHtml}
+                        
+                        <div class="card-body">
+                            <div class="card-title" onclick="showDetail('${r.id}', 'home')" style="cursor:pointer;">${r.courseName}</div>
+                            <div class="card-date">👥 同伴: ${(r.players || []).map(p=>p.cart_name).join(', ')}</div>
+                            <div class="score-highlight">${mainScore}</div>
+
+                            <div class="card-action-bar">
+                                <div class="left-actions">
+                                    <button class="btn-action ${isLikedByMe ? 'liked' : ''}" onclick="toggleLike(${idx})">
+                                        <span>${isLikedByMe ? '❤️' : '🤍'}</span>
+                                        <span>いいね！</span>
+                                        ${likeCount > 0 ? `<span>${likeCount}</span>` : ''}
+                                    </button>
+                                    <button class="btn-action" onclick="openCommentSheet('${r.id}')">
+                                        <span>💬</span>
+                                        <span>コメント</span>
+                                        ${commentCount > 0 ? `<span>${commentCount}</span>` : ''}
+                                    </button>
+                                </div>
+                                ${lineShareBtnHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderAllGallery() {
+            const container = document.getElementById('allGalleryContainer');
+            const allPhotos = [];
+            const visibleRounds = getVisibleTimelineRounds();
+
+            visibleRounds.forEach(r => {
+                if (r.isAwardPost) return;
+                (r.photos || []).forEach(pUrl => {
+                    allPhotos.push({
+                        photoUrl: pUrl,
+                        roundId: r.id,
+                        courseName: r.courseName,
+                        playDate: r.playDate,
+                        authorName: r.authorName || myProfile.name
+                    });
+                });
+            });
+
+            if (allPhotos.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; padding:40px; color:var(--text-sub);">表示できる写真がありません。<br><span class="font-golsta">Golsta</span> 登録から写真を追加してください📷</div>';
+                return;
+            }
+
+            container.innerHTML = allPhotos.map(item => `
+                <div class="gallery-card" onclick="showDetail('${item.roundId}', 'gallery')">
+                    <img src="${item.photoUrl}">
+                    <div class="gallery-card-info">
+                        <div class="gallery-card-title">⛳ ${item.courseName}</div>
+                        <div style="color:var(--text-sub); font-size:10px;">📅 ${item.playDate} ｜ 👤 ${item.authorName}</div>
                     </div>
                 </div>
             `).join('');
         }
 
-        function calcTotal(idx) {
-            const outS = parseInt(document.getElementById(`p_out_${idx}`).value) || 0;
-            const inS = parseInt(document.getElementById(`p_in_${idx}`).value) || 0;
-            if (outS || inS) {
-                document.getElementById(`p_total_${idx}`).value = outS + inS;
-            }
-        }
-
-        async function saveRound() {
-            const editId = document.getElementById('editRoundId').value;
-            const playDate = document.getElementById('playDate').value;
-            const courseName = document.getElementById('courseName').value.trim();
-            const visibility = document.getElementById('visibility').value;
-            const memo = document.getElementById('roundMemo').value.trim();
-
-            if (!courseName) {
-                await showAppAlert('入力確認', 'ゴルフ場・コース名を入力してください。');
-                return;
-            }
-
-            const players = [];
-            for (let i = 0; i < 4; i++) {
-                const name = document.getElementById(`p_name_${i}`).value.trim();
-                const total = parseInt(document.getElementById(`p_total_${i}`).value) || null;
-                const outS = parseInt(document.getElementById(`p_out_${i}`).value) || null;
-                const inS = parseInt(document.getElementById(`p_in_${i}`).value) || null;
-                const putts = parseInt(document.getElementById(`p_putts_${i}`).value) || null;
-
-                if (name) {
-                    players.push({
-                        cart_name: name,
-                        total_score: total,
-                        out_score: outS,
-                        in_score: inS,
-                        putts: putts
-                    });
-                }
-            }
-
-            const roundData = {
-                authorId: myProfile.id || 'usr_nagahara',
-                authorName: myProfile.name || '長原 健太',
-                authorAvatar: myProfile.avatar || '',
-                playDate: playDate,
-                courseName: courseName,
-                visibility: visibility,
-                memo: memo,
-                players: players,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            try {
-                if (editId) {
-                    await db.collection("rounds").doc(editId).update(roundData);
-                    showToast('✅ ラウンドを更新しました');
-                } else {
-                    roundData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-                    roundData.photos = ['https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600'];
-                    roundData.bestPhotoIndex = 0;
-                    await db.collection("rounds").add(roundData);
-                    showToast('🎉 ラウンドを新規保存しました！');
-                }
-                closeRecordModal();
-            } catch (err) {
-                await showAppAlert('エラー', '保存に失敗しました: ' + err.message);
-            }
-        }
-
-        // -------------------------------------------------------------
-        // 詳細モーダル & 削除
-        // -------------------------------------------------------------
-        function showDetail(roundId) {
-            const r = rounds.find(item => item.id === roundId);
-            if (!r) return;
-
-            const isMyPost = (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
-            const photoUrl = (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos[0]) || '';
-
-            const detailContent = document.getElementById('detailContent');
-            detailContent.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                    <h3 style="color:var(--primary); font-size:16px;">⛳ ${r.courseName}</h3>
-                    <button onclick="document.getElementById('detailModal').style.display='none'" style="background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>
-                </div>
-                <div style="font-size:12px; color:var(--text-sub); margin-bottom:12px;">📅 プレー日: ${r.playDate} ｜ 投稿者: ${r.authorName}</div>
-                ${photoUrl ? `<img src="${photoUrl}" style="width:100%; border-radius:8px; margin-bottom:14px;">` : ''}
-                
-                <table style="width:100%; border-collapse:collapse; font-size:13px; margin-bottom:14px;">
-                    <thead>
-                        <tr style="background:var(--card-sub-bg); border-bottom:1px solid var(--border); text-align:left;">
-                            <th style="padding:8px;">プレイヤー</th>
-                            <th style="padding:8px; text-align:center;">OUT</th>
-                            <th style="padding:8px; text-align:center;">IN</th>
-                            <th style="padding:8px; text-align:center;">TOTAL</th>
-                            <th style="padding:8px; text-align:center;">PT</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${(r.players || []).map(p => `
-                            <tr style="border-bottom:1px dashed var(--border);">
-                                <td style="padding:8px; font-weight:700;">${p.cart_name}</td>
-                                <td style="padding:8px; text-align:center;">${p.out_score || '-'}</td>
-                                <td style="padding:8px; text-align:center;">${p.in_score || '-'}</td>
-                                <td style="padding:8px; text-align:center; font-weight:700; color:var(--primary);">${p.total_score || '-'}</td>
-                                <td style="padding:8px; text-align:center;">${p.putts || '-'}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-
-                ${r.memo ? `<p style="font-size:13px; color:var(--text-sub); line-height:1.5; background:var(--card-sub-bg); padding:10px; border-radius:6px; margin-bottom:14px;">${r.memo}</p>` : ''}
-
-                <div style="display:flex; gap:8px;">
-                    ${isMyPost ? `
-                        <button class="btn-sub" style="flex:1;" onclick="document.getElementById('detailModal').style.display='none'; openEditRegistration('${r.id}')">✏️ 編集</button>
-                        <button class="btn-sub" style="flex:1; color:var(--danger);" onclick="deleteRound('${r.id}')">🗑️ 削除</button>
-                    ` : ''}
-                    <button class="btn-main" style="flex:1;" onclick="document.getElementById('detailModal').style.display='none'">閉じる</button>
-                </div>
-            `;
-            document.getElementById('detailModal').style.display = 'block';
-        }
-
-        async function deleteRound(roundId) {
-            if (confirm('このラウンド記録を削除してもよろしいですか？')) {
-                try {
-                    await db.collection("rounds").doc(roundId).delete();
-                    showToast('🗑️ ラウンド記録を削除しました');
-                    document.getElementById('detailModal').style.display = 'none';
-                } catch (e) {
-                    await showAppAlert('エラー', '削除に失敗しました: ' + e.message);
-                }
-            }
-        }
-
-        // -------------------------------------------------------------
-        // ギャラリー
-        // -------------------------------------------------------------
-        function renderGallery() {
-            const grid = document.getElementById('gallery-grid');
-            if (!grid) return;
-            const photoRounds = rounds.filter(r => !r.isAwardPost && r.photos && r.photos.length > 0);
-            grid.innerHTML = photoRounds.map(r => `
-                <img src="${(r.photos && r.photos[r.bestPhotoIndex]) || r.photos[0]}" style="width:100%; height:120px; object-fit:cover; cursor:pointer;" onclick="showDetail('${r.id}')">
-            `).join('') || '<p style="grid-column:span 3; text-align:center; padding:30px; color:var(--text-sub);">写真がありません</p>';
-        }
-
-        // -------------------------------------------------------------
-        // 振り返り (Memory) - 自分の実績のみを抽出
-        // -------------------------------------------------------------
-        function switchSummaryTab(tab) {
-            currentSummaryTab = tab;
-            document.getElementById('btn-sum-members').style.fontWeight = (tab === 'members' ? '700' : '400');
-            document.getElementById('btn-sum-courses').style.fontWeight = (tab === 'courses' ? '700' : '400');
-            renderSummary(tab);
+        function switchSummaryTab(type) {
+            document.getElementById('btn-toggle-members').classList.toggle('active', type === 'members');
+            document.getElementById('btn-toggle-courses').classList.toggle('active', type === 'courses');
+            renderSummary(type);
         }
 
         function toggleDrilldown(id) {
             const el = document.getElementById(id);
-            if (el) el.classList.toggle('open');
+            if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
         }
 
         function renderSummary(type) {
             const container = document.getElementById('summary-content');
-            if (!container) return;
-
-            const myName = (myProfile.name || '長原 健太').trim();
+            const myName = myProfile.name ? myProfile.name.trim() : '長原 健太';
             const myNameNoSpace = myName.replace(/\s+/g, '');
 
             // 自分が参加しているラウンドのみを抽出
@@ -1086,6 +2749,7 @@
                             courseName: r.courseName || '未設定コース',
                             playDate: r.playDate || '',
                             score: p.total_score || '-',
+                            isPrivate: (r.visibility === 'private'),
                             photo: (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
                         });
                     });
@@ -1097,36 +2761,37 @@
                     const best = data.scores.length ? Math.min(...data.scores) : '-';
 
                     const historyList = data.rounds.map(rd => `
-                        <div class="drilldown-item" onclick="showDetail('${rd.roundId}')">
+                        <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
                             <img src="${rd.photo}" class="drilldown-thumb">
                             <div style="flex:1;">
-                                <div style="font-weight:700; color:var(--primary); font-size:12px;">${rd.courseName}</div>
-                                <div style="color:var(--text-sub); font-size:10px;">📅 ${rd.playDate}</div>
+                                <div style="font-weight:700; color:var(--primary);">${rd.courseName} ${rd.isPrivate ? '<span style="font-size:10px; color:var(--text-sub);">🔒非公開</span>' : ''}</div>
+                                <div style="color:var(--text-sub); font-size:11px;">📅 ${rd.playDate}</div>
                             </div>
-                            <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:14px;">${rd.score}</div>
+                            <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:15px;">${rd.score}</div>
                         </div>
                     `).join('');
 
                     return `
-                        <div class="card" style="padding:14px; margin-bottom:10px;">
+                        <div class="card" style="padding:16px; margin-bottom:12px;">
                             <div onclick="toggleDrilldown('drilldown-member-${idx}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
                                 <div>
-                                    <div style="font-size:15px; font-weight:700; color:var(--primary);">👤 ${name}</div>
-                                    <div style="font-size:11px; color:var(--text-sub); margin-top:3px;">
+                                    <div style="font-size:16px; font-weight:700; color:var(--primary);">👤 ${name}</div>
+                                    <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">
                                         ラウンド: <strong>${data.count}回</strong> ｜ ベスト: <strong>${best}</strong> ｜ 平均: <strong>${avg}</strong>
                                     </div>
                                 </div>
-                                <span style="font-size:11px; color:var(--gold); font-weight:700;">▼ 履歴</span>
+                                <span style="font-size:12px; color:var(--gold); font-weight:700;">▼ 履歴</span>
                             </div>
+                            
                             <div class="drilldown-container" id="drilldown-member-${idx}">
+                                <div style="font-size:11px; font-weight:700; color:var(--text-sub); margin-bottom:6px;">過去のラウンド対戦履歴（タップで詳細）:</div>
                                 ${historyList}
                             </div>
                         </div>
                     `;
                 }).join('') || '<p style="color:var(--text-sub); text-align:center; padding:20px;">データがありません</p>';
-
             } else {
-                // コース別
+                // ゴルフ場別
                 const courseMap = {};
                 accessibleRounds.forEach(r => {
                     const courseName = (r.courseName || '未設定コース').trim();
@@ -1141,6 +2806,7 @@
                     }) || (r.players && r.players[0] ? r.players[0] : null);
 
                     const myScore = (myPlayerObj && myPlayerObj.total_score) ? myPlayerObj.total_score : null;
+
                     if (myScore) {
                         courseMap[courseName].bestScore = Math.min(courseMap[courseName].bestScore, myScore);
                     }
@@ -1149,6 +2815,8 @@
                         roundId: r.id,
                         playDate: r.playDate || '',
                         score: myScore || '-',
+                        isPrivate: (r.visibility === 'private'),
+                        playersCount: (r.players || []).length,
                         photo: (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
                     });
                 });
@@ -1158,27 +2826,30 @@
                     const best = data.bestScore === 999 ? '-' : data.bestScore;
 
                     const historyList = data.rounds.map(rd => `
-                        <div class="drilldown-item" onclick="showDetail('${rd.roundId}')">
+                        <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
                             <img src="${rd.photo}" class="drilldown-thumb">
                             <div style="flex:1;">
-                                <div style="font-weight:700; color:var(--primary); font-size:12px;">📅 ${rd.playDate}</div>
+                                <div style="font-weight:700; color:var(--primary);">📅 ${rd.playDate} ${rd.isPrivate ? '<span style="font-size:10px; color:var(--text-sub);">🔒非公開</span>' : ''}</div>
+                                <div style="color:var(--text-sub); font-size:11px;">同伴者数: ${rd.playersCount}名</div>
                             </div>
-                            <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:14px;">スコア: ${rd.score}</div>
+                            <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:15px;">スコア: ${rd.score}</div>
                         </div>
                     `).join('');
 
                     return `
-                        <div class="card" style="padding:14px; margin-bottom:10px;">
+                        <div class="card" style="padding:16px; margin-bottom:12px;">
                             <div onclick="toggleDrilldown('drilldown-course-${idx}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
                                 <div>
-                                    <div style="font-size:15px; font-weight:700; color:var(--primary);">⛳ ${course}</div>
-                                    <div style="font-size:11px; color:var(--text-sub); margin-top:3px;">
-                                        訪問: <strong>${data.count}回</strong> ｜ ベスト: <strong>${best}</strong>
+                                    <div style="font-size:16px; font-weight:700; color:var(--primary);">⛳ ${course}</div>
+                                    <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">
+                                        訪問回数: <strong>${data.count}回</strong> ｜ ベストスコア: <strong>${best}</strong>
                                     </div>
                                 </div>
-                                <span style="font-size:11px; color:var(--gold); font-weight:700;">▼ 履歴</span>
+                                <span style="font-size:12px; color:var(--gold); font-weight:700;">▼ 履歴</span>
                             </div>
+
                             <div class="drilldown-container" id="drilldown-course-${idx}">
+                                <div style="font-size:11px; font-weight:700; color:var(--text-sub); margin-bottom:6px;">このコースでの過去ラウンド（タップで詳細）:</div>
                                 ${historyList}
                             </div>
                         </div>
@@ -1187,117 +2858,261 @@
             }
         }
 
-        // -------------------------------------------------------------
-        // 分析 (Analytics)
-        // -------------------------------------------------------------
         function renderAnalytics() {
-            const container = document.getElementById('analytics-content');
-            if (!container) return;
+            const accessibleRounds = getMyAccessibleRounds();
+            const myName = myProfile.name;
+            const myNameNoSpace = myName.replace(/\s+/g, '');
 
-            const myNameNoSpace = (myProfile.name || '長原 健太').trim().replace(/\s+/g, '');
-            const myScores = [];
-            const myPutts = [];
+            const myRoundRecords = [];
+            const yearlyMap = {};
+            const courseMap = {};
+            const h2hMap = {};
 
-            rounds.forEach(r => {
-                if (r.isAwardPost) return;
-                const p = (r.players || []).find(pl => {
-                    const pName = (pl.cart_name || '').trim().replace(/\s+/g, '');
-                    return pName === myNameNoSpace || pName.includes(myNameNoSpace);
+            accessibleRounds.forEach(r => {
+                const myPlayer = (r.players || []).find(p => {
+                    const pName = (p.cart_name || '').trim().replace(/\s+/g, '');
+                    return pName === myNameNoSpace || pName.includes(myNameNoSpace) || (r.authorName === myName && p === r.players[0]);
                 });
-                if (p && p.total_score) {
-                    myScores.push(p.total_score);
-                    if (p.putts) myPutts.push(p.putts);
-                }
+                if (!myPlayer || !myPlayer.total_score) return;
+
+                const myScore = myPlayer.total_score;
+                myRoundRecords.push({
+                    roundId: r.id,
+                    date: r.playDate,
+                    year: (r.playDate || '').substring(0, 4) || '不明',
+                    course: r.courseName,
+                    score: myScore
+                });
+
+                const yr = (r.playDate || '').substring(0, 4) || '不明';
+                if (!yearlyMap[yr]) yearlyMap[yr] = [];
+                yearlyMap[yr].push(myScore);
+
+                if (!courseMap[r.courseName]) courseMap[r.courseName] = [];
+                courseMap[r.courseName].push(myScore);
+
+                (r.players || []).forEach(p => {
+                    if (p.cart_name !== myPlayer.cart_name && p.total_score) {
+                        const rivalName = p.cart_name;
+                        if (!h2hMap[rivalName]) {
+                            h2hMap[rivalName] = { rounds: 0, win: 0, lose: 0, draw: 0 };
+                        }
+                        h2hMap[rivalName].rounds += 1;
+                        if (myScore < p.total_score) {
+                            h2hMap[rivalName].win += 1;
+                        } else if (myScore > p.total_score) {
+                            h2hMap[rivalName].lose += 1;
+                        } else {
+                            h2hMap[rivalName].draw += 1;
+                        }
+                    }
+                });
             });
 
-            if (myScores.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:var(--text-sub); padding:20px;">まだあなたのスコアデータがありません</p>';
-                return;
+            const allScores = myRoundRecords.map(r => r.score);
+            const totalRounds = allScores.length;
+            const bestScore = totalRounds ? Math.min(...allScores) : '-';
+            const avgScore = totalRounds ? (allScores.reduce((a, b) => a + b, 0) / totalRounds).toFixed(1) : '-';
+
+            document.getElementById('stat-best-score').innerText = bestScore;
+            document.getElementById('stat-avg-score').innerText = avgScore;
+            document.getElementById('stat-total-rounds').innerText = totalRounds ? `${totalRounds}回` : '-';
+
+            const yearlyContainer = document.getElementById('analytics-yearly-container');
+            const years = Object.keys(yearlyMap).sort().reverse();
+            if (years.length === 0) {
+                yearlyContainer.innerHTML = '<p style="font-size:12px; color:var(--text-sub);">データがありません</p>';
+            } else {
+                let yearlyRows = years.map(yr => {
+                    const scs = yearlyMap[yr];
+                    const yBest = Math.min(...scs);
+                    const yAvg = (scs.reduce((a,b)=>a+b,0) / scs.length).toFixed(1);
+                    return `
+                        <tr>
+                            <td style="font-weight:700;">${yr}年</td>
+                            <td>${scs.length}回</td>
+                            <td style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif;">${yBest}</td>
+                            <td style="font-family:'Cinzel',serif;">${yAvg}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                yearlyContainer.innerHTML = `
+                    <table class="analytics-table">
+                        <thead>
+                            <tr>
+                                <th>年</th>
+                                <th>ラウンド数</th>
+                                <th>ベスト</th>
+                                <th>平均スコア</th>
+                            </tr>
+                        </thead>
+                        <tbody>${yearlyRows}</tbody>
+                    </table>
+                `;
             }
 
-            const best = Math.min(...myScores);
-            const avg = (myScores.reduce((a,b)=>a+b, 0) / myScores.length).toFixed(1);
-            const avgPutts = myPutts.length ? (myPutts.reduce((a,b)=>a+b, 0) / myPutts.length).toFixed(1) : '-';
+            const coursesContainer = document.getElementById('analytics-courses-container');
+            const courses = Object.keys(courseMap);
+            if (courses.length === 0) {
+                coursesContainer.innerHTML = '<p style="font-size:12px; color:var(--text-sub);">データがありません</p>';
+            } else {
+                let courseRows = courses.map(cName => {
+                    const scs = courseMap[cName];
+                    const cBest = Math.min(...scs);
+                    const cAvg = (scs.reduce((a,b)=>a+b,0) / scs.length).toFixed(1);
+                    return `
+                        <tr>
+                            <td style="font-weight:700; text-align:left; padding-left:8px;">${cName}</td>
+                            <td>${scs.length}回</td>
+                            <td style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif;">${cBest}</td>
+                            <td style="font-family:'Cinzel',serif;">${cAvg}</td>
+                        </tr>
+                    `;
+                }).join('');
 
-            container.innerHTML = `
-                <h3 style="color:var(--primary); font-size:16px; margin-bottom:14px; text-align:center;">📊 あなたのスタッツ概要</h3>
-                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; text-align:center;">
-                    <div style="background:var(--card-sub-bg); padding:12px 6px; border-radius:8px;">
-                        <div style="font-size:10px; color:var(--text-sub);">ラウンド数</div>
-                        <div style="font-size:18px; font-weight:700; color:var(--primary); font-family:'Cinzel',serif;">${myScores.length}</div>
-                    </div>
-                    <div style="background:var(--card-sub-bg); padding:12px 6px; border-radius:8px;">
-                        <div style="font-size:10px; color:var(--text-sub);">ベスト</div>
-                        <div style="font-size:18px; font-weight:700; color:var(--gold); font-family:'Cinzel',serif;">${best}</div>
-                    </div>
-                    <div style="background:var(--card-sub-bg); padding:12px 6px; border-radius:8px;">
-                        <div style="font-size:10px; color:var(--text-sub);">平均スコア</div>
-                        <div style="font-size:18px; font-weight:700; color:var(--primary); font-family:'Cinzel',serif;">${avg}</div>
+                coursesContainer.innerHTML = `
+                    <table class="analytics-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left; padding-left:8px;">コース名</th>
+                                <th>回数</th>
+                                <th>ベスト</th>
+                                <th>平均</th>
+                            </tr>
+                        </thead>
+                        <tbody>${courseRows}</tbody>
+                    </table>
+                `;
+            }
+
+            const h2hContainer = document.getElementById('analytics-h2h-container');
+            const rivals = Object.keys(h2hMap);
+            if (rivals.length === 0) {
+                h2hContainer.innerHTML = '<p style="font-size:12px; color:var(--text-sub);">同伴者との対戦データがありません</p>';
+            } else {
+                let h2hRows = rivals.map(rName => {
+                    const h = h2hMap[rName];
+                    const winRate = ((h.win / h.rounds) * 100).toFixed(0);
+                    return `
+                        <tr>
+                            <td style="font-weight:700; text-align:left; padding-left:8px;">${rName}</td>
+                            <td>${h.rounds}戦</td>
+                            <td>
+                                <span class="h2h-badge-win">${h.win}勝</span>
+                                <span class="h2h-badge-lose">${h.lose}敗</span>
+                                ${h.draw ? `<span style="font-size:10px; color:var(--text-sub);">${h.draw}分</span>` : ''}
+                            </td>
+                            <td style="font-weight:700; font-family:'Cinzel',serif;">${winRate}%</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                h2hContainer.innerHTML = `
+                    <table class="analytics-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left; padding-left:8px;">ゴルフ仲間</th>
+                                <th>同伴回数</th>
+                                <th>勝敗</th>
+                                <th>勝率</th>
+                            </tr>
+                        </thead>
+                        <tbody>${h2hRows}</tbody>
+                    </table>
+                `;
+            }
+        }
+
+        function showDetail(roundId, fromScreen = 'home') {
+            const r = rounds.find(item => item.id === roundId);
+            if (!r || r.isAwardPost) return;
+
+            const cover = (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600');
+            const detail = document.getElementById('detail-content');
+            const backBtn = document.getElementById('detailBackBtn');
+
+            if (fromScreen === 'gallery') {
+                backBtn.setAttribute('onclick', "showScreen('screen-gallery')");
+                backBtn.innerHTML = '← ギャラリーに戻る';
+            } else if (fromScreen === 'summary') {
+                backBtn.setAttribute('onclick', "showScreen('screen-summary')");
+                backBtn.innerHTML = '← 振り返りに戻る';
+            } else {
+                backBtn.setAttribute('onclick', "showScreen('screen-home')");
+                backBtn.innerHTML = '← タイムラインに戻る';
+            }
+            
+            const isMyPost = (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
+            const editBtnHtml = isMyPost ? `<button class="btn-edit" onclick="openEditRegistration('${r.id}')">✏️ このラウンドを編集する</button>` : '';
+
+            let scoreRows = (r.players || []).map((p, pIdx) => `
+                <tr>
+                    <td style="font-weight:700;">${p.cart_name}</td>
+                    <td style="font-family:'Cinzel',serif;">${p.out_total}</td>
+                    <td style="font-family:'Cinzel',serif;">${p.in_total}</td>
+                    <td style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:16px;">${p.total_score}</td>
+                </tr>
+                <tr class="detail-row" id="detail-out-${pIdx}">
+                    <td colspan="4" style="background:var(--primary-light); padding:8px;">
+                        <strong>OUT (1-9H):</strong> ${p.out_scores ? p.out_scores.join(' | ') : '-'}
+                    </td>
+                </tr>
+                <tr class="detail-row" id="detail-in-${pIdx}">
+                    <td colspan="4" style="background:var(--primary-light); padding:8px;">
+                        <strong>IN (10-18H):</strong> ${p.in_scores ? p.in_scores.join(' | ') : '-'}
+                    </td>
+                </tr>
+            `).join('');
+
+            let galleryHtml = (r.photos || []).map(p => `<img src="${p}" style="width:100%; height:100px; object-fit:cover; border-radius:8px; border:1px solid var(--border);">`).join('');
+
+            detail.innerHTML = `
+                <div class="card">
+                    <img src="${cover}" class="card-img" style="height:260px; width:100%; object-fit:cover;">
+                    <div class="card-body">
+                        ${editBtnHtml}
+
+                        <h2 style="color:var(--primary); font-size:22px; margin-bottom:4px;">${r.courseName} ${r.visibility === 'private' ? '<span style="font-size:12px; color:var(--text-sub);">🔒 非公開</span>' : ''}</h2>
+                        <p style="color:var(--text-sub); font-size:13px; margin-bottom:16px;">プレー日: ${r.playDate}</p>
+                        
+                        <h4 style="margin-top:18px; border-left:4px solid var(--gold); padding-left:10px; color:var(--primary);">📊 スコア一覧</h4>
+                        <div style="margin: 8px 0;">
+                            <button class="accordion-btn" onclick="toggleScoreDetail('out')">OUT各ホール打数 展開/収納</button>
+                            <button class="accordion-btn" onclick="toggleScoreDetail('in')">IN各ホール打数 展開/収納</button>
+                        </div>
+                        <table class="score-table">
+                            <thead>
+                                <tr>
+                                    <th>プレイヤー</th>
+                                    <th>OUT</th>
+                                    <th>IN</th>
+                                    <th>TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${scoreRows}
+                            </tbody>
+                        </table>
+
+                        <h4 style="margin:22px 0 10px; border-left:4px solid var(--gold); padding-left:10px; color:var(--primary);">📷 想い出ギャラリー (${(r.photos || []).length}枚)</h4>
+                        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
+                            ${galleryHtml || '<p style="font-size:12px; color:var(--text-sub);">写真はありません</p>'}
+                        </div>
                     </div>
                 </div>
             `;
+            showScreen('screen-detail');
         }
 
-        // -------------------------------------------------------------
-        // 設定 & 月間AIアワード
-        // -------------------------------------------------------------
-        function openSettingsModal() {
-            const m = new Date();
-            const yyyy = m.getFullYear();
-            const mm = String(m.getMonth() + 1).padStart(2, '0');
-            document.getElementById('awardTargetMonth').value = `${yyyy}-${mm}`;
-            document.getElementById('settingsModal').style.display = 'flex';
+        function toggleScoreDetail(type) {
+            document.querySelectorAll(`[id^="detail-${type}-"]`).forEach(el => {
+                el.classList.toggle('open');
+            });
         }
 
-        function closeSettingsModal() {
-            document.getElementById('settingsModal').style.display = 'none';
-        }
-
-        function toggleTheme() {
-            document.body.classList.toggle('theme-dark');
-            const isDark = document.body.classList.contains('theme-dark');
-            localStorage.setItem('golf_theme_dark', isDark ? '1' : '0');
-        }
-
-        async function triggerManualAward() {
-            const targetMonth = document.getElementById('awardTargetMonth').value;
-            if (!targetMonth) return;
-
-            showToast('🤖 AI審査員が選考中...');
-            closeSettingsModal();
-
-            const monthRounds = rounds.filter(r => !r.isAwardPost && r.playDate && r.playDate.startsWith(targetMonth));
-
-            let awardText = `【${targetMonth} 月間公式Golstagramアワード】\n今月は計 ${monthRounds.length} ラウンドの熱戦が繰り広げられました！\n\n`;
-            awardText += `🎖️ 最優秀ベストスコア賞: 素晴らしい集中力と安定したプレーを称えます！\n`;
-            awardText += `💬 AI審査員講評: 各自の成長とゴルフ愛が光る見事な1ヶ月でした。来月もGood Golfを！`;
-
-            const awardPost = {
-                isAwardPost: true,
-                title: `${targetMonth} 月間Golstagramアワード`,
-                playDate: `${targetMonth}-28`,
-                memo: awardText,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            try {
-                await db.collection("rounds").add(awardPost);
-                showToast('🏆 アワードをタイムラインに発表しました！');
-            } catch (e) {
-                await showAppAlert('エラー', 'アワード投稿に失敗しました: ' + e.message);
-            }
-        }
-
-        // -------------------------------------------------------------
-        // アプリ起動時初期化
-        // -------------------------------------------------------------
-        window.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('golf_theme_dark') === '1') {
-                document.body.classList.add('theme-dark');
-            }
-            initFirestoreListener();
-            checkUserAuth();
-        });
+        // 起動時に認証チェックを実行
+        checkUserAuth();
     </script>
 </body>
 </html>
