@@ -3068,6 +3068,33 @@
         // ★ここに以下の1行を追加します★
         checkUserAuth();
     </script>
+    
+<!-- 🔑 初回ログイン・登録モーダル -->
+<div id="authModal" class="app-modal-overlay">
+    <div class="app-modal-box" style="text-align: left;">
+        <h3 style="color:var(--primary); font-size:18px; margin-bottom:4px; text-align:center;">
+            ⛳ <span class="font-golsta">Golstagram</span> へようこそ
+        </h3>
+        <p style="font-size:12px; color:var(--text-sub); margin-bottom:16px; text-align:center;">
+            専用IDを設定すると、PCや別端末でも同じデータを利用できます。
+        </p>
+
+        <div class="form-group">
+            <label class="form-label">ユーザーID（半角英数字・変更不可）</label>
+            <input type="text" id="authUserIdInput" class="form-control" placeholder="例: kenta1971" style="text-transform: lowercase;">
+        </div>
+
+        <div class="form-group" id="authNameGroup">
+            <label class="form-label">お名前・ニックネーム（表示名）</label>
+            <input type="text" id="authUserNameInput" class="form-control" placeholder="例: 長原 健太">
+        </div>
+
+        <button class="btn-main" onclick="handleAuthSubmit()">Golstagram を始める</button>
+    </div>
+</div>
+
+
+    
 </body>
     </script>
     
