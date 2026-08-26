@@ -1075,16 +1075,33 @@
         let activeCommentRoundId = null;
 
         // 🔑 ユーザー認証チェック（初回のみモーダル表示）
-    function checkUserAuth() {
-        const savedProfile = localStorage.getItem('golf_my_profile');
-        if (!savedProfile) {
-        document.getElementById('authModal').classList.add('active');
-        } else {
-            myProfile = JSON.parse(savedProfile);
-            const idInput = document.getElementById('myProfileId');
-            if (idInput) idInput.value = myProfile.id || '';
+  function checkUserAuth() {
+    const savedProfileStr = localStorage.getItem('golf_my_profile');
+    let needsAuth = false;
+
+    if (!savedProfileStr) {
+        needsAuth = true;
+    } else {
+        myProfile = JSON.parse(savedProfileStr);
+        if (!myProfile.id) {
+            needsAuth = true;
+            const nameInput = document.getElementById('authUserNameInput');
+            if (nameInput && myProfile.name) nameInput.value = myProfile.name;
         }
     }
+
+    const modal = document.getElementById('authModal');
+    if (needsAuth && modal) {
+        modal.classList.add('active');
+    } else {
+        const idInput = document.getElementById('myProfileId');
+        if (idInput) idInput.value = myProfile.id || '';
+        const nameInput = document.getElementById('myProfileName');
+        if (nameInput) nameInput.value = myProfile.name || '';
+        const avatarImg = document.getElementById('myAvatarImg');
+        if (avatarImg && myProfile.avatar) avatarImg.src = myProfile.avatar;
+    }
+}
 
     // 🔑 ログイン・新規登録処理
     async function handleAuthSubmit() {
