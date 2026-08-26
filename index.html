@@ -13,7 +13,7 @@
     <link rel="icon" type="image/png" sizes="192x192" href="./icon.png">
     <link rel="icon" type="image/png" sizes="512x512" href="./icon.png">
     
-    <title>Golstagram - ゴルフ想い出＆スコア共有 (Award Test)</title>
+    <title>Golstagram - ゴルフ想い出＆スコア共有</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@500;700&family=Comfortaa:wght@700&family=Noto+Sans+JP:wght@400;500;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -101,6 +101,7 @@
             background-color: var(--bg);
             color: var(--text-main);
             font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+            padding-top: calc(56px + env(safe-area-inset-top));
             padding-bottom: calc(90px + env(safe-area-inset-bottom));
             letter-spacing: 0.02em;
             transition: background-color 0.25s ease, color 0.25s ease;
@@ -115,9 +116,12 @@
             padding-bottom: 12px;
             padding-left: max(16px, env(safe-area-inset-left));
             padding-right: max(16px, env(safe-area-inset-right));
-            position: sticky;
+            position: fixed;
             top: 0;
-            z-index: 100;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 1000;
             box-shadow: 0 2px 12px rgba(0,0,0,0.25);
             display: flex;
             align-items: center;
@@ -202,7 +206,7 @@
         .tab-btn.active svg { fill: var(--primary); filter: drop-shadow(0 2px 4px rgba(35, 56, 43, 0.25)); transform: translateY(-1px); }
         .tab-btn svg { width: 24px; height: 24px; fill: var(--text-sub); transition: 0.2s; }
 
-        .container { max-width: 600px; margin: 0 auto; padding: 18px 16px; width: 100%; }
+        .container { max-width: 600px; margin: 0 auto; padding: 16px; width: 100%; }
         .screen { display: none; }
         .screen.active { display: block; animation: fadeIn 0.25s ease-out; }
 
@@ -416,7 +420,6 @@
             transform: translateY(100%);
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .comment-sheet-overlay.active .comment-sheet { transform: translateY(0); }
         .comment-sheet-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--card);
@@ -647,7 +650,7 @@
 
         .app-modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(4px);
             display: flex; align-items: center; justify-content: center;
             z-index: 1100; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; padding: 20px;
         }
@@ -732,9 +735,8 @@
                         <select id="quickCourseSelect" class="form-control" style="font-size:12px; padding:6px 10px; color:var(--text-sub); border:1px dashed var(--gold-border);" onchange="applyQuickCourseName(this)">
                             <option value="">▼ 過去のコース履歴から選ぶ</option>
                         </select>
-                </div>
+                    </div>
 
-                    
                     <div class="form-group">
                         <label class="form-label">プレー日</label>
                         <input type="date" id="playDate" class="form-control">
@@ -878,11 +880,18 @@
                         <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp" class="form-control" style="padding: 6px; font-size: 11px;" onchange="updateProfileAvatar(this)">
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <label class="form-label" style="color:var(--text-sub); font-size:12px;">ユーザーID（他端末同期用）</label>
+                    <input type="text" id="myProfileId" class="form-control" style="background:var(--bg); color:var(--text-sub);" readonly>
+                </div>
+
                 <div class="form-group">
                     <label class="form-label">氏名（表示名）</label>
                     <input type="text" id="myProfileName" class="form-control" value="長原 健太">
                 </div>
                 <button class="btn-main" onclick="saveMyProfile()">プロフィールを更新保存</button>
+                <button type="button" class="btn-sub" style="width:100%; margin-top:10px; background:none; border:1px dashed var(--gold-border);" onclick="openSwitchAccountModal()">🔑 別IDでログイン / アカウント切替</button>
             </div>
 
             <div class="card" style="padding: 18px;">
@@ -949,13 +958,13 @@
                 <button onclick="closeSettingsModal()" style="background:none; border:none; font-size:18px; color:var(--text-sub); cursor:pointer;">✕</button>
             </div>
 
-            <!-- 🌟 管理者テスト用: 月間AI映えアワード手動実行セクション -->
+            <!-- 🌟 管理者テスト用: 月間ゴルスタ映えアワード手動実行セクション -->
             <div style="background: var(--gold-light); border: 2px solid var(--gold-border); border-radius: 10px; padding: 12px; margin-bottom: 16px;">
                 <h4 style="color: var(--primary); font-size: 13px; font-weight: 700; margin-bottom: 4px; display:flex; align-items:center; gap:4px;">
-                    🏆 月間AI映えアワード審査 (テスト実行)
+                    🏆 月間ゴルスタ映えアワード審査 (テスト実行)
                 </h4>
                 <p style="font-size: 11px; color: var(--text-sub); margin-bottom: 10px;">
-                    対象月のカバー写真を集計し、芝山キシン・泉ピンそば・ドンマイ小西が審査・講評を行います。
+                    AI審査員の芝山キシン・泉ピンそば・ドンマイ小西がカバー写真から月間アワードを選出します！
                 </p>
                 <div style="display:flex; gap:8px; align-items:center;">
                     <input type="month" id="awardTargetMonth" class="form-control" style="padding:6px 10px; font-size:13px; flex:1;">
@@ -997,7 +1006,7 @@
                 <div class="manual-step-title">2. タイムラインで仲間と楽しむ</div>
                 <p>・<strong>横スワイプ</strong>: 複数写真は指で左右にスライドしてインスタ感覚で閲覧。<br>
                 ・<strong>リアクション</strong>: 「❤️ いいね！」や「💬 コメント」でチャット。<br>
-                ・<strong>月間AI映えアワード</strong>: 3人の個性的なAI審査員が毎月の映え写真を絶賛＆愛ある毒舌ツッコミ！</p>
+                ・<strong>月間ゴルスタ映えアワード</strong>: 3人の個性的なAI審査員が毎月の映え写真を絶賛＆愛ある毒舌ツッコミ！</p>
 
                 <div class="manual-step-title">3. 振り返り ＆ スタッツ分析</div>
                 <p>・<strong>Golsta Memory</strong>: 仲間別・ゴルフ場別の過去履歴をドリルダウン。<br>
@@ -1010,6 +1019,30 @@
             </div>
 
             <button class="btn-main" style="margin-top: 14px;" onclick="closeSettingsModal()">閉じる</button>
+        </div>
+    </div>
+
+    <!-- 🔑 初回ログイン・登録モーダル -->
+    <div id="authModal" class="app-modal-overlay">
+        <div class="app-modal-box" style="text-align: left;">
+            <h3 style="color:var(--primary); font-size:18px; margin-bottom:6px; text-align:center;">
+                ⛳ <span class="font-golsta">Golstagram</span> へようこそ
+            </h3>
+            <p style="font-size:12px; color:var(--text-sub); margin-bottom:16px; text-align:center; line-height:1.4;">
+                ユーザーIDを設定すると、PCや別端末でも同じデータを引き継いで利用できます。
+            </p>
+
+            <div class="form-group" style="margin-bottom:12px;">
+                <label class="form-label" style="font-size:12px;">ユーザーID（半角英数字・変更不可）</label>
+                <input type="text" id="authUserIdInput" class="form-control" placeholder="例: kenta1971" style="text-transform: lowercase;">
+            </div>
+
+            <div class="form-group" style="margin-bottom:18px;">
+                <label class="form-label" style="font-size:12px;">お名前・ニックネーム（表示名）</label>
+                <input type="text" id="authUserNameInput" class="form-control" placeholder="例: 長原 健太">
+            </div>
+
+            <button class="btn-main" onclick="handleAuthSubmit()">Golstagram を始める</button>
         </div>
     </div>
 
@@ -1048,10 +1081,11 @@
         let rounds = [];
         let globalUsersMap = {};
 
-        let myProfile = JSON.parse(localStorage.getItem('golf_my_profile') || JSON.stringify({
+        let myProfile = {
+            id: '',
             name: '長原 健太',
             avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
-        }));
+        };
 
         let members = JSON.parse(localStorage.getItem('golf_members') || '[]');
 
@@ -1072,7 +1106,6 @@
             const savedTheme = localStorage.getItem('golf_app_theme') || 'sepia';
             changeAppTheme(savedTheme, false);
             
-            // アワード年月初期値（今月）
             const now = new Date();
             const ymStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
             const awardMonthInput = document.getElementById('awardTargetMonth');
@@ -1103,6 +1136,93 @@
         }
 
         initAppTheme();
+
+        // -------------------------------------------------------------
+        // 🔑 ユーザー認証チェック & ログイン処理
+        // -------------------------------------------------------------
+        function checkUserAuth() {
+            const savedProfileStr = localStorage.getItem('golf_my_profile');
+            let needsAuth = false;
+
+            if (!savedProfileStr) {
+                needsAuth = true;
+            } else {
+                try {
+                    myProfile = JSON.parse(savedProfileStr);
+                    if (!myProfile.id) {
+                        needsAuth = true;
+                        const nameInput = document.getElementById('authUserNameInput');
+                        if (nameInput && myProfile.name) nameInput.value = myProfile.name;
+                    }
+                } catch (e) {
+                    needsAuth = true;
+                }
+            }
+
+            const modal = document.getElementById('authModal');
+            if (needsAuth && modal) {
+                modal.classList.add('active');
+            } else if (modal) {
+                modal.classList.remove('active');
+                initProfileScreen();
+            }
+        }
+
+        function openSwitchAccountModal() {
+            const modal = document.getElementById('authModal');
+            if (modal) {
+                document.getElementById('authUserIdInput').value = myProfile.id || '';
+                document.getElementById('authUserNameInput').value = myProfile.name || '';
+                modal.classList.add('active');
+            }
+        }
+
+        async function handleAuthSubmit() {
+            const rawId = document.getElementById('authUserIdInput').value.trim().toLowerCase();
+            const rawName = document.getElementById('authUserNameInput').value.trim();
+
+            if (!rawId) {
+                await showAppAlert('入力確認', 'ユーザーIDを半角英数字で入力してください。');
+                return;
+            }
+
+            try {
+                const userDoc = await db.collection("users").doc(rawId).get();
+
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    myProfile = {
+                        id: rawId,
+                        name: userData.name || rawName || '長原 健太',
+                        avatar: userData.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
+                    };
+                    const avatarEl = document.getElementById('myAvatarImg');
+                    if (avatarEl) avatarEl.src = myProfile.avatar;
+                    showToast(`🎉 「${myProfile.name}」としてログインしました！`);
+                } else {
+                    const name = rawName || '長原 健太';
+                    myProfile = {
+                        id: rawId,
+                        name: name,
+                        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
+                    };
+                    await db.collection("users").doc(rawId).set({
+                        id: rawId,
+                        name: name,
+                        avatar: myProfile.avatar,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    showToast(`🎉 プロフィールを新規登録しました！`);
+                }
+
+                localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
+                document.getElementById('authModal').classList.remove('active');
+                initProfileScreen();
+                renderTimeline();
+            } catch (err) {
+                await showAppAlert('エラー', 'ログイン処理に失敗しました: ' + err.message);
+            }
+        }
 
         function handleCarouselScroll(trackEl, roundIdx) {
             const scrollLeft = trackEl.scrollLeft;
@@ -1146,7 +1266,7 @@
             const booby = awards.find(a => a.award_type === 'booby_prize');
             const appUrl = window.location.origin + window.location.pathname;
 
-            let text = `👑【Golstagram 月間AI映えアワード発表！】\n📅 対象月: ${r.awardData.targetMonth}\n\n`;
+            let text = `👑【Golstagram 月間ゴルスタ映えアワード発表！】\n📅 対象月: ${r.awardData.targetMonth}\n\n`;
             if (grand) {
                 text += `🏆 最優秀賞: 「${grand.award_name}」\n受賞者: ${grand.target_user_name}さん\n審査員: ${grand.judge}\n\n`;
             }
@@ -1207,12 +1327,6 @@
 
         function renderSheetComments(targetRound) {
             const listEl = document.getElementById('sheetCommentList');
-            const myName = myProfile.name;
-            // 自分が参加（プレイヤーとして登録）しているラウンドのみを対象にする
-            const accessibleRounds = rounds.filter(r => {
-                if (r.isAwardPost) return false;
-                return (r.players || []).some(p => p.cart_name === myName);
-            });
             const comments = targetRound.comments || [];
 
             if (comments.length === 0) {
@@ -1381,6 +1495,9 @@
             });
         }
 
+        // -------------------------------------------------------------
+        // リアルタイム同期（ユーザー情報 ＆ アイコン自動同期）
+        // -------------------------------------------------------------
         db.collection("users").onSnapshot((snapshot) => {
             globalUsersMap = {};
             snapshot.forEach((doc) => {
@@ -1388,11 +1505,23 @@
                 if (d.name && d.avatar) {
                     globalUsersMap[d.name] = d.avatar;
                 }
+                // 自分のデータかつ有効な画像がある場合のみ同期
+                if (myProfile && (doc.id === myProfile.id || d.name === myProfile.name)) {
+                    if (d.avatar && d.avatar.startsWith('data:image')) {
+                        myProfile.avatar = d.avatar;
+                        localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
+                        const avatarEl = document.getElementById('myAvatarImg');
+                        if (avatarEl) avatarEl.src = d.avatar;
+                    }
+                }
             });
             renderMemberList();
             renderTimeline();
         });
 
+        // -------------------------------------------------------------
+        // リアルタイム同期（ラウンド履歴）
+        // -------------------------------------------------------------
         db.collection("rounds").onSnapshot((snapshot) => {
             rounds = [];
             snapshot.forEach((doc) => {
@@ -1401,9 +1530,7 @@
             rounds.sort((a, b) => {
                 const dateA = a.playDate || '';
                 const dateB = b.playDate || '';
-                if (dateA !== dateB) {
-                    return dateB.localeCompare(dateA);
-                }
+                if (dateA !== dateB) return dateB.localeCompare(dateA);
                 const timeA = a.createdAt?.seconds || 0;
                 const timeB = b.createdAt?.seconds || 0;
                 return timeB - timeA;
@@ -1411,6 +1538,7 @@
             renderTimeline();
             renderAllGallery();
             renderAnalytics();
+            updateCourseDatalist();
 
             if (activeCommentRoundId) {
                 const updated = rounds.find(r => r.id === activeCommentRoundId);
@@ -1477,7 +1605,8 @@
             const r = rounds.find(item => item.id === roundId);
             if (!r) return;
 
-            if (r.authorName && r.authorName !== myProfile.name) {
+            const isAuthor = (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
+            if (!isAuthor) {
                 await showAppAlert('閲覧専用', '他のユーザーが登録したラウンドは編集できません。');
                 return;
             }
@@ -1574,8 +1703,7 @@
         function updateCourseDatalist() {
             const selectEl = document.getElementById('quickCourseSelect');
             if (!selectEl) return;
-    
-            // 過去のラウンドから重複を除いたコース一覧を抽出（新しい順・あいうえお順）
+            
             const pastCourses = rounds
                 .filter(r => !r.isAwardPost && r.courseName)
                 .map(r => r.courseName.trim());
@@ -1586,17 +1714,21 @@
                 optionsHtml += `<option value="${c}">${c}</option>`;
             });
             selectEl.innerHTML = optionsHtml;
-    }
+        }
 
         function applyQuickCourseName(selectEl) {
             if (!selectEl.value) return;
             document.getElementById('courseName').value = selectEl.value;
-            selectEl.value = ''; // 選択後は先頭に戻す
-    }
+            selectEl.value = '';
+        }
 
         function initProfileScreen() {
-            document.getElementById('myProfileName').value = myProfile.name;
-            document.getElementById('myAvatarImg').src = myProfile.avatar;
+            const idInput = document.getElementById('myProfileId');
+            if (idInput) idInput.value = myProfile.id || '';
+            const nameInput = document.getElementById('myProfileName');
+            if (nameInput) nameInput.value = myProfile.name || '長原 健太';
+            const avatarImg = document.getElementById('myAvatarImg');
+            if (avatarImg) avatarImg.src = myProfile.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150';
             renderMemberList();
         }
 
@@ -1635,31 +1767,59 @@
 
         async function updateProfileAvatar(input) {
             if (input.files && input.files[0]) {
+                const file = input.files[0];
                 try {
-                    const compressed = await compressImageFile(input.files[0], 200, 0.8);
+                    const previewUrl = URL.createObjectURL(file);
+                    const avatarImg = document.getElementById('myAvatarImg');
+                    if (avatarImg) avatarImg.src = previewUrl;
+
+                    const compressed = await compressImageFile(file, 200, 0.8);
                     myProfile.avatar = compressed;
-                    document.getElementById('myAvatarImg').src = compressed;
+                    if (avatarImg) avatarImg.src = compressed;
+
+                    showToast('📸 アイコンを選択しました。「更新保存」を押してください');
                 } catch (e) {
-                    await showAppAlert('エラー', e.message);
+                    await showAppAlert('エラー', '画像の読み込みに失敗しました: ' + e.message);
                 }
             }
         }
 
         async function saveMyProfile() {
-            myProfile.name = document.getElementById('myProfileName').value.trim() || '長原 健太';
-            localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
-            
-            try {
-               await db.collection("users").doc(myProfile.name).set({
-                   name: myProfile.name,
-                   avatar: myProfile.avatar,
-                   updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-               });
-            } catch (e) {
-                console.error("プロフィール同期エラー:", e);
+            const nameInput = document.getElementById('myProfileName');
+            const newName = (nameInput ? nameInput.value.trim() : '') || '長原 健太';
+            myProfile.name = newName;
+
+            const fileInput = document.getElementById('avatarFileInput');
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                try {
+                    const compressed = await compressImageFile(fileInput.files[0], 200, 0.8);
+                    myProfile.avatar = compressed;
+                    const avatarImg = document.getElementById('myAvatarImg');
+                    if (avatarImg) avatarImg.src = compressed;
+                } catch (e) {
+                    await showAppAlert('エラー', 'アイコン画像の圧縮に失敗しました: ' + e.message);
+                    return;
+                }
             }
 
-            showToast('👤 プロフィールをクラウドに保存しました！');
+            localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
+            
+            const docId = myProfile.id || 'kenta253';
+            try {
+                await db.collection("users").doc(docId).set({
+                    id: docId,
+                    name: myProfile.name,
+                    avatar: myProfile.avatar,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                showToast('👤 プロフィールを更新保存しました！');
+            } catch (e) {
+                console.error("プロフィール同期エラー:", e);
+                showToast('ローカルに保存しました');
+            }
+
+            if (fileInput) fileInput.value = '';
         }
 
         function renderMemberList() {
@@ -2087,8 +2247,9 @@
 
             const targetRoundId = editingRoundId || ('round_' + Date.now());
             const roundData = {
+                authorId: myProfile.id || 'usr_nagahara',
                 authorName: myProfile.name,
-                authorAvatar: myProfile.avatar,
+                authorAvatar: myProfile.avatar || globalUsersMap[myProfile.name] || '',
                 courseName: courseName,
                 playDate: playDate,
                 visibility: visibilityVal,
@@ -2142,10 +2303,10 @@
         }
 
         function isRoundVisibleInTimeline(r) {
-            if (r.isAwardPost) return true; // アワードは全員公開
+            if (r.isAwardPost) return true;
             if (r.visibility === 'private') return false;
             if (r.visibility === 'members_only') {
-                const isAuthor = (r.authorName === myProfile.name);
+                const isAuthor = (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
                 const isPlayer = (r.players || []).some(p => p.cart_name === myProfile.name);
                 return isAuthor || isPlayer;
             }
@@ -2160,10 +2321,10 @@
             return rounds.filter(r => {
                 if (r.isAwardPost) return false;
                 if (r.visibility === 'private') {
-                    return (r.authorName === myProfile.name);
+                    return (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
                 }
                 if (r.visibility === 'members_only') {
-                    const isAuthor = (r.authorName === myProfile.name);
+                    const isAuthor = (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
                     const isPlayer = (r.players || []).some(p => p.cart_name === myProfile.name);
                     return isAuthor || isPlayer;
                 }
@@ -2172,7 +2333,7 @@
         }
 
         // ==========================================
-        // 🌟 月間AI映えアワード 審査実行エンジン (Gemini API)
+        // 🌟 月間ゴルスタ映えアワード 審査実行エンジン (Gemini API)
         // ==========================================
         async function triggerManualAiAward() {
             const targetMonth = document.getElementById('awardTargetMonth').value;
@@ -2184,7 +2345,6 @@
                 return;
             }
 
-            // 対象月のカバー写真を持つラウンドを抽出
             const targetCandidates = [];
             rounds.forEach(r => {
                 if (r.isAwardPost) return;
@@ -2221,10 +2381,9 @@
             statusEl.innerText = 'AI審査員が写真を選考中...📸';
 
             try {
-                // Geminiに渡す画像パーツを構築
                 const parts = [
                     {
-                        text: `あなたはゴルフ思い出共有アプリ「Golstagram」の月間AI映えアワード審査委員会です。
+                        text: `あなたはゴルフ思い出共有アプリ「Golstagram」の月間ゴルスタ映えアワード審査委員会です。
 対象月: ${targetMonth}。提供された ${targetCandidates.length} 枚のゴルフ写真から、以下の3人の審査員キャラクターとして「最優秀賞」「優秀賞」「ブービー賞」の計3つの賞を選出・講評してください。
 
 【審査員設定と選考基準】
@@ -2245,7 +2404,7 @@
 
 【ルール】
 - 3人の審査員がそれぞれ1つずつ異なる賞を担当してください（例：芝山＝最優秀賞、泉＝優秀賞、ドンマイ＝ブービー賞）。
-- 各賞にはユニークでキャッチーな賞の名称（award_name）を付けてください（例: 奇跡の借景ナイスイン賞、砂漠のオアシス迷走賞など）。
+- 各賞にはユニークでキャッチーな賞の名称（award_name）を付けてください。
 - 必ず以下のJSONフォーマットのみを出力してください。Markdown等の装飾は不要です。
 
 {
@@ -2321,7 +2480,6 @@
                     throw new Error('審査結果のJSON生成に失敗しました。もう一度お試しください。');
                 }
 
-                // target_photo_id（インデックス）から実際の写真URLを紐付け
                 parsedAwardJSON.awards.forEach(a => {
                     const idxNum = parseInt(a.target_photo_id, 10) || 0;
                     const matchedCandidate = targetCandidates[idxNum] || targetCandidates[0];
@@ -2333,13 +2491,12 @@
                     }
                 });
 
-                // アワード特別投稿としてFirestoreに保存
                 const awardPostId = `award_${targetMonth.replace('-', '_')}_${Date.now()}`;
                 const awardPostData = {
                     isAwardPost: true,
                     authorName: 'Golstagram AI審査委員会',
                     authorAvatar: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=150',
-                    playDate: `${targetMonth}-28`, // 月末日付け
+                    playDate: `${targetMonth}-28`,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     visibility: 'friends',
                     awardData: {
@@ -2352,8 +2509,8 @@
 
                 await db.collection("rounds").doc(awardPostId).set(awardPostData);
                 
-                statusEl.innerText = `🎉 ${targetMonth} AI映えアワードの選出とタイムライン投稿が完了しました！`;
-                showToast(`🏆 ${targetMonth} 月間AIアワードを発表しました！`);
+                statusEl.innerText = `🎉 ${targetMonth} 月間ゴルスタ映えアワードの選出とタイムライン投稿が完了しました！`;
+                showToast(`🏆 ${targetMonth} 月間ゴルスタ映えアワードを発表しました！`);
                 closeSettingsModal();
                 showScreen('screen-home');
 
@@ -2371,6 +2528,8 @@
         // ==========================================
         function renderTimeline() {
             const list = document.getElementById('timeline-list');
+            if (!list) return;
+
             const visibleRounds = getVisibleTimelineRounds();
 
             if (visibleRounds.length === 0) {
@@ -2384,25 +2543,16 @@
                 const likeCount = likes.length;
                 const commentCount = (r.comments || []).length;
 
-                // 🌟 AIアワード特別カードの場合の描画
+                // 🌟 AIアワード特別カード
                 if (r.isAwardPost && r.awardData) {
                     const awards = r.awardData.awards || [];
-                    const deleteBtnHtml = (myProfile.name === '長原 健太') ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ アワード削除</button>` : '';
+                    const isOwner = (myProfile.id === 'kenta253' || myProfile.id === 'kenta1971' || (myProfile.name && myProfile.name.replace(/\s+/g, '') === '長原健太') || (myProfile.id && myProfile.id.length > 0));
+                    const deleteBtnHtml = isOwner ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ アワード削除</button>` : '';
 
                     const awardsHtml = awards.map(a => {
-                        let badgeClass = 'badge-excellence';
-                        let awardLabel = '🥈 優秀賞';
-                        let judgeIcon = '⛳';
-
-                        if (a.award_type === 'grand_prize') {
-                            badgeClass = 'badge-grand';
-                            awardLabel = '🏆 最優秀賞';
-                            judgeIcon = '📷';
-                        } else if (a.award_type === 'booby_prize') {
-                            badgeClass = 'badge-booby';
-                            awardLabel = '😂 ブービー賞';
-                            judgeIcon = '🕶️';
-                        }
+                        let badgeClass = (a.award_type === 'grand_prize') ? 'badge-grand' : ((a.award_type === 'booby_prize') ? 'badge-booby' : 'badge-excellence');
+                        let awardLabel = (a.award_type === 'grand_prize') ? '🏆 最優秀賞' : ((a.award_type === 'booby_prize') ? '😂 ブービー賞' : '🥈 優秀賞');
+                        let judgeIcon = (a.award_type === 'grand_prize') ? '📷' : ((a.award_type === 'booby_prize') ? '🕶️' : '⛳');
 
                         return `
                             <div class="award-item-block">
@@ -2410,15 +2560,12 @@
                                     <span>${awardLabel}</span>
                                     <span style="font-weight:700;">「${a.award_name}」</span>
                                 </div>
-                                
                                 <div style="font-size:12px; font-weight:700; color:var(--primary); margin-top:2px;">
                                     👤 受賞者: <strong>${a.target_user_name}</strong> さん （${a.courseName || ''}）
                                 </div>
-
                                 <div class="award-photo-container">
                                     <img src="${a.photoUrl}">
                                 </div>
-
                                 <div class="award-judge-bubble">
                                     <div class="award-judge-name">${judgeIcon} 審査員：${a.judge} の講評</div>
                                     <div>${a.comment}</div>
@@ -2431,18 +2578,15 @@
                         <div class="card award-banner-card">
                             ${deleteBtnHtml}
                             <div class="award-badge-header">
-                                <span>👑 月間AI映えアワード【${r.awardData.targetMonth}】</span>
+                                <span>👑 月間ゴルスタ映えアワード【${r.awardData.targetMonth}】</span>
                                 <span style="font-size:11px; font-weight:normal; opacity:0.9;">公式審査発表</span>
                             </div>
-
                             <div style="padding: 12px 16px 6px;">
                                 <p style="font-size:12px; color:var(--text-sub);">
                                     芝山キシン・泉ピンそば・ドンマイ小西による厳正なるAI写真審査結果です！🏌️‍♂️✨
                                 </p>
                             </div>
-
                             ${awardsHtml}
-
                             <div class="card-body" style="padding-top:6px;">
                                 <div class="card-action-bar">
                                     <div class="left-actions">
@@ -2467,12 +2611,13 @@
                     `;
                 }
 
-                // 通常のラウンド投稿の場合の描画
-                const mainScore = (r.players && r.players[0]) ? `${r.players[0].cart_name}: ${r.players[0].total_score}` : '';
-                const authorAvatar = globalUsersMap[r.authorName] || r.authorAvatar || myProfile.avatar;
+                // 通常のラウンド投稿（最新アイコンを反映）
+                const isMyPost = (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
+                const authorAvatar = isMyPost 
+                    ? (myProfile.avatar || globalUsersMap[myProfile.name] || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150')
+                    : (globalUsersMap[r.authorName] || r.authorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150');
                 const authorName = r.authorName || myProfile.name;
-                
-                const isMyPost = (authorName === myProfile.name);
+                const mainScore = (r.players && r.players[0]) ? `${r.players[0].cart_name}: ${r.players[0].total_score}` : '';
                 const deleteBtnHtml = isMyPost ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ 削除</button>` : '';
 
                 const lineShareBtnHtml = isMyPost ? `
@@ -2508,9 +2653,7 @@
                             <div class="carousel-track" onscroll="handleCarouselScroll(this, ${idx})">
                                 ${slidesHtml}
                             </div>
-                            <div class="carousel-dots">
-                                ${dotsHtml}
-                            </div>
+                            <div class="carousel-dots">${dotsHtml}</div>
                         </div>
                     `;
                 } else {
@@ -2522,7 +2665,6 @@
                 return `
                     <div class="card">
                         ${deleteBtnHtml}
-                        
                         <div class="card-header-user">
                             <img src="${authorAvatar}" class="avatar-img">
                             <div>
@@ -2609,145 +2751,143 @@
             const myName = myProfile.name ? myProfile.name.trim() : '長原 健太';
             const myNameNoSpace = myName.replace(/\s+/g, '');
 
-            // 自分が参加しているラウンドのみを抽出（投稿者本人 または 同伴プレイヤーに名前が含まれる）
             const accessibleRounds = rounds.filter(r => {
                 if (r.isAwardPost) return false;
-            const isAuthor = (r.authorName && r.authorName.trim().replace(/\s+/g, '') === myNameNoSpace);
-            const isPlayer = (r.players || []).some(p => {
-            const pName = (p.cart_name || '').trim().replace(/\s+/g, '');
-            return pName === myNameNoSpace || pName.includes(myNameNoSpace);
-        });
-            return isAuthor || isPlayer;
-        });
-
-        if (type === 'members') {
-            const memberMap = {};
-            accessibleRounds.forEach(r => {
-                (r.players || []).forEach(p => {
-                    const pName = (p.cart_name || 'プレイヤー').trim();
-                    if (!memberMap[pName]) {
-                    memberMap[pName] = { count: 0, scores: [], rounds: [] };
-                    }
-                    memberMap[pName].count += 1;
-                    if (p.total_score) memberMap[pName].scores.push(p.total_score);
-                    memberMap[pName].rounds.push({
-                        roundId: r.id,
-                        courseName: r.courseName || '未設定コース',
-                        playDate: r.playDate || '',
-                        score: p.total_score || '-',
-                        isPrivate: (r.visibility === 'private'),
-                        photo: (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
+                const isAuthor = (r.authorId && r.authorId === myProfile.id) || (r.authorName && r.authorName.trim().replace(/\s+/g, '') === myNameNoSpace);
+                const isPlayer = (r.players || []).some(p => {
+                    const pName = (p.cart_name || '').trim().replace(/\s+/g, '');
+                    return pName === myNameNoSpace || pName.includes(myNameNoSpace);
                 });
+                return isAuthor || isPlayer;
             });
-        });
 
-        container.innerHTML = Object.keys(memberMap).map((name, idx) => {
-            const data = memberMap[name];
-            const avg = data.scores.length ? (data.scores.reduce((a,b)=>a+b, 0) / data.scores.length).toFixed(1) : '-';
-            const best = data.scores.length ? Math.min(...data.scores) : '-';
+            if (type === 'members') {
+                const memberMap = {};
+                accessibleRounds.forEach(r => {
+                    (r.players || []).forEach(p => {
+                        const pName = (p.cart_name || 'プレイヤー').trim();
+                        if (!memberMap[pName]) {
+                            memberMap[pName] = { count: 0, scores: [], rounds: [] };
+                        }
+                        memberMap[pName].count += 1;
+                        if (p.total_score) memberMap[pName].scores.push(p.total_score);
+                        memberMap[pName].rounds.push({
+                            roundId: r.id,
+                            courseName: r.courseName || '未設定コース',
+                            playDate: r.playDate || '',
+                            score: p.total_score || '-',
+                            isPrivate: (r.visibility === 'private'),
+                            photo: (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
+                        });
+                    });
+                });
 
-            const historyList = data.rounds.map(rd => `
-                <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
-                    <img src="${rd.photo}" class="drilldown-thumb">
-                    <div style="flex:1;">
-                        <div style="font-weight:700; color:var(--primary);">${rd.courseName} ${rd.isPrivate ? '<span style="font-size:10px; color:var(--text-sub);">🔒非公開</span>' : ''}</div>
-                        <div style="color:var(--text-sub); font-size:11px;">📅 ${rd.playDate}</div>
-                    </div>
-                    <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:15px;">${rd.score}</div>
-                </div>
-            `).join('');
+                container.innerHTML = Object.keys(memberMap).map((name, idx) => {
+                    const data = memberMap[name];
+                    const avg = data.scores.length ? (data.scores.reduce((a,b)=>a+b, 0) / data.scores.length).toFixed(1) : '-';
+                    const best = data.scores.length ? Math.min(...data.scores) : '-';
 
-            return `
-                <div class="card" style="padding:16px; margin-bottom:12px;">
-                    <div onclick="toggleDrilldown('drilldown-member-${idx}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <div style="font-size:16px; font-weight:700; color:var(--primary);">👤 ${name}</div>
-                            <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">
-                                ラウンド: <strong>${data.count}回</strong> ｜ ベスト: <strong>${best}</strong> ｜ 平均: <strong>${avg}</strong>
+                    const historyList = data.rounds.map(rd => `
+                        <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
+                            <img src="${rd.photo}" class="drilldown-thumb">
+                            <div style="flex:1;">
+                                <div style="font-weight:700; color:var(--primary);">${rd.courseName} ${rd.isPrivate ? '<span style="font-size:10px; color:var(--text-sub);">🔒非公開</span>' : ''}</div>
+                                <div style="color:var(--text-sub); font-size:11px;">📅 ${rd.playDate}</div>
+                            </div>
+                            <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:15px;">${rd.score}</div>
+                        </div>
+                    `).join('');
+
+                    return `
+                        <div class="card" style="padding:16px; margin-bottom:12px;">
+                            <div onclick="toggleDrilldown('drilldown-member-${idx}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <div style="font-size:16px; font-weight:700; color:var(--primary);">👤 ${name}</div>
+                                    <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">
+                                        ラウンド: <strong>${data.count}回</strong> ｜ ベスト: <strong>${best}</strong> ｜ 平均: <strong>${avg}</strong>
+                                    </div>
+                                </div>
+                                <span style="font-size:12px; color:var(--gold); font-weight:700;">▼ 履歴</span>
+                            </div>
+                            
+                            <div class="drilldown-container" id="drilldown-member-${idx}">
+                                <div style="font-size:11px; font-weight:700; color:var(--text-sub); margin-bottom:6px;">過去のラウンド対戦履歴（タップで詳細）:</div>
+                                ${historyList}
                             </div>
                         </div>
-                        <span style="font-size:12px; color:var(--gold); font-weight:700;">▼ 履歴</span>
-                    </div>
-                    
-                    <div class="drilldown-container" id="drilldown-member-${idx}">
-                        <div style="font-size:11px; font-weight:700; color:var(--text-sub); margin-bottom:6px;">過去のラウンド対戦履歴（タップで詳細）:</div>
-                        ${historyList}
-                    </div>
-                </div>
-            `;
-        }).join('') || '<p style="color:var(--text-sub); text-align:center; padding:20px;">データがありません</p>';
-    } else {
-        // ゴルフ場別
-        const courseMap = {};
-        accessibleRounds.forEach(r => {
-            const courseName = (r.courseName || '未設定コース').trim();
-            if (!courseMap[courseName]) {
-                courseMap[courseName] = { count: 0, bestScore: 999, rounds: [] };
-            }
-            courseMap[courseName].count += 1;
+                    `;
+                }).join('') || '<p style="color:var(--text-sub); text-align:center; padding:20px;">データがありません</p>';
+            } else {
+                const courseMap = {};
+                accessibleRounds.forEach(r => {
+                    const courseName = (r.courseName || '未設定コース').trim();
+                    if (!courseMap[courseName]) {
+                        courseMap[courseName] = { count: 0, bestScore: 999, rounds: [] };
+                    }
+                    courseMap[courseName].count += 1;
 
-            // 自分のスコアを取得（名前の一致、または自分が先頭プレイヤーの場合）
-            const myPlayerObj = (r.players || []).find(p => {
-                const pName = (p.cart_name || '').trim().replace(/\s+/g, '');
-                return pName === myNameNoSpace || pName.includes(myNameNoSpace);
-            }) || (r.players && r.players[0] ? r.players[0] : null);
+                    const myPlayerObj = (r.players || []).find(p => {
+                        const pName = (p.cart_name || '').trim().replace(/\s+/g, '');
+                        return pName === myNameNoSpace || pName.includes(myNameNoSpace);
+                    }) || (r.players && r.players[0] ? r.players[0] : null);
 
-            const myScore = (myPlayerObj && myPlayerObj.total_score) ? myPlayerObj.total_score : null;
+                    const myScore = (myPlayerObj && myPlayerObj.total_score) ? myPlayerObj.total_score : null;
 
-            if (myScore) {
-                courseMap[courseName].bestScore = Math.min(courseMap[courseName].bestScore, myScore);
-            }
+                    if (myScore) {
+                        courseMap[courseName].bestScore = Math.min(courseMap[courseName].bestScore, myScore);
+                    }
 
-            courseMap[courseName].rounds.push({
-                roundId: r.id,
-                playDate: r.playDate || '',
-                score: myScore || '-',
-                isPrivate: (r.visibility === 'private'),
-                playersCount: (r.players || []).length,
-                photo: (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
-            });
-        });
+                    courseMap[courseName].rounds.push({
+                        roundId: r.id,
+                        playDate: r.playDate || '',
+                        score: myScore || '-',
+                        isPrivate: (r.visibility === 'private'),
+                        playersCount: (r.players || []).length,
+                        photo: (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
+                    });
+                });
 
-        container.innerHTML = Object.keys(courseMap).map((course, idx) => {
-            const data = courseMap[course];
-            const best = data.bestScore === 999 ? '-' : data.bestScore;
+                container.innerHTML = Object.keys(courseMap).map((course, idx) => {
+                    const data = courseMap[course];
+                    const best = data.bestScore === 999 ? '-' : data.bestScore;
 
-            const historyList = data.rounds.map(rd => `
-                <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
-                    <img src="${rd.photo}" class="drilldown-thumb">
-                    <div style="flex:1;">
-                        <div style="font-weight:700; color:var(--primary);">📅 ${rd.playDate} ${rd.isPrivate ? '<span style="font-size:10px; color:var(--text-sub);">🔒非公開</span>' : ''}</div>
-                        <div style="color:var(--text-sub); font-size:11px;">同伴者数: ${rd.playersCount}名</div>
-                    </div>
-                    <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:15px;">スコア: ${rd.score}</div>
-                </div>
-            `).join('');
+                    const historyList = data.rounds.map(rd => `
+                        <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
+                            <img src="${rd.photo}" class="drilldown-thumb">
+                            <div style="flex:1;">
+                                <div style="font-weight:700; color:var(--primary);">📅 ${rd.playDate} ${rd.isPrivate ? '<span style="font-size:10px; color:var(--text-sub);">🔒非公開</span>' : ''}</div>
+                                <div style="color:var(--text-sub); font-size:11px;">同伴者数: ${rd.playersCount}名</div>
+                            </div>
+                            <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:15px;">スコア: ${rd.score}</div>
+                        </div>
+                    `).join('');
 
-            return `
-                <div class="card" style="padding:16px; margin-bottom:12px;">
-                    <div onclick="toggleDrilldown('drilldown-course-${idx}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <div style="font-size:16px; font-weight:700; color:var(--primary);">⛳ ${course}</div>
-                            <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">
-                                訪問回数: <strong>${data.count}回</strong> ｜ ベストスコア: <strong>${best}</strong>
+                    return `
+                        <div class="card" style="padding:16px; margin-bottom:12px;">
+                            <div onclick="toggleDrilldown('drilldown-course-${idx}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <div style="font-size:16px; font-weight:700; color:var(--primary);">⛳ ${course}</div>
+                                    <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">
+                                        訪問回数: <strong>${data.count}回</strong> ｜ ベストスコア: <strong>${best}</strong>
+                                    </div>
+                                </div>
+                                <span style="font-size:12px; color:var(--gold); font-weight:700;">▼ 履歴</span>
+                            </div>
+
+                            <div class="drilldown-container" id="drilldown-course-${idx}">
+                                <div style="font-size:11px; font-weight:700; color:var(--text-sub); margin-bottom:6px;">このコースでの過去ラウンド（タップで詳細）:</div>
+                                ${historyList}
                             </div>
                         </div>
-                        <span style="font-size:12px; color:var(--gold); font-weight:700;">▼ 履歴</span>
-                    </div>
-
-                    <div class="drilldown-container" id="drilldown-course-${idx}">
-                        <div style="font-size:11px; font-weight:700; color:var(--text-sub); margin-bottom:6px;">このコースでの過去ラウンド（タップで詳細）:</div>
-                        ${historyList}
-                    </div>
-                </div>
-            `;
-        }).join('') || '<p style="color:var(--text-sub); text-align:center; padding:20px;">データがありません</p>';
-    }
-}
+                    `;
+                }).join('') || '<p style="color:var(--text-sub); text-align:center; padding:20px;">データがありません</p>';
+            }
+        }
 
         function renderAnalytics() {
             const accessibleRounds = getMyAccessibleRounds();
             const myName = myProfile.name;
+            const myNameNoSpace = myName.replace(/\s+/g, '');
 
             const myRoundRecords = [];
             const yearlyMap = {};
@@ -2755,7 +2895,10 @@
             const h2hMap = {};
 
             accessibleRounds.forEach(r => {
-                const myPlayer = (r.players || []).find(p => p.cart_name === myName || (r.authorName === myName && p === r.players[0]));
+                const myPlayer = (r.players || []).find(p => {
+                    const pName = (p.cart_name || '').trim().replace(/\s+/g, '');
+                    return pName === myNameNoSpace || pName.includes(myNameNoSpace) || (r.authorName === myName && p === r.players[0]);
+                });
                 if (!myPlayer || !myPlayer.total_score) return;
 
                 const myScore = myPlayer.total_score;
@@ -2926,7 +3069,7 @@
                 backBtn.innerHTML = '← タイムラインに戻る';
             }
             
-            const isMyPost = (r.authorName === myProfile.name);
+            const isMyPost = (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
             const editBtnHtml = isMyPost ? `<button class="btn-edit" onclick="openEditRegistration('${r.id}')">✏️ このラウンドを編集する</button>` : '';
 
             let scoreRows = (r.players || []).map((p, pIdx) => `
@@ -2993,6 +3136,9 @@
                 el.classList.toggle('open');
             });
         }
+
+        // 初期化処理の実行
+        checkUserAuth();
     </script>
 </body>
 </html>
