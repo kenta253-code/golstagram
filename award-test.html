@@ -1202,6 +1202,12 @@
 
         function renderSheetComments(targetRound) {
             const listEl = document.getElementById('sheetCommentList');
+            const myName = myProfile.name;
+            // 自分が参加（プレイヤーとして登録）しているラウンドのみを対象にする
+            const accessibleRounds = rounds.filter(r => {
+                if (r.isAwardPost) return false;
+                return (r.players || []).some(p => p.cart_name === myName);
+            });
             const comments = targetRound.comments || [];
 
             if (comments.length === 0) {
