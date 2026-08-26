@@ -1074,6 +1074,65 @@
 
         let activeCommentRoundId = null;
 
+        // 🔑 ユーザー認証チェック（初回のみモーダル表示）
+    function checkUserAuth() {
+        const savedProfile = localStorage.getItem('golf_my_profile');
+        if (!savedProfile) {
+        document.getElementById('authModal').classList.add('active');
+        } else {
+            myProfile = JSON.parse(savedProfile);
+            const idInput = document.getElementById('myProfileId');
+            if (idInput) idInput.value = myProfile.id || '';
+        }
+    }
+
+    // 🔑 ログイン・新規登録処理
+    async function handleAuthSubmit() {
+        const rawId = document.getElementById('authUserIdInput').value.trim().toLowerCase();
+        const rawName = document.getElementById('authUserNameInput').value.trim();
+
+        if (!rawId) {
+            await showAppAlert('入力確認', 'ユーザーIDを半角英数字で入力してください。');
+            return;
+        }
+
+        try {
+            const userDoc = await db.collection("users").doc(rawId).get();
+
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                myProfile = {
+                    id: rawId,
+                    name: userData.name || rawName || 'ゴルファー',
+                    avatar: userData.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
+                };
+                showToast(`🎉 「${myProfile.name}」としてログインしました！`);
+            } else {
+                const name = rawName || '長原 健太';
+                myProfile = {
+                    id: rawId,
+                    name: name,
+                    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
+                };
+            await db.collection("users").doc(rawId).set({
+                id: rawId,
+                name: name,
+                avatar: myProfile.avatar,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            showToast(`🎉 プロフィールを新規登録しました！`);
+        }
+
+        localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
+        document.getElementById('authModal').classList.remove('active');
+        initProfileScreen();
+        renderTimeline();
+    } catch (err) {
+        await showAppAlert('エラー', 'ログイン処理に失敗しました: ' + err.message);
+    }
+}
+       
+
         function initAppTheme() {
             const savedTheme = localStorage.getItem('golf_app_theme') || 'sepia';
             changeAppTheme(savedTheme, false);
