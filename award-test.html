@@ -1370,7 +1370,7 @@
             });
         }
 
-        db.collection("users").onSnapshot((snapshot) => {
+        db.collection("users_dev").onSnapshot((snapshot) => {
             globalUsersMap = {};
             snapshot.forEach((doc) => {
                 const d = doc.data();
