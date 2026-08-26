@@ -2554,11 +2554,12 @@
                 const commentCount = (r.comments || []).length;
 
                 // 🌟 AIアワード特別カード
-                if (r.isAwardPost && r.awardData) {
-                    const awards = r.awardData.awards || [];
-                    const deleteBtnHtml = (myProfile.name === '長原 健太') ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ アワード削除</button>` : '';
-
-                    const awardsHtml = awards.map(a => {
+               // 変更後
+if (r.isAwardPost && r.awardData) {
+    const awards = r.awardData.awards || [];
+    // 管理者判定（ユーザーIDが一致、または名前が長原健太（スペース有無問わず）なら削除ボタンを表示）
+    const isOwner = (myProfile.id === 'kenta253' || myProfile.id === 'kenta1971' || (myProfile.name && myProfile.name.replace(/\s+/g, '') === '長原健太'));
+    const deleteBtnHtml = isOwner ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ アワード削除</button>` : '';
                         let badgeClass = (a.award_type === 'grand_prize') ? 'badge-grand' : ((a.award_type === 'booby_prize') ? 'badge-booby' : 'badge-excellence');
                         let awardLabel = (a.award_type === 'grand_prize') ? '🏆 最優秀賞' : ((a.award_type === 'booby_prize') ? '😂 ブービー賞' : '🥈 優秀賞');
                         let judgeIcon = (a.award_type === 'grand_prize') ? '📷' : ((a.award_type === 'booby_prize') ? '🕶️' : '⛳');
