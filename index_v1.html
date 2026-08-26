@@ -1780,46 +1780,45 @@
     }
 }
 
-       async function saveMyProfile() {
-    const nameInput = document.getElementById('myProfileName');
-    myProfile.name = (nameInput ? nameInput.value.trim() : '') || '長原 健太';
-    
-    // 現在画面に表示されているアバター画像（または既存のmyProfile.avatar）を保持
-    const currentAvatarSrc = document.getElementById('myAvatarImg')?.src;
-    if (currentAvatarSrc && !myProfile.avatar) {
-        myProfile.avatar = currentAvatarSrc;
-    }
+    async function saveMyProfile() {
+        const nameInput = document.getElementById('myProfileName');
+        const newName = (nameInput ? nameInput.value.trim() : '') || '長原 健太';
+        myProfile.name = newName;
 
-    const fileInput = document.getElementById('avatarFileInput');
-    if (fileInput && fileInput.files && fileInput.files[0]) {
-        try {
-            const compressed = await compressImageFile(fileInput.files[0], 200, 0.8);
-            myProfile.avatar = compressed;
-            document.getElementById('myAvatarImg').src = compressed;
-        } catch (e) {
-            await showAppAlert('エラー', 'アイコン画像の保存に失敗しました: ' + e.message);
-            return;
+        const fileInput = document.getElementById('avatarFileInput');
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+            try {
+                const compressed = await compressImageFile(fileInput.files[0], 200, 0.8);
+                myProfile.avatar = compressed;
+                const avatarImg = document.getElementById('myAvatarImg');
+                if (avatarImg) avatarImg.src = compressed;
+            } catch (e) {
+                await showAppAlert('エラー', 'アイコン画像の圧縮に失敗しました: ' + e.message);
+                return;
+            }
         }
-    }
 
-    localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
+        // ローカルストレージへ即時保存
+        localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
     
-    if (myProfile.id) {
+        // クラウド（Firestore）へ保存
+        const docId = myProfile.id || 'kenta253';
         try {
-            await db.collection("users").doc(myProfile.id).set({
-                id: myProfile.id,
+            await db.collection("users").doc(docId).set({
+                id: docId,
                 name: myProfile.name,
-                avatar: myProfile.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+                avatar: myProfile.avatar,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
+
+            showToast('👤 プロフィールを更新保存しました！');
         } catch (e) {
             console.error("プロフィール同期エラー:", e);
+            showToast('ローカルに保存しました');
         }
-    }
 
-    showToast('👤 プロフィールを更新保存しました！');
-    if (fileInput) fileInput.value = '';
-}
+        if (fileInput) fileInput.value = '';
+    }
 
         function renderMemberList() {
             const container = document.getElementById('memberListContainer');
