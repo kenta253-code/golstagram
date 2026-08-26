@@ -2,22 +2,18 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <!-- 画面の拡大縮小・ズレを完全に固定するViewport設定 (セーフエリア対応) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- ホーム画面追加時のネイティブアプリ化（フルスクリーン）設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Golstagram">
     <meta name="mobile-web-app-capable" content="yes">
     
-    <!-- ホーム画面・アプリアイコン設定 -->
     <link rel="apple-touch-icon" sizes="180x180" href="./icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="./icon.png">
     <link rel="icon" type="image/png" sizes="512x512" href="./icon.png">
     
-    <title>Golstagram - ゴルフ想い出＆スコア共有</title>
-    <!-- Google Fonts: ロゴ・Golsta用フォント ＆ 筆記体フォント ＆ 和欧文フォント -->
+    <title>Golstagram - ゴルフ想い出＆スコア共有 (Award Test)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@500;700&family=Comfortaa:wght@700&family=Noto+Sans+JP:wght@400;500;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -27,7 +23,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <style>
-        /* デフォルト（セピアモード）のカラー変数 */
         :root, body[data-theme="sepia"] {
             --primary: #23382b;
             --primary-light: #e4dcce;
@@ -52,7 +47,6 @@
             --shadow-lg: 0 12px 32px rgba(60, 48, 36, 0.12);
         }
 
-        /* ライトモード */
         body[data-theme="light"] {
             --primary: #1e4620;
             --primary-light: #e8f5e9;
@@ -77,7 +71,6 @@
             --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.1);
         }
 
-        /* ダークモード */
         body[data-theme="dark"] {
             --primary: #4ade80;
             --primary-light: #1e293b;
@@ -102,19 +95,8 @@
             --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        html, body {
-            width: 100%;
-            overflow-x: hidden;
-            touch-action: pan-y;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html, body { width: 100%; overflow-x: hidden; touch-action: pan-y; }
         body {
             background-color: var(--bg);
             color: var(--text-main);
@@ -124,13 +106,8 @@
             transition: background-color 0.25s ease, color 0.25s ease;
         }
 
-        .font-golsta {
-            font-family: 'Outfit', 'Comfortaa', sans-serif;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-        }
+        .font-golsta { font-family: 'Outfit', 'Comfortaa', sans-serif; font-weight: 800; letter-spacing: -0.02em; }
 
-        /* ヘッダー */
         header {
             background: var(--header-bg);
             color: var(--header-text);
@@ -147,11 +124,7 @@
             justify-content: space-between;
             border-bottom: 2px solid var(--gold);
         }
-        .logo-container {
-            display: flex;
-            align-items: baseline;
-            gap: 8px;
-        }
+        .logo-container { display: flex; align-items: baseline; gap: 8px; }
         .golstagram-logo {
             font-family: 'Outfit', 'Comfortaa', sans-serif;
             font-size: 24px;
@@ -163,12 +136,7 @@
             text-shadow: 0 1px 2px rgba(0,0,0,0.3);
             line-height: 1;
         }
-        .golstagram-logo span.gold-dot {
-            color: var(--gold);
-            font-size: 28px;
-            line-height: 0;
-            margin-left: 1px;
-        }
+        .golstagram-logo span.gold-dot { color: var(--gold); font-size: 28px; line-height: 0; margin-left: 1px; }
         .header-tagline {
             font-family: 'Alex Brush', cursive;
             font-size: 15px;
@@ -178,12 +146,7 @@
             line-height: 1;
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-left: auto;
-        }
+        .header-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
         .btn-settings-gear {
             background: rgba(255, 255, 255, 0.12);
             border: 1px solid rgba(255, 255, 255, 0.25);
@@ -197,37 +160,15 @@
             color: #ffffff;
             transition: all 0.2s ease;
         }
-        .btn-settings-gear:hover {
-            background: rgba(255, 255, 255, 0.22);
-            transform: rotate(30deg);
-        }
-        .btn-settings-gear svg {
-            width: 18px;
-            height: 18px;
-            fill: #ffffff;
-        }
+        .btn-settings-gear:hover { background: rgba(255, 255, 255, 0.22); transform: rotate(30deg); }
+        .btn-settings-gear svg { width: 18px; height: 18px; fill: #ffffff; }
 
-        .section-header-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .section-header-desc {
-            font-size: 12px;
-            color: var(--text-sub);
-            margin-bottom: 16px;
-        }
+        .section-header-title { font-size: 20px; font-weight: 700; color: var(--primary); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+        .section-header-desc { font-size: 12px; color: var(--text-sub); margin-bottom: 16px; }
 
-        /* 下部タブバー */
         .tab-bar {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            bottom: 0; left: 0; right: 0;
             height: calc(68px + env(safe-area-inset-bottom));
             padding-bottom: env(safe-area-inset-bottom);
             background: var(--tab-bg);
@@ -257,27 +198,16 @@
             flex: 1;
             height: 100%;
         }
-        .tab-btn.active {
-            color: var(--primary);
-            font-weight: 700;
-        }
-        .tab-btn.active svg {
-            fill: var(--primary);
-            filter: drop-shadow(0 2px 4px rgba(35, 56, 43, 0.25));
-            transform: translateY(-1px);
-        }
+        .tab-btn.active { color: var(--primary); font-weight: 700; }
+        .tab-btn.active svg { fill: var(--primary); filter: drop-shadow(0 2px 4px rgba(35, 56, 43, 0.25)); transform: translateY(-1px); }
         .tab-btn svg { width: 24px; height: 24px; fill: var(--text-sub); transition: 0.2s; }
 
         .container { max-width: 600px; margin: 0 auto; padding: 18px 16px; width: 100%; }
         .screen { display: none; }
         .screen.active { display: block; animation: fadeIn 0.25s ease-out; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 大型＆ピンクのフローティング「＋Golsta登録」ボタン */
         .fab {
             position: fixed;
             right: 18px;
@@ -298,15 +228,9 @@
             transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             letter-spacing: 0.04em;
         }
-        .fab:hover {
-            transform: translateY(-3px) scale(1.03);
-            box-shadow: 0 12px 28px rgba(233, 30, 99, 0.55);
-        }
-        .fab:active {
-            transform: translateY(0) scale(0.97);
-        }
+        .fab:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 12px 28px rgba(233, 30, 99, 0.55); }
+        .fab:active { transform: translateY(0) scale(0.97); }
 
-        /* カードデザイン */
         .card {
             background: var(--card);
             border-radius: 16px;
@@ -326,198 +250,142 @@
             background: var(--card);
             border-bottom: 1px solid var(--border);
         }
-        .avatar-img {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--gold-border);
-            background: #e6dfd1;
-            flex-shrink: 0;
-        }
-        .avatar-img-sm {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 1px solid var(--gold-border);
-            flex-shrink: 0;
-            background: #ded5c2;
-        }
-        .user-name-text {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-main);
-        }
+        .avatar-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold-border); background: #e6dfd1; flex-shrink: 0; }
+        .avatar-img-sm { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold-border); flex-shrink: 0; background: #ded5c2; }
+        .user-name-text { font-size: 14px; font-weight: 700; color: var(--text-main); }
         
-        /* カルーセルスライダー */
-        .carousel-wrapper {
-            position: relative;
-            width: 100%;
-            background: #000;
-        }
-        .carousel-track {
-            display: flex;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
-        .carousel-track::-webkit-scrollbar {
-            display: none;
-        }
-        .carousel-slide {
-            flex: 0 0 100%;
-            width: 100%;
-            height: 260px;
-            scroll-snap-align: start;
-            position: relative;
-        }
-        .carousel-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            cursor: pointer;
-        }
+        .carousel-wrapper { position: relative; width: 100%; background: #000; }
+        .carousel-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .carousel-track::-webkit-scrollbar { display: none; }
+        .carousel-slide { flex: 0 0 100%; width: 100%; height: 260px; scroll-snap-align: start; position: relative; }
+        .carousel-img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: pointer; }
         .carousel-count-badge {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(4px);
-            color: #ffffff;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 12px;
-            z-index: 5;
-            letter-spacing: 0.05em;
+            position: absolute; top: 12px; right: 12px;
+            background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(4px);
+            color: #ffffff; font-size: 11px; font-weight: 700;
+            padding: 3px 8px; border-radius: 12px; z-index: 5; letter-spacing: 0.05em;
         }
-        .carousel-dots {
-            position: absolute;
-            bottom: 10px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            z-index: 5;
-            pointer-events: none;
-        }
-        .carousel-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.45);
-            transition: all 0.2s ease;
-        }
-        .carousel-dot.active {
-            background: var(--gold);
-            width: 14px;
-            border-radius: 4px;
-        }
+        .carousel-dots { position: absolute; bottom: 10px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; z-index: 5; pointer-events: none; }
+        .carousel-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, 0.45); transition: all 0.2s ease; }
+        .carousel-dot.active { background: var(--gold); width: 14px; border-radius: 4px; }
 
         .card-body { padding: 16px; }
-        .card-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 6px;
+        .card-title { font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+        .card-date { font-size: 12px; color: var(--text-sub); margin-bottom: 10px; display: flex; align-items: center; gap: 4px; }
+        .score-highlight {
+            font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700;
+            color: var(--primary); background: var(--gold-light);
+            border: 1px solid var(--gold-border); padding: 4px 10px;
+            border-radius: 6px; display: inline-block;
         }
-        .card-date {
+
+        .btn-card-delete {
+            position: absolute; top: 12px; right: 12px;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+            color: white; border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px; padding: 4px 10px; font-size: 11px;
+            cursor: pointer; z-index: 10; transition: 0.2s;
+        }
+        .btn-card-delete:hover { background: var(--danger); }
+
+        .card-action-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border);
+        }
+        .left-actions { display: flex; align-items: center; gap: 8px; }
+        .btn-action {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 6px 13px; font-size: 12px;
+            font-weight: 700; color: var(--text-main); cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-action:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+        .btn-action.liked { background: #fde8e8; border-color: #fca5a5; color: #dc2626; }
+
+        .btn-line-share {
+            display: inline-flex; align-items: center; gap: 5px;
+            background-color: var(--line-green); color: #ffffff;
+            border: none; border-radius: 6px; padding: 6px 11px;
+            font-size: 11px; font-weight: 700; cursor: pointer;
+            transition: 0.2s; text-decoration: none;
+        }
+        .btn-line-share:hover { opacity: 0.9; }
+        .btn-line-share svg { width: 14px; height: 14px; fill: #ffffff; }
+
+        /* ========= 🌟 AI映えアワード専用カードデザイン ========= */
+        .award-banner-card {
+            background: linear-gradient(135deg, #fffdf8 0%, #faf3e0 100%);
+            border: 2px solid #e2bc58;
+            box-shadow: 0 10px 25px rgba(226, 188, 88, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        body[data-theme="dark"] .award-banner-card {
+            background: linear-gradient(135deg, #1e2530 0%, #151d27 100%);
+            border-color: #facc15;
+        }
+        .award-badge-header {
+            background: linear-gradient(135deg, #dfa938 0%, #c48b17 100%);
+            color: #ffffff;
+            padding: 10px 16px;
+            font-weight: 800;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            letter-spacing: 0.05em;
+        }
+        .award-item-block {
+            border-top: 1px dashed var(--gold-border);
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .award-item-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 800;
+            font-size: 13px;
+            border-radius: 20px;
+            padding: 4px 12px;
+            width: fit-content;
+        }
+        .badge-grand { background: #fff3c4; color: #9a6500; border: 1px solid #ffd166; }
+        .badge-excellence { background: #e6f4ea; color: #137333; border: 1px solid #a8dab5; }
+        .badge-booby { background: #fce8e6; color: #c5221f; border: 1px solid #f6aea9; }
+
+        .award-photo-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 6px 0;
+            border: 1px solid var(--border);
+        }
+        .award-photo-container img { width: 100%; height: 100%; object-fit: cover; }
+        .award-judge-bubble {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--gold);
+            border-radius: 8px;
+            padding: 10px 12px;
             font-size: 12px;
-            color: var(--text-sub);
-            margin-bottom: 10px;
+            line-height: 1.5;
+            color: var(--text-main);
+        }
+        .award-judge-name {
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 11px;
+            margin-bottom: 2px;
             display: flex;
             align-items: center;
             gap: 4px;
         }
-        .score-highlight {
-            font-family: 'Cinzel', serif;
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--primary);
-            background: var(--gold-light);
-            border: 1px solid var(--gold-border);
-            padding: 4px 10px;
-            border-radius: 6px;
-            display: inline-block;
-        }
-
-        .btn-card-delete {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 20px;
-            padding: 4px 10px;
-            font-size: 11px;
-            cursor: pointer;
-            z-index: 10;
-            transition: 0.2s;
-        }
-        .btn-card-delete:hover { background: var(--danger); }
-
-        /* リアクションバー */
-        .card-action-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 14px;
-            padding-top: 12px;
-            border-top: 1px dashed var(--border);
-        }
-        .left-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-action {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 6px 13px;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-main);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .btn-action:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm);
-        }
-        .btn-action.liked {
-            background: #fde8e8;
-            border-color: #fca5a5;
-            color: #dc2626;
-        }
-
-        /* LINE シェアボタン */
-        .btn-line-share {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background-color: var(--line-green);
-            color: #ffffff;
-            border: none;
-            border-radius: 6px;
-            padding: 6px 11px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
-            text-decoration: none;
-        }
-        .btn-line-share:hover { opacity: 0.9; }
-        .btn-line-share svg { width: 14px; height: 14px; fill: #ffffff; }
 
         /* コメントボトムシート */
         .comment-sheet-overlay {
@@ -533,10 +401,7 @@
             pointer-events: none;
             transition: opacity 0.25s ease;
         }
-        .comment-sheet-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        .comment-sheet-overlay.active { opacity: 1; pointer-events: auto; }
         .comment-sheet {
             background: var(--card);
             border-top-left-radius: 20px;
@@ -551,723 +416,260 @@
             transform: translateY(100%);
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .comment-sheet-overlay.active .comment-sheet {
-            transform: translateY(0);
-        }
+        .comment-sheet-overlay.active .comment-sheet { transform: translateY(0); }
         .comment-sheet-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 18px;
-            border-bottom: 1px solid var(--border);
-            background: var(--card);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--card);
         }
-        .comment-sheet-title {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .btn-close-sheet {
-            background: none;
-            border: none;
-            font-size: 18px;
-            color: var(--text-sub);
-            cursor: pointer;
-            padding: 4px;
-        }
+        .comment-sheet-title { font-size: 15px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 6px; }
+        .btn-close-sheet { background: none; border: none; font-size: 18px; color: var(--text-sub); cursor: pointer; padding: 4px; }
         .comment-sheet-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            background: var(--comment-bg);
+            flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: var(--comment-bg);
         }
         .comment-sheet-footer {
             padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-            background: var(--card);
-            border-top: 1px solid var(--border);
-            display: flex;
-            gap: 8px;
+            background: var(--card); border-top: 1px solid var(--border); display: flex; gap: 8px;
         }
 
-        .chat-row-other {
-            display: flex;
-            align-items: flex-end;
-            gap: 8px;
-            width: 100%;
-        }
-        .chat-content-other {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            max-width: 78%;
-        }
-        .chat-author-name {
-            font-size: 11px;
-            color: var(--text-sub);
-            font-weight: 700;
-            margin-bottom: 3px;
-            margin-left: 2px;
-        }
+        .chat-row-other { display: flex; align-items: flex-end; gap: 8px; width: 100%; }
+        .chat-content-other { display: flex; flex-direction: column; align-items: flex-start; max-width: 78%; }
+        .chat-author-name { font-size: 11px; color: var(--text-sub); font-weight: 700; margin-bottom: 3px; margin-left: 2px; }
         .chat-bubble-other {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 14px 14px 14px 2px;
-            padding: 9px 13px;
-            font-size: 13px;
-            color: var(--text-main);
-            box-shadow: var(--shadow-sm);
-            word-break: break-word;
-            line-height: 1.4;
+            background: var(--card); border: 1px solid var(--border); border-radius: 14px 14px 14px 2px;
+            padding: 9px 13px; font-size: 13px; color: var(--text-main); box-shadow: var(--shadow-sm);
+            word-break: break-word; line-height: 1.4;
         }
-        .chat-row-my {
-            display: flex;
-            align-items: flex-end;
-            justify-content: flex-end;
-            gap: 6px;
-            width: 100%;
-        }
+        .chat-row-my { display: flex; align-items: flex-end; justify-content: flex-end; gap: 6px; width: 100%; }
         .chat-bubble-my {
-            background: var(--my-bubble-bg);
-            color: #ffffff;
-            border-radius: 14px 14px 2px 14px;
-            padding: 9px 13px;
-            font-size: 13px;
-            box-shadow: var(--shadow-sm);
-            max-width: 78%;
-            word-break: break-word;
-            line-height: 1.4;
+            background: var(--my-bubble-bg); color: #ffffff; border-radius: 14px 14px 2px 14px;
+            padding: 9px 13px; font-size: 13px; box-shadow: var(--shadow-sm); max-width: 78%;
+            word-break: break-word; line-height: 1.4;
         }
-        .chat-time {
-            font-size: 9px;
-            color: var(--text-sub);
-            margin-bottom: 2px;
-            flex-shrink: 0;
-        }
-
+        .chat-time { font-size: 9px; color: var(--text-sub); margin-bottom: 2px; flex-shrink: 0; }
         .comment-input-sheet {
-            flex: 1;
-            padding: 10px 14px;
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            font-size: 16px;
-            background: var(--bg);
-            color: var(--text-main);
-            outline: none;
+            flex: 1; padding: 10px 14px; border: 1px solid var(--border);
+            border-radius: 24px; font-size: 16px; background: var(--bg);
+            color: var(--text-main); outline: none;
         }
         .comment-input-sheet:focus { border-color: var(--gold); }
         .btn-comment-send {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 8px 16px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
+            background: var(--primary); color: white; border: none;
+            border-radius: 20px; padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;
         }
 
-        /* フォームコントロール */
         .form-group { margin-bottom: 18px; }
-        .form-label {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 6px;
-            display: block;
-        }
+        .form-label { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 6px; display: block; }
         .form-control {
-            width: 100%;
-            padding: 11px 13px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 16px;
-            background: var(--card);
-            color: var(--text-main);
-            outline: none;
-            transition: 0.2s;
+            width: 100%; padding: 11px 13px; border: 1px solid var(--border);
+            border-radius: 8px; font-size: 16px; background: var(--card);
+            color: var(--text-main); outline: none; transition: 0.2s;
         }
-        .form-control:focus {
-            border-color: var(--gold);
-            box-shadow: 0 0 0 3px rgba(179, 135, 67, 0.15);
-        }
+        .form-control:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(179, 135, 67, 0.15); }
 
-        /* ボタン群 */
         .btn-main {
-            width: 100%;
-            background: linear-gradient(135deg, #23382b 0%, #344d3d 100%);
-            color: white;
-            border: 1px solid var(--gold);
-            padding: 14px;
-            font-size: 15px;
-            font-weight: 700;
-            border-radius: 10px;
-            cursor: pointer;
-            box-shadow: var(--shadow-sm);
-            transition: 0.2s;
+            width: 100%; background: linear-gradient(135deg, #23382b 0%, #344d3d 100%);
+            color: white; border: 1px solid var(--gold); padding: 14px;
+            font-size: 15px; font-weight: 700; border-radius: 10px;
+            cursor: pointer; box-shadow: var(--shadow-sm); transition: 0.2s;
         }
         .btn-main:hover { opacity: 0.95; box-shadow: var(--shadow-md); }
         .btn-cancel {
-            width: 100%;
-            background: var(--card);
-            color: var(--text-sub);
-            border: 1px solid var(--border);
-            padding: 12px;
-            font-size: 13px;
-            font-weight: 700;
-            border-radius: 10px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: 0.2s;
+            width: 100%; background: var(--card); color: var(--text-sub);
+            border: 1px solid var(--border); padding: 12px; font-size: 13px;
+            font-weight: 700; border-radius: 10px; cursor: pointer; margin-top: 10px; transition: 0.2s;
         }
         .btn-cancel:hover { color: var(--danger); }
         .btn-sub {
-            background: var(--card);
-            border: 1px solid var(--gold-border);
-            color: var(--primary);
-            padding: 7px 14px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
+            background: var(--card); border: 1px solid var(--gold-border);
+            color: var(--primary); padding: 7px 14px; border-radius: 8px;
+            font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s;
         }
         .btn-sub:hover { background: var(--gold-light); }
         .btn-edit {
-            background: var(--card);
-            color: var(--primary);
-            border: 1px solid var(--gold-border);
-            padding: 9px 16px;
-            font-size: 13px;
-            font-weight: 700;
-            border-radius: 8px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 16px;
-            box-shadow: var(--shadow-sm);
+            background: var(--card); color: var(--primary); border: 1px solid var(--gold-border);
+            padding: 9px 16px; font-size: 13px; font-weight: 700; border-radius: 8px;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+            margin-bottom: 16px; box-shadow: var(--shadow-sm);
         }
         .btn-back {
-            background: none;
-            border: none;
-            color: var(--primary);
-            font-weight: 700;
-            cursor: pointer;
-            margin-bottom: 14px;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
+            background: none; border: none; color: var(--primary);
+            font-weight: 700; cursor: pointer; margin-bottom: 14px; font-size: 14px;
+            display: inline-flex; align-items: center; gap: 4px;
         }
 
-        /* スコア表 */
         .score-editor-wrapper {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            touch-action: pan-x;
-            margin: 10px 0 18px;
-            border: 1px solid var(--gold-border);
-            border-radius: 8px;
-            background: var(--card);
+            overflow-x: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x;
+            margin: 10px 0 18px; border: 1px solid var(--gold-border); border-radius: 8px; background: var(--card);
         }
-        .scorecard-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-            white-space: nowrap;
-        }
-        .scorecard-table th, .scorecard-table td {
-            border: 1px solid var(--border);
-            padding: 7px 5px;
-            text-align: center;
-        }
-        .scorecard-table thead th {
-            background: #23382b;
-            color: #f7f4ee;
-            font-weight: 700;
-            font-family: 'Cinzel', serif;
-        }
-        .scorecard-table tr.par-row {
-            background: var(--gold-light);
-            font-weight: 700;
-            color: #7a5823;
-        }
+        .scorecard-table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+        .scorecard-table th, .scorecard-table td { border: 1px solid var(--border); padding: 7px 5px; text-align: center; }
+        .scorecard-table thead th { background: #23382b; color: #f7f4ee; font-weight: 700; font-family: 'Cinzel', serif; }
+        .scorecard-table tr.par-row { background: var(--gold-light); font-weight: 700; color: #7a5823; }
         .scorecard-table td.player-name-cell {
-            position: sticky;
-            left: 0;
-            background: var(--card);
-            z-index: 2;
-            border-right: 2px solid var(--gold-border);
-            min-width: 155px;
-            max-width: 170px;
-            text-align: left;
-            padding: 5px;
+            position: sticky; left: 0; background: var(--card); z-index: 2;
+            border-right: 2px solid var(--gold-border); min-width: 155px; max-width: 170px; text-align: left; padding: 5px;
         }
         .scorecard-table thead th.player-name-cell {
-            position: sticky;
-            left: 0;
-            background: #23382b;
-            z-index: 3;
-            border-right: 2px solid var(--gold-border);
+            position: sticky; left: 0; background: #23382b; z-index: 3; border-right: 2px solid var(--gold-border);
         }
         .scorecard-table td.total-cell {
-            background: var(--gold-light);
-            font-weight: 700;
-            color: #9c6010;
-            font-family: 'Cinzel', serif;
-            font-size: 13px;
-            min-width: 46px;
+            background: var(--gold-light); font-weight: 700; color: #9c6010; font-family: 'Cinzel', serif; font-size: 13px; min-width: 46px;
         }
         .score-input {
-            width: 34px;
-            height: 30px;
-            text-align: center;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: 700;
-            font-family: 'Cinzel', serif;
-            background: var(--card);
-            color: var(--text-main);
-            outline: none;
+            width: 34px; height: 30px; text-align: center; border: 1px solid var(--border);
+            border-radius: 4px; font-size: 16px; font-weight: 700; font-family: 'Cinzel', serif;
+            background: var(--card); color: var(--text-main); outline: none;
         }
         .score-input:focus { border-color: var(--gold); }
         
         .player-name-input-box { display: flex; flex-direction: column; gap: 3px; }
         .name-text-input {
-            width: 100%;
-            padding: 5px 6px;
-            font-size: 13px;
-            font-weight: 700;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            background: var(--card);
-            color: var(--text-main);
-            outline: none;
+            width: 100%; padding: 5px 6px; font-size: 13px; font-weight: 700;
+            border: 1px solid var(--border); border-radius: 4px; background: var(--card); color: var(--text-main); outline: none;
         }
         .name-text-input:focus { border-color: var(--gold); }
         .name-select-quick {
-            width: 100%;
-            padding: 2px 4px;
-            font-size: 10px;
-            color: var(--text-sub);
-            border: 1px dashed var(--border);
-            border-radius: 4px;
-            background: var(--card);
-            cursor: pointer;
+            width: 100%; padding: 2px 4px; font-size: 10px; color: var(--text-sub);
+            border: 1px dashed var(--border); border-radius: 4px; background: var(--card); cursor: pointer;
         }
 
         .half-toggle-bar { display: flex; gap: 6px; margin-bottom: 8px; }
         .half-btn {
-            padding: 6px 14px;
-            font-size: 12px;
-            font-weight: 700;
-            border: 1px solid var(--border);
-            background: var(--card);
-            color: var(--text-main);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: 0.2s;
+            padding: 6px 14px; font-size: 12px; font-weight: 700; border: 1px solid var(--border);
+            background: var(--card); color: var(--text-main); border-radius: 6px; cursor: pointer; transition: 0.2s;
         }
-        .half-btn.active {
-            background: var(--primary);
-            color: #ffffff;
-            border-color: var(--primary);
-        }
+        .half-btn.active { background: var(--primary); color: #ffffff; border-color: var(--primary); }
 
-        /* 写真グリッド */
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 12px;
-        }
+        .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
         .photo-item {
-            position: relative;
-            height: 110px;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 2px solid var(--border);
-            cursor: pointer;
-            background: #000;
-            box-shadow: var(--shadow-sm);
+            position: relative; height: 110px; border-radius: 10px;
+            overflow: hidden; border: 2px solid var(--border); cursor: pointer; background: #000; box-shadow: var(--shadow-sm);
         }
         .photo-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .photo-item.best { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(179, 135, 67, 0.4); }
         .best-badge {
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            background: var(--gold);
-            color: white;
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 4px;
+            position: absolute; top: 4px; left: 4px; background: var(--gold);
+            color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
         }
         .btn-remove-photo {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            background: rgba(0,0,0,0.65);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 11px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 5;
+            position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.65);
+            color: white; border: none; border-radius: 50%; width: 22px; height: 22px;
+            font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5;
         }
 
-        .toggle-group {
-            display: flex;
-            background: var(--border);
-            border-radius: 10px;
-            padding: 4px;
-            margin-bottom: 18px;
-        }
+        .toggle-group { display: flex; background: var(--border); border-radius: 10px; padding: 4px; margin-bottom: 18px; }
         .toggle-btn {
-            flex: 1;
-            border: none;
-            padding: 9px;
-            border-radius: 8px;
-            background: none;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            color: var(--text-sub);
-            transition: 0.2s;
+            flex: 1; border: none; padding: 9px; border-radius: 8px;
+            background: none; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text-sub); transition: 0.2s;
         }
-        .toggle-btn.active {
-            background: var(--card);
-            color: var(--primary);
-            box-shadow: var(--shadow-sm);
-        }
+        .toggle-btn.active { background: var(--card); color: var(--primary); box-shadow: var(--shadow-sm); }
 
-        .all-gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 14px;
-        }
+        .all-gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
         .gallery-card {
-            background: var(--card);
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-            cursor: pointer;
-            box-shadow: var(--shadow-sm);
-            transition: transform 0.2s;
+            background: var(--card); border-radius: 12px; overflow: hidden;
+            border: 1px solid var(--border); cursor: pointer; box-shadow: var(--shadow-sm); transition: transform 0.2s;
         }
         .gallery-card:hover { transform: translateY(-2px); }
         .gallery-card img { width: 100%; height: 140px; object-fit: cover; display: block; }
         .gallery-card-info { padding: 10px; font-size: 11px; }
         .gallery-card-title {
-            font-weight: 700;
-            color: var(--primary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 4px;
+            font-weight: 700; color: var(--primary); white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;
         }
 
-        .drilldown-container {
-            margin-top: 12px;
-            padding-top: 10px;
-            border-top: 1px dashed var(--border);
-            display: none;
-        }
-        .drilldown-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            font-size: 12px;
-        }
+        .drilldown-container { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); display: none; }
+        .drilldown-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 12px; }
         .drilldown-thumb { width: 38px; height: 38px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
 
         .score-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-            margin-top: 10px;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-            background: var(--card);
+            width: 100%; border-collapse: collapse; font-size: 13px;
+            margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: var(--card);
         }
-        .score-table th, .score-table td {
-            border: 1px solid var(--border);
-            padding: 9px 6px;
-            text-align: center;
-        }
-        .score-table th {
-            background: var(--primary-light);
-            color: var(--primary);
-            font-weight: 700;
-        }
+        .score-table th, .score-table td { border: 1px solid var(--border); padding: 9px 6px; text-align: center; }
+        .score-table th { background: var(--primary-light); color: var(--primary); font-weight: 700; }
         .accordion-btn {
-            background: var(--card);
-            border: 1px solid var(--border);
-            color: var(--primary);
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            margin: 4px 2px;
-            font-weight: 700;
+            background: var(--card); border: 1px solid var(--border); color: var(--primary);
+            padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; margin: 4px 2px; font-weight: 700;
         }
         .detail-row { display: none; background: var(--bg); }
         .detail-row.open { display: table-row; }
 
         .profile-edit-box { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
         .avatar-preview {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--gold);
-            background: #ded5c2;
-            flex-shrink: 0;
-            box-shadow: var(--shadow-sm);
+            width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
+            border: 3px solid var(--gold); background: #ded5c2; flex-shrink: 0; box-shadow: var(--shadow-sm);
         }
         .member-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 12px 14px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: var(--shadow-sm);
+            background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+            padding: 12px 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-sm);
         }
 
-        .analytics-summary-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 18px;
-        }
+        .analytics-summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
         .analytics-stat-card {
-            background: var(--card);
-            border: 1px solid var(--gold-border);
-            border-radius: 12px;
-            padding: 12px 8px;
-            text-align: center;
-            box-shadow: var(--shadow-sm);
+            background: var(--card); border: 1px solid var(--gold-border);
+            border-radius: 12px; padding: 12px 8px; text-align: center; box-shadow: var(--shadow-sm);
         }
-        .analytics-stat-label {
-            font-size: 11px;
-            color: var(--text-sub);
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-        .analytics-stat-value {
-            font-family: 'Cinzel', serif;
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--primary);
-        }
+        .analytics-stat-label { font-size: 11px; color: var(--text-sub); font-weight: 700; margin-bottom: 4px; }
+        .analytics-stat-value { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700; color: var(--primary); }
         .analytics-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-            margin-top: 8px;
-            background: var(--card);
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border);
+            width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px;
+            background: var(--card); border-radius: 8px; overflow: hidden; border: 1px solid var(--border);
         }
-        .analytics-table th, .analytics-table td {
-            border: 1px solid var(--border);
-            padding: 8px 6px;
-            text-align: center;
-        }
-        .analytics-table th {
-            background: var(--primary-light);
-            color: var(--primary);
-            font-weight: 700;
-        }
-        .h2h-badge-win {
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 700;
-        }
-        .h2h-badge-lose {
-            background: #ffebee;
-            color: #c62828;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 700;
-        }
+        .analytics-table th, .analytics-table td { border: 1px solid var(--border); padding: 8px 6px; text-align: center; }
+        .analytics-table th { background: var(--primary-light); color: var(--primary); font-weight: 700; }
+        .h2h-badge-win { background: #e8f5e9; color: #2e7d32; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+        .h2h-badge-lose { background: #ffebee; color: #c62828; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
 
-        /* 設定モーダル・テーマ選択スタイル */
-        .theme-select-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin: 10px 0 16px;
-        }
+        .theme-select-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0 16px; }
         .theme-btn-card {
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            padding: 10px 4px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 700;
-            background: var(--card);
-            color: var(--text-main);
-            transition: all 0.2s ease;
+            border: 2px solid var(--border); border-radius: 10px; padding: 10px 4px;
+            text-align: center; cursor: pointer; font-size: 11px; font-weight: 700;
+            background: var(--card); color: var(--text-main); transition: all 0.2s ease;
         }
-        .theme-btn-card.active {
-            border-color: var(--gold);
-            background: var(--gold-light);
-            color: #9c6010;
-        }
-        .theme-btn-icon {
-            font-size: 20px;
-            display: block;
-            margin-bottom: 4px;
-        }
+        .theme-btn-card.active { border-color: var(--gold); background: var(--gold-light); color: #9c6010; }
+        .theme-btn-icon { font-size: 20px; display: block; margin-bottom: 4px; }
 
-        /* マニュアル・ガイドスタイル */
         .manual-section-box {
-            background: var(--bg);
-            border-radius: 10px;
-            padding: 14px;
-            margin-top: 14px;
-            font-size: 12px;
-            line-height: 1.6;
-            max-height: 240px;
-            overflow-y: auto;
-            border: 1px solid var(--border);
+            background: var(--bg); border-radius: 10px; padding: 14px; margin-top: 14px;
+            font-size: 12px; line-height: 1.6; max-height: 240px; overflow-y: auto; border: 1px solid var(--border);
         }
         .manual-hero-catch {
-            text-align: center;
-            padding: 8px 6px;
-            margin-bottom: 12px;
-            border-bottom: 1px dashed var(--gold-border);
-            background: var(--card);
-            border-radius: 8px;
+            text-align: center; padding: 8px 6px; margin-bottom: 12px;
+            border-bottom: 1px dashed var(--gold-border); background: var(--card); border-radius: 8px;
         }
-        .manual-hero-catch h4 {
-            font-size: 13px;
-            color: var(--primary);
-            font-weight: 700;
-            margin-bottom: 3px;
-        }
-        .manual-hero-catch p {
-            font-family: 'Alex Brush', cursive;
-            font-size: 14px;
-            color: var(--gold);
-            font-weight: normal;
-        }
-        .manual-step-title {
-            font-weight: 700;
-            color: var(--primary);
-            margin: 10px 0 4px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
+        .manual-hero-catch h4 { font-size: 13px; color: var(--primary); font-weight: 700; margin-bottom: 3px; }
+        .manual-hero-catch p { font-family: 'Alex Brush', cursive; font-size: 14px; color: var(--gold); }
+        .manual-step-title { font-weight: 700; color: var(--primary); margin: 10px 0 4px; display: flex; align-items: center; gap: 4px; }
         .manual-trademark-footer {
-            margin-top: 14px;
-            padding-top: 10px;
-            border-top: 1px solid var(--border);
-            text-align: center;
-            font-size: 10px;
-            color: var(--text-sub);
-            letter-spacing: 0.05em;
+            margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border);
+            text-align: center; font-size: 10px; color: var(--text-sub); letter-spacing: 0.05em;
         }
 
-        /* モーダル＆トースト */
         .app-modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1100;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease;
-            padding: 20px;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1100; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; padding: 20px;
         }
-        .app-modal-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        .app-modal-overlay.active { opacity: 1; pointer-events: auto; }
         .app-modal-box {
-            background: var(--card);
-            border: 2px solid var(--gold-border);
-            border-radius: 16px;
-            padding: 20px;
-            width: 100%;
-            max-width: 420px;
-            max-height: 85vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: var(--shadow-lg);
-            transform: scale(0.95);
-            transition: transform 0.2s ease;
+            background: var(--card); border: 2px solid var(--gold-border);
+            border-radius: 16px; padding: 20px; width: 100%; max-width: 420px;
+            max-height: 85vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg);
+            transform: scale(0.95); transition: transform 0.2s ease;
         }
         .app-modal-overlay.active .app-modal-box { transform: scale(1); }
-        .app-modal-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 8px;
-        }
-        .app-modal-text {
-            font-size: 13px;
-            color: var(--text-main);
-            line-height: 1.5;
-            margin-bottom: 18px;
-            white-space: pre-wrap;
-        }
+        .app-modal-title { font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+        .app-modal-text { font-size: 13px; color: var(--text-main); line-height: 1.5; margin-bottom: 18px; white-space: pre-wrap; }
         .app-modal-buttons { display: flex; gap: 10px; }
         .app-toast {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-20px);
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
             background: linear-gradient(135deg, #23382b 0%, #344d3d 100%);
-            color: #ffffff;
-            border: 1px solid var(--gold);
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-size: 13px;
-            font-weight: 700;
-            box-shadow: var(--shadow-lg);
-            z-index: 1200;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.3s ease;
-            text-align: center;
-            white-space: nowrap;
+            color: #ffffff; border: 1px solid var(--gold); padding: 12px 24px;
+            border-radius: 30px; font-size: 13px; font-weight: 700; box-shadow: var(--shadow-lg);
+            z-index: 1200; opacity: 0; pointer-events: none; transition: all 0.3s ease; text-align: center; white-space: nowrap;
         }
-        .app-toast.active {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
+        .app-toast.active { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
 </head>
 <body data-theme="sepia">
@@ -1290,7 +692,6 @@
         <div class="container">
             <div id="timeline-list"></div>
         </div>
-        <!-- 大型＆ピンクの目立つGolsta登録ボタン -->
         <button class="fab" onclick="openNewRegistration()">
             <span>＋ <span class="font-golsta">Golsta</span> 登録</span>
         </button>
@@ -1305,7 +706,6 @@
                 </h3>
                 <p id="formSubTitle" style="font-size: 12px; color: var(--text-sub); margin-bottom: 14px;">スコアカード画面の写真をセットしてAI解析を行うか、手動で入力してください。</p>
                 
-                <!-- AI読み取りセクション -->
                 <div id="aiUploadSection">
                     <div class="form-group">
                         <label class="form-label">スコア画面画像 1 (必須)</label>
@@ -1324,7 +724,6 @@
                     </div>
                 </div>
 
-                <!-- スコア確認・写真追加エリア -->
                 <div id="parsedResultSection" style="display:none; margin-top: 18px; border-top: 1px solid var(--border); padding-top: 18px;">
                     <div class="form-group">
                         <label class="form-label">ゴルフ場・コース名</label>
@@ -1351,7 +750,6 @@
                         <table class="scorecard-table" id="scoreEditorTable"></table>
                     </div>
                     
-                    <!-- 想い出写真追加エリア -->
                     <h3 style="margin: 20px 0 6px; color: var(--primary); font-size: 15px;">2. 想い出写真を追加 (<span id="photoCountLabel">0</span> / 5枚)</h3>
                     <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 8px;">写真をタップすると「★ カバー写真」に設定できます（JPEG/PNG形式）</p>
                     
@@ -1420,7 +818,6 @@
             </div>
             <div class="section-header-desc">あなた専用のスタッツサマリー・年別推移・対戦成績です</div>
 
-            <!-- 基本サマリー 3連カード -->
             <div class="analytics-summary-grid">
                 <div class="analytics-stat-card">
                     <div class="analytics-stat-label">生涯ベスト</div>
@@ -1436,7 +833,6 @@
                 </div>
             </div>
 
-            <!-- 1. 年別平均・実績 -->
             <div class="card" style="padding: 16px; margin-bottom: 16px;">
                 <h4 style="color: var(--primary); font-size: 14px; margin-bottom: 8px; border-left: 3px solid var(--gold); padding-left: 8px;">
                     📅 年別パフォーマンス
@@ -1444,7 +840,6 @@
                 <div id="analytics-yearly-container"></div>
             </div>
 
-            <!-- 2. ゴルフ場別実績＆平均 -->
             <div class="card" style="padding: 16px; margin-bottom: 16px;">
                 <h4 style="color: var(--primary); font-size: 14px; margin-bottom: 8px; border-left: 3px solid var(--gold); padding-left: 8px;">
                     ⛳ ゴルフ場別 実績＆平均
@@ -1452,7 +847,6 @@
                 <div id="analytics-courses-container"></div>
             </div>
 
-            <!-- 3. 友人との対戦成績 (H2H) -->
             <div class="card" style="padding: 16px; margin-bottom: 16px;">
                 <h4 style="color: var(--primary); font-size: 14px; margin-bottom: 8px; border-left: 3px solid var(--gold); padding-left: 8px;">
                     🥊 ゴルフ仲間との対戦成績
@@ -1542,12 +936,27 @@
         </div>
     </div>
 
-    <!-- 設定モーダル（テーマ切り替え ＆ 使い方ガイド） -->
+    <!-- 設定モーダル（テーマ切り替え ＆ 🌟AIアワード手動実行 ＆ ガイド） -->
     <div id="settingsModal" class="app-modal-overlay">
-        <div class="app-modal-box" style="text-align: left;">
+        <div class="app-modal-box" style="text-align: left; overflow-y: auto;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">
                 <h3 style="color:var(--primary); font-size:16px;">⚙️ 設定 ＆ ガイド</h3>
                 <button onclick="closeSettingsModal()" style="background:none; border:none; font-size:18px; color:var(--text-sub); cursor:pointer;">✕</button>
+            </div>
+
+            <!-- 🌟 管理者テスト用: 月間AI映えアワード手動実行セクション -->
+            <div style="background: var(--gold-light); border: 2px solid var(--gold-border); border-radius: 10px; padding: 12px; margin-bottom: 16px;">
+                <h4 style="color: var(--primary); font-size: 13px; font-weight: 700; margin-bottom: 4px; display:flex; align-items:center; gap:4px;">
+                    🏆 月間AI映えアワード審査 (テスト実行)
+                </h4>
+                <p style="font-size: 11px; color: var(--text-sub); margin-bottom: 10px;">
+                    対象月のカバー写真を集計し、芝山キシン・泉ピンそば・ドンマイ小西が審査・講評を行います。
+                </p>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <input type="month" id="awardTargetMonth" class="form-control" style="padding:6px 10px; font-size:13px; flex:1;">
+                    <button class="btn-main" id="btnRunAward" onclick="triggerManualAiAward()" style="width:auto; padding:8px 14px; font-size:12px; white-space:nowrap;">審査を実行</button>
+                </div>
+                <div id="awardStatusMsg" style="font-size:11px; color:var(--primary); font-weight:700; margin-top:6px;"></div>
             </div>
 
             <!-- テーマ切り替えセクション -->
@@ -1567,7 +976,7 @@
                 </div>
             </div>
 
-            <!-- 📖 使い方ガイド（マニュアル） -->
+            <!-- 📖 使い方ガイド -->
             <label class="form-label" style="font-size:12px; margin-top:8px; margin-bottom:4px;">📖 Golstagram クイックガイド</label>
             <div class="manual-section-box">
                 <div class="manual-hero-catch">
@@ -1582,15 +991,12 @@
 
                 <div class="manual-step-title">2. タイムラインで仲間と楽しむ</div>
                 <p>・<strong>横スワイプ</strong>: 複数写真は指で左右にスライドしてインスタ感覚で閲覧。<br>
-                ・<strong>リアクション</strong>: 「❤️ いいね！」や「💬 コメント（吹き出し）」からLINE風にチャット。<br>
-                ・<strong>LINEシェア</strong>: 自分の投稿はワンタップでLINEグループへ共有可能。</p>
+                ・<strong>リアクション</strong>: 「❤️ いいね！」や「💬 コメント」でチャット。<br>
+                ・<strong>月間AI映えアワード</strong>: 3人の個性的なAI審査員が毎月の映え写真を絶賛＆愛ある毒舌ツッコミ！</p>
 
                 <div class="manual-step-title">3. 振り返り ＆ スタッツ分析</div>
-                <p>・<strong>Golsta Memory（振り返り）</strong>: 仲間別・ゴルフ場別の過去履歴をドリルダウン。<br>
-                ・<strong>Golsta Analytics（分析）</strong>: ベスト・通算平均・年別推移・仲間との対戦勝敗（〇勝〇敗）を自動集計。</p>
-
-                <div class="manual-step-title">4. プロフィール設定</div>
-                <p>・「メンバー」タブから自分のアイコン画像や名前を変更可能。登録仲間の一覧にも自動同期されます。</p>
+                <p>・<strong>Golsta Memory</strong>: 仲間別・ゴルフ場別の過去履歴をドリルダウン。<br>
+                ・<strong>Golsta Analytics</strong>: 生涯ベスト・通算平均・年別推移・仲間との対戦勝敗を自動集計。</p>
 
                 <div class="manual-trademark-footer">
                     Produced by <strong>Long Field LLC ®</strong><br>
@@ -1657,10 +1063,15 @@
 
         let activeCommentRoundId = null;
 
-        // テーマ切り替え機能
         function initAppTheme() {
             const savedTheme = localStorage.getItem('golf_app_theme') || 'sepia';
             changeAppTheme(savedTheme, false);
+            
+            // アワード年月初期値（今月）
+            const now = new Date();
+            const ymStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            const awardMonthInput = document.getElementById('awardTargetMonth');
+            if (awardMonthInput) awardMonthInput.value = ymStr;
         }
 
         function changeAppTheme(themeName, showToastMsg = true) {
@@ -1688,14 +1099,12 @@
 
         initAppTheme();
 
-        // カルーセル スクロール連動インジケーター更新
         function handleCarouselScroll(trackEl, roundIdx) {
             const scrollLeft = trackEl.scrollLeft;
             const slideWidth = trackEl.clientWidth;
             if (!slideWidth) return;
 
             const currentIndex = Math.round(scrollLeft / slideWidth);
-            
             const badge = document.getElementById(`carousel-badge-${roundIdx}`);
             const total = trackEl.children.length;
             if (badge) {
@@ -1708,7 +1117,6 @@
             });
         }
 
-        // LINE共有URL生成
         function getLineShareUrl(roundData) {
             const myScore = roundData.players && roundData.players[0] ? roundData.players[0].total_score : '-';
             const companionNames = (roundData.players || []).map(p => p.cart_name).join(', ');
@@ -1725,7 +1133,26 @@
             window.open(url, '_blank');
         }
 
-        // いいね！（Like）トグル処理
+        function shareAwardToLine(roundId) {
+            const r = rounds.find(item => item.id === roundId);
+            if (!r || !r.awardData) return;
+            const awards = r.awardData.awards || [];
+            const grand = awards.find(a => a.award_type === 'grand_prize');
+            const booby = awards.find(a => a.award_type === 'booby_prize');
+            const appUrl = window.location.origin + window.location.pathname;
+
+            let text = `👑【Golstagram 月間AI映えアワード発表！】\n📅 対象月: ${r.awardData.targetMonth}\n\n`;
+            if (grand) {
+                text += `🏆 最優秀賞: 「${grand.award_name}」\n受賞者: ${grand.target_user_name}さん\n審査員: ${grand.judge}\n\n`;
+            }
+            if (booby) {
+                text += `😂 ブービー賞: 「${booby.award_name}」\n受賞者: ${booby.target_user_name}さん\nコメント: ${booby.comment}\n\n`;
+            }
+            text += `👇 全ての審査結果と写真はこちら\n${appUrl}`;
+            const url = `https://line.me/R/msg/text/?${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+
         async function toggleLike(roundIndex) {
             const visibleRounds = getVisibleTimelineRounds();
             const targetRound = visibleRounds[roundIndex];
@@ -1750,13 +1177,12 @@
             }
         }
 
-        // Instagram風 専用コメントシートの開閉
         function openCommentSheet(roundId) {
             const r = rounds.find(item => item.id === roundId);
             if (!r) return;
 
             activeCommentRoundId = roundId;
-            document.getElementById('sheetRoundTitle').innerText = `(${r.courseName})`;
+            document.getElementById('sheetRoundTitle').innerText = r.isAwardPost ? `(🏆 ${r.awardData.targetMonth} アワード)` : `(${r.courseName})`;
             renderSheetComments(r);
 
             const overlay = document.getElementById('commentSheetOverlay');
@@ -1844,7 +1270,6 @@
             }
         }
 
-        // UI通知・モーダルヘルパー
         function showToast(msg) {
             const toast = document.getElementById('customToast');
             toast.innerText = msg;
@@ -1945,7 +1370,6 @@
             });
         }
 
-        // Firestore ユーザープロフィール同期リスナー
         db.collection("users").onSnapshot((snapshot) => {
             globalUsersMap = {};
             snapshot.forEach((doc) => {
@@ -1958,7 +1382,6 @@
             renderTimeline();
         });
 
-        // Firestore リアルタイム同期
         db.collection("rounds").onSnapshot((snapshot) => {
             rounds = [];
             snapshot.forEach((doc) => {
@@ -2682,11 +2105,11 @@
 
         async function deleteRound(e, roundId) {
             e.stopPropagation();
-            const ok = await showAppConfirm('ラウンド削除', 'このラウンド記録を削除してもよろしいですか？（全員の画面から削除されます）');
+            const ok = await showAppConfirm('削除の確認', 'この投稿・アワード記録を削除してもよろしいですか？');
             if (ok) {
                 try {
                     await db.collection("rounds").doc(roundId).delete();
-                    showToast('🗑️ ラウンドを削除しました');
+                    showToast('🗑️ 削除しました');
                 } catch (err) {
                     await showAppAlert('削除エラー', err.message);
                 }
@@ -2694,6 +2117,7 @@
         }
 
         function isRoundVisibleInTimeline(r) {
+            if (r.isAwardPost) return true; // アワードは全員公開
             if (r.visibility === 'private') return false;
             if (r.visibility === 'members_only') {
                 const isAuthor = (r.authorName === myProfile.name);
@@ -2709,6 +2133,7 @@
 
         function getMyAccessibleRounds() {
             return rounds.filter(r => {
+                if (r.isAwardPost) return false;
                 if (r.visibility === 'private') {
                     return (r.authorName === myProfile.name);
                 }
@@ -2721,6 +2146,204 @@
             });
         }
 
+        // ==========================================
+        // 🌟 月間AI映えアワード 審査実行エンジン (Gemini API)
+        // ==========================================
+        async function triggerManualAiAward() {
+            const targetMonth = document.getElementById('awardTargetMonth').value;
+            const statusEl = document.getElementById('awardStatusMsg');
+            const btnRun = document.getElementById('btnRunAward');
+
+            if (!targetMonth) {
+                await showAppAlert('確認', '審査対象の年月を選択してください。');
+                return;
+            }
+
+            // 対象月のカバー写真を持つラウンドを抽出
+            const targetCandidates = [];
+            rounds.forEach(r => {
+                if (r.isAwardPost) return;
+                const rMonth = (r.playDate || '').substring(0, 7);
+                if (rMonth === targetMonth && r.photos && r.photos.length > 0) {
+                    const coverIdx = r.bestPhotoIndex || 0;
+                    const coverPhoto = r.photos[coverIdx] || r.photos[0];
+                    if (coverPhoto) {
+                        targetCandidates.push({
+                            roundId: r.id,
+                            userName: r.authorName || 'メンバー',
+                            courseName: r.courseName || '',
+                            playDate: r.playDate,
+                            photoUrl: coverPhoto
+                        });
+                    }
+                }
+            });
+
+            if (targetCandidates.length === 0) {
+                await showAppAlert('審査対象なし', `${targetMonth} に投稿されたカバー写真付きのラウンド記録がありませんでした。`);
+                return;
+            }
+
+            const ok = await showAppConfirm(
+                'AIアワード審査の開始',
+                `${targetMonth} のカバー写真 ${targetCandidates.length} 枚をAI審査員（芝山キシン・泉ピンそば・ドンマイ小西）に提出します。\n審査を実行しますか？`,
+                '審査開始！',
+                'キャンセル'
+            );
+            if (!ok) return;
+
+            btnRun.disabled = true;
+            statusEl.innerText = 'AI審査員が写真を選考中...📸';
+
+            try {
+                // Geminiに渡す画像パーツを構築
+                const parts = [
+                    {
+                        text: `あなたはゴルフ思い出共有アプリ「Golstagram」の月間AI映えアワード審査委員会です。
+対象月: ${targetMonth}。提供された ${targetCandidates.length} 枚のゴルフ写真から、以下の3人の審査員キャラクターとして「最優秀賞」「優秀賞」「ブービー賞」の計3つの賞を選出・講評してください。
+
+【審査員設定と選考基準】
+1. 芝山キシン（ロマン派プロカメラマン）
+   - トーン：情熱的、ドラマチック、カメラや構図の専門用語を交える。
+   - 最優秀賞：躍動感、光の美しさ、ゴルフ場の美しい借景などを絶賛。
+   - ブービー賞：ピンボケ、変なシャッタータイミング、傾いた構図などをプロ目線で愛を込めてイジる。
+
+2. 泉ピンそば（関西弁のお茶目なベテランキャディ）
+   - トーン：親しみやすいコテコテの関西弁、ゴルフ歴40年のオカン口調。
+   - 最優秀/優秀賞：ナイスショットの気配、プレイヤーの満面の笑顔、楽しそうな雰囲気を豪快に褒める。
+   - ブービー賞：バンカー脱出の苦闘、深いラフ、OBの哀愁など「ゴルフあるある」を大笑いしながら励ます。
+
+3. ドンマイ小西（辛口ファッション＆映え評論家）
+   - トーン：美意識が高い、独自のファッション哲学、口癖は「ドンマイ！」「〜でしょ！」。
+   - 最優秀/優秀賞：ウェアの色使い、芝とのコントラスト、スタイリッシュな着こなしを絶賛。
+   - ブービー賞：地味すぎるコーデ、上下の柄の衝突、汗だくでヨレヨレな姿など、思わず「ドンマイ！」と言いたくなるポイントをユーモアたっぷりに愛ある毒舌でバッサリ斬る。
+
+【ルール】
+- 3人の審査員がそれぞれ1つずつ異なる賞を担当してください（例：芝山＝最優秀賞、泉＝優秀賞、ドンマイ＝ブービー賞）。
+- 各賞にはユニークでキャッチーな賞の名称（award_name）を付けてください（例: 奇跡の借景ナイスイン賞、砂漠のオアシス迷走賞など）。
+- 必ず以下のJSONフォーマットのみを出力してください。Markdown等の装飾は不要です。
+
+{
+  "awards": [
+    {
+      "judge": "芝山キシン",
+      "award_type": "grand_prize",
+      "award_name": "賞の名前",
+      "target_photo_id": "対象となった写真のインデックス番号 (0から始まる連番)",
+      "target_user_name": "受賞したメンバー名",
+      "comment": "審査員の熱い/面白い受賞コメント"
+    },
+    {
+      "judge": "泉ピンそば",
+      "award_type": "excellence_prize",
+      "award_name": "賞の名前",
+      "target_photo_id": "対象となった写真のインデックス番号",
+      "target_user_name": "受賞したメンバー名",
+      "comment": "審査員の受賞コメント"
+    },
+    {
+      "judge": "ドンマイ小西",
+      "award_type": "booby_prize",
+      "award_name": "賞の名前",
+      "target_photo_id": "対象となった写真のインデックス番号",
+      "target_user_name": "受賞したメンバー名",
+      "comment": "審査員の受賞コメント"
+    }
+  ]
+}`
+                    }
+                ];
+
+                targetCandidates.forEach((c, cIdx) => {
+                    const base64Data = c.photoUrl.split(',')[1] || c.photoUrl;
+                    parts.push({ text: `【写真インデックス: ${cIdx}】 撮影/投稿: ${c.userName}（${c.courseName}）` });
+                    if (c.photoUrl.startsWith('data:image')) {
+                        parts.push({ inlineData: { mimeType: "image/jpeg", data: base64Data } });
+                    }
+                });
+
+                const mRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
+                const mData = await mRes.json();
+                const candidateModels = (mData.models || []).filter(m => 
+                    m.supportedGenerationMethods && 
+                    m.supportedGenerationMethods.includes('generateContent') && 
+                    !m.name.includes('embedding')
+                );
+
+                let parsedAwardJSON = null;
+                for (const model of candidateModels) {
+                    try {
+                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model.name}:generateContent?key=${GEMINI_API_KEY}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ contents: [{ parts: parts }] })
+                        });
+                        const resData = await res.json();
+                        if (res.ok && resData.candidates?.[0]?.content?.parts?.[0]?.text) {
+                            let raw = resData.candidates[0].content.parts[0].text;
+                            const match = raw.match(/\{[\s\S]*\}/);
+                            if (match) {
+                                parsedAwardJSON = JSON.parse(match[0]);
+                                break;
+                            }
+                        }
+                    } catch (e) {
+                        continue;
+                    }
+                }
+
+                if (!parsedAwardJSON || !parsedAwardJSON.awards) {
+                    throw new Error('審査結果のJSON生成に失敗しました。もう一度お試しください。');
+                }
+
+                // target_photo_id（インデックス）から実際の写真URLを紐付け
+                parsedAwardJSON.awards.forEach(a => {
+                    const idxNum = parseInt(a.target_photo_id, 10) || 0;
+                    const matchedCandidate = targetCandidates[idxNum] || targetCandidates[0];
+                    a.photoUrl = matchedCandidate.photoUrl;
+                    a.courseName = matchedCandidate.courseName;
+                    a.playDate = matchedCandidate.playDate;
+                    if (!a.target_user_name || a.target_user_name === 'メンバー') {
+                        a.target_user_name = matchedCandidate.userName;
+                    }
+                });
+
+                // アワード特別投稿としてFirestoreに保存
+                const awardPostId = `award_${targetMonth.replace('-', '_')}_${Date.now()}`;
+                const awardPostData = {
+                    isAwardPost: true,
+                    authorName: 'Golstagram AI審査委員会',
+                    authorAvatar: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=150',
+                    playDate: `${targetMonth}-28`, // 月末日付け
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    visibility: 'friends',
+                    awardData: {
+                        targetMonth: targetMonth,
+                        awards: parsedAwardJSON.awards
+                    },
+                    likes: [],
+                    comments: []
+                };
+
+                await db.collection("rounds").doc(awardPostId).set(awardPostData);
+                
+                statusEl.innerText = `🎉 ${targetMonth} AI映えアワードの選出とタイムライン投稿が完了しました！`;
+                showToast(`🏆 ${targetMonth} 月間AIアワードを発表しました！`);
+                closeSettingsModal();
+                showScreen('screen-home');
+
+            } catch (err) {
+                console.error("アワード審査エラー:", err);
+                statusEl.innerText = '審査エラー: ' + err.message;
+                await showAppAlert('AI審査エラー', err.message);
+            } finally {
+                btnRun.disabled = false;
+            }
+        }
+
+        // ==========================================
+        // タイムライン描画 (通常投稿 ＆ 🌟AIアワード特別カード)
+        // ==========================================
         function renderTimeline() {
             const list = document.getElementById('timeline-list');
             const visibleRounds = getVisibleTimelineRounds();
@@ -2729,7 +2352,97 @@
                 list.innerHTML = '<div style="text-align:center; padding:50px 20px; color:var(--text-sub);">まだ表示できるラウンド履歴がありません。<br>右下のボタンから想い出を登録してください⛳</div>';
                 return;
             }
+
             list.innerHTML = visibleRounds.map((r, idx) => {
+                const likes = r.likes || [];
+                const isLikedByMe = likes.includes(myProfile.name);
+                const likeCount = likes.length;
+                const commentCount = (r.comments || []).length;
+
+                // 🌟 AIアワード特別カードの場合の描画
+                if (r.isAwardPost && r.awardData) {
+                    const awards = r.awardData.awards || [];
+                    const deleteBtnHtml = (myProfile.name === '長原 健太') ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ アワード削除</button>` : '';
+
+                    const awardsHtml = awards.map(a => {
+                        let badgeClass = 'badge-excellence';
+                        let awardLabel = '🥈 優秀賞';
+                        let judgeIcon = '⛳';
+
+                        if (a.award_type === 'grand_prize') {
+                            badgeClass = 'badge-grand';
+                            awardLabel = '🏆 最優秀賞';
+                            judgeIcon = '📷';
+                        } else if (a.award_type === 'booby_prize') {
+                            badgeClass = 'badge-booby';
+                            awardLabel = '😂 ブービー賞';
+                            judgeIcon = '🕶️';
+                        }
+
+                        return `
+                            <div class="award-item-block">
+                                <div class="award-item-badge ${badgeClass}">
+                                    <span>${awardLabel}</span>
+                                    <span style="font-weight:700;">「${a.award_name}」</span>
+                                </div>
+                                
+                                <div style="font-size:12px; font-weight:700; color:var(--primary); margin-top:2px;">
+                                    👤 受賞者: <strong>${a.target_user_name}</strong> さん （${a.courseName || ''}）
+                                </div>
+
+                                <div class="award-photo-container">
+                                    <img src="${a.photoUrl}">
+                                </div>
+
+                                <div class="award-judge-bubble">
+                                    <div class="award-judge-name">${judgeIcon} 審査員：${a.judge} の講評</div>
+                                    <div>${a.comment}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div class="card award-banner-card">
+                            ${deleteBtnHtml}
+                            <div class="award-badge-header">
+                                <span>👑 月間AI映えアワード【${r.awardData.targetMonth}】</span>
+                                <span style="font-size:11px; font-weight:normal; opacity:0.9;">公式審査発表</span>
+                            </div>
+
+                            <div style="padding: 12px 16px 6px;">
+                                <p style="font-size:12px; color:var(--text-sub);">
+                                    芝山キシン・泉ピンそば・ドンマイ小西による厳正なるAI写真審査結果です！🏌️‍♂️✨
+                                </p>
+                            </div>
+
+                            ${awardsHtml}
+
+                            <div class="card-body" style="padding-top:6px;">
+                                <div class="card-action-bar">
+                                    <div class="left-actions">
+                                        <button class="btn-action ${isLikedByMe ? 'liked' : ''}" onclick="toggleLike(${idx})">
+                                            <span>${isLikedByMe ? '❤️' : '🤍'}</span>
+                                            <span>いいね！</span>
+                                            ${likeCount > 0 ? `<span>${likeCount}</span>` : ''}
+                                        </button>
+                                        <button class="btn-action" onclick="openCommentSheet('${r.id}')">
+                                            <span>💬</span>
+                                            <span>コメント</span>
+                                            ${commentCount > 0 ? `<span>${commentCount}</span>` : ''}
+                                        </button>
+                                    </div>
+                                    <button class="btn-line-share" onclick="shareAwardToLine('${r.id}')">
+                                        <svg viewBox="0 0 24 24"><path d="M24 10.3c0-4.6-4.9-8.3-11-8.3S2 5.7 2 10.3c0 4.1 3.6 7.6 8.6 8.2.3.1.8.2.9.6.1.3.1.8 0 1.1-.1.4-.4 1.5-.5 1.8-.1.6-.6 2.3 2 1.3 2.6-1.1 7-4.1 9.6-7 1.4-1.6 2.4-3.4 2.4-5z"/></svg>
+                                        LINEで結果をシェア
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // 通常のラウンド投稿の場合の描画
                 const mainScore = (r.players && r.players[0]) ? `${r.players[0].cart_name}: ${r.players[0].total_score}` : '';
                 const authorAvatar = globalUsersMap[r.authorName] || r.authorAvatar || myProfile.avatar;
                 const authorName = r.authorName || myProfile.name;
@@ -2743,11 +2456,6 @@
                         LINEでシェア
                     </button>
                 ` : '';
-
-                const likes = r.likes || [];
-                const isLikedByMe = likes.includes(myProfile.name);
-                const likeCount = likes.length;
-                const commentCount = (r.comments || []).length;
 
                 let photoList = (r.photos && r.photos.length) ? [...r.photos] : ['https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600'];
                 if (r.photos && r.photos.length > 1 && r.bestPhotoIndex > 0 && r.bestPhotoIndex < r.photos.length) {
@@ -2782,7 +2490,7 @@
                     `;
                 } else {
                     carouselHtml = `
-                        <img src="${photoList[0]}" class="card-img" onclick="showDetail('${r.id}', 'home')" style="cursor:pointer;">
+                        <img src="${photoList[0]}" class="card-img" onclick="showDetail('${r.id}', 'home')" style="cursor:pointer; width:100%; height:260px; object-fit:cover; display:block;">
                     `;
                 }
 
@@ -2832,6 +2540,7 @@
             const visibleRounds = getVisibleTimelineRounds();
 
             visibleRounds.forEach(r => {
+                if (r.isAwardPost) return;
                 (r.photos || []).forEach(pUrl => {
                     allPhotos.push({
                         photoUrl: pUrl,
@@ -2987,7 +2696,6 @@
             }
         }
 
-        // 分析画面 (Analytics) の描画ロジック
         function renderAnalytics() {
             const accessibleRounds = getMyAccessibleRounds();
             const myName = myProfile.name;
@@ -3152,7 +2860,7 @@
 
         function showDetail(roundId, fromScreen = 'home') {
             const r = rounds.find(item => item.id === roundId);
-            if (!r) return;
+            if (!r || r.isAwardPost) return;
 
             const cover = (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600');
             const detail = document.getElementById('detail-content');
@@ -3195,7 +2903,7 @@
 
             detail.innerHTML = `
                 <div class="card">
-                    <img src="${cover}" class="card-img" style="height:260px;">
+                    <img src="${cover}" class="card-img" style="height:260px; width:100%; object-fit:cover;">
                     <div class="card-body">
                         ${editBtnHtml}
 
