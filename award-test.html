@@ -1572,17 +1572,27 @@
         }
 
         function updateCourseDatalist() {
-            const datalist = document.getElementById('pastCourseList');
-            if (!datalist) return;
+            const selectEl = document.getElementById('quickCourseSelect');
+            if (!selectEl) return;
+    
+            // 過去のラウンドから重複を除いたコース一覧を抽出（新しい順・あいうえお順）
             const pastCourses = rounds
                 .filter(r => !r.isAwardPost && r.courseName)
                 .map(r => r.courseName.trim());
             const uniqueCourses = Array.from(new Set(pastCourses)).filter(Boolean);
-            if (uniqueCourses.length === 0) {
-                uniqueCourses.push('熱海ゴルフ倶楽部', '川奈ホテルゴルフコース', '太平洋クラブ');
-            }
-            datalist.innerHTML = uniqueCourses.map(course => `<option value="${course}">`).join('');
-}
+
+            let optionsHtml = '<option value="">▼ 過去のコース履歴から選ぶ</option>';
+            uniqueCourses.forEach(c => {
+                optionsHtml += `<option value="${c}">${c}</option>`;
+            });
+            selectEl.innerHTML = optionsHtml;
+    }
+
+        function applyQuickCourseName(selectEl) {
+            if (!selectEl.value) return;
+            document.getElementById('courseName').value = selectEl.value;
+            selectEl.value = ''; // 選択後は先頭に戻す
+    }
 
         function initProfileScreen() {
             document.getElementById('myProfileName').value = myProfile.name;
