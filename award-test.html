@@ -727,9 +727,14 @@
                 <div id="parsedResultSection" style="display:none; margin-top: 18px; border-top: 1px solid var(--border); padding-top: 18px;">
                     <div class="form-group">
                         <label class="form-label">ゴルフ場・コース名</label>
-                        <input type="text" id="courseName" class="form-control" list="pastCourseList" placeholder="例: 熱海ゴルフ倶楽部">
-                        <datalist id="pastCourseList"></datalist>
-                    </div>
+                        <input type="text" id="courseName" class="form-control" placeholder="例: 熱海ゴルフ倶楽部" style="margin-bottom:6px;">
+                        <!-- スマホで確実に選べるクイックセレクトボックス -->
+                        <select id="quickCourseSelect" class="form-control" style="font-size:12px; padding:6px 10px; color:var(--text-sub); border:1px dashed var(--gold-border);" onchange="applyQuickCourseName(this)">
+                            <option value="">▼ 過去のコース履歴から選ぶ</option>
+                        </select>
+                </div>
+
+                    
                     <div class="form-group">
                         <label class="form-label">プレー日</label>
                         <input type="date" id="playDate" class="form-control">
