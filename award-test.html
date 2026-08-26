@@ -2655,7 +2655,9 @@
                         courseMap[r.courseName] = { count: 0, bestScore: 999, rounds: [] };
                     }
                     courseMap[r.courseName].count += 1;
-                    const myScore = r.players && r.players[0] ? r.players[0].total_score : null;
+                    const myPlayerObj = (r.players || []).find(p => p.cart_name === myName);
+                    const myScore = myPlayerObj ? myPlayerObj.total_score : null;
+                    
                     if (myScore) {
                         courseMap[r.courseName].bestScore = Math.min(courseMap[r.courseName].bestScore, myScore);
                     }
