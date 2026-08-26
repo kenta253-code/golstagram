@@ -1492,7 +1492,7 @@
             });
         }
 
-        // -------------------------------------------------------------
+    // -------------------------------------------------------------
         // リアルタイム同期（ユーザー情報 ＆ アイコン自動同期）
         // -------------------------------------------------------------
         db.collection("users").onSnapshot((snapshot) => {
@@ -1502,11 +1502,14 @@
                 if (d.name && d.avatar) {
                     globalUsersMap[d.name] = d.avatar;
                 }
-                if (myProfile && (doc.id === myProfile.id || d.name === myProfile.name) && d.avatar) {
-                    myProfile.avatar = d.avatar;
-                    localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
-                    const avatarEl = document.getElementById('myAvatarImg');
-                    if (avatarEl) avatarEl.src = d.avatar;
+                // 自分のデータかつ有効な画像がある場合のみ同期
+                if (myProfile && (doc.id === myProfile.id || d.name === myProfile.name)) {
+                    if (d.avatar && d.avatar.startsWith('data:image')) {
+                        myProfile.avatar = d.avatar;
+                        localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
+                        const avatarEl = document.getElementById('myAvatarImg');
+                        if (avatarEl) avatarEl.src = d.avatar;
+                    }
                 }
             });
             renderMemberList();
