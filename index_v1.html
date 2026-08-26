@@ -3058,6 +3058,17 @@
                 el.classList.toggle('open');
             });
         }
+
+        function toggleScoreDetail(type) {
+            document.querySelectorAll(`[id^="detail-${type}-"]`).forEach(el => {
+                el.classList.toggle('open');
+            });
+        }
+
+        // ★ここに以下の1行を追加します★
+        checkUserAuth();
+    </script>
+</body>
     </script>
     
 <!-- 🔑 初回ログイン・登録モーダル -->
