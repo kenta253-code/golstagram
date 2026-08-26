@@ -205,7 +205,12 @@
         .tab-btn.active svg { fill: var(--primary); filter: drop-shadow(0 2px 4px rgba(35, 56, 43, 0.25)); transform: translateY(-1px); }
         .tab-btn svg { width: 24px; height: 24px; fill: var(--text-sub); transition: 0.2s; }
 
-        .container { max-width: 600px; margin: 0 auto; padding: 18px 16px; width: 100%; }
+        ..container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: calc(64px + env(safe-area-inset-top)) 16px 18px; 
+            width: 100%; 
+        }
         .screen { display: none; }
         .screen.active { display: block; animation: fadeIn 0.25s ease-out; }
 
