@@ -401,6 +401,7 @@
             pointer-events: none;
             transition: opacity 0.25s ease;
         }
+        .comment-sheet-overlay.active .comment-sheet { transform: translateY(0); }
         .comment-sheet-overlay.active { opacity: 1; pointer-events: auto; }
         .comment-sheet {
             background: var(--card);
@@ -416,7 +417,6 @@
             transform: translateY(100%);
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .comment-sheet-overlay.active .comment-sheet { transform: translateY(0); }
         .comment-sheet-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--card);
@@ -1186,17 +1186,15 @@
             try {
                 const userDoc = await db.collection("users").doc(rawId).get();
 
-               if (userDoc.exists) {
-                const userData = userDoc.data();
-                myProfile = {
-                    id: rawId,
-                    name: userData.name || rawName || '長原 健太',
-                    avatar: userData.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
-                };
-                // 画面上のアイコン写真も即座に更新
-                const avatarEl = document.getElementById('myAvatarImg');
-                if (avatarEl) avatarEl.src = myProfile.avatar;
-                   
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    myProfile = {
+                        id: rawId,
+                        name: userData.name || rawName || '長原 健太',
+                        avatar: userData.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
+                    };
+                    const avatarEl = document.getElementById('myAvatarImg');
+                    if (avatarEl) avatarEl.src = myProfile.avatar;
                     showToast(`🎉 「${myProfile.name}」としてログインしました！`);
                 } else {
                     const name = rawName || '長原 健太';
@@ -1494,14 +1492,16 @@
             });
         }
 
-       db.collection("users").onSnapshot((snapshot) => {
+        // -------------------------------------------------------------
+        // リアルタイム同期（ユーザー情報 ＆ アイコン自動同期）
+        // -------------------------------------------------------------
+        db.collection("users").onSnapshot((snapshot) => {
             globalUsersMap = {};
             snapshot.forEach((doc) => {
                 const d = doc.data();
                 if (d.name && d.avatar) {
                     globalUsersMap[d.name] = d.avatar;
                 }
-                // クラウド側に自分の最新アイコンがあれば端末側にも自動同期
                 if (myProfile && (doc.id === myProfile.id || d.name === myProfile.name) && d.avatar) {
                     myProfile.avatar = d.avatar;
                     localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
@@ -1513,6 +1513,9 @@
             renderTimeline();
         });
 
+        // -------------------------------------------------------------
+        // リアルタイム同期（ラウンド履歴）
+        // -------------------------------------------------------------
         db.collection("rounds").onSnapshot((snapshot) => {
             rounds = [];
             snapshot.forEach((doc) => {
@@ -1521,9 +1524,7 @@
             rounds.sort((a, b) => {
                 const dateA = a.playDate || '';
                 const dateB = b.playDate || '';
-                if (dateA !== dateB) {
-                    return dateB.localeCompare(dateA);
-                }
+                if (dateA !== dateB) return dateB.localeCompare(dateA);
                 const timeA = a.createdAt?.seconds || 0;
                 const timeB = b.createdAt?.seconds || 0;
                 return timeB - timeA;
@@ -2214,7 +2215,6 @@
             }
 
             const targetRoundId = editingRoundId || ('round_' + Date.now());
-            // 変更後
             const roundData = {
                 authorId: myProfile.id || 'usr_nagahara',
                 authorName: myProfile.name,
@@ -2497,6 +2497,8 @@
         // ==========================================
         function renderTimeline() {
             const list = document.getElementById('timeline-list');
+            if (!list) return;
+
             const visibleRounds = getVisibleTimelineRounds();
 
             if (visibleRounds.length === 0) {
@@ -2516,19 +2518,9 @@
                     const deleteBtnHtml = (myProfile.name === '長原 健太') ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ アワード削除</button>` : '';
 
                     const awardsHtml = awards.map(a => {
-                        let badgeClass = 'badge-excellence';
-                        let awardLabel = '🥈 優秀賞';
-                        let judgeIcon = '⛳';
-
-                        if (a.award_type === 'grand_prize') {
-                            badgeClass = 'badge-grand';
-                            awardLabel = '🏆 最優秀賞';
-                            judgeIcon = '📷';
-                        } else if (a.award_type === 'booby_prize') {
-                            badgeClass = 'badge-booby';
-                            awardLabel = '😂 ブービー賞';
-                            judgeIcon = '🕶️';
-                        }
+                        let badgeClass = (a.award_type === 'grand_prize') ? 'badge-grand' : ((a.award_type === 'booby_prize') ? 'badge-booby' : 'badge-excellence');
+                        let awardLabel = (a.award_type === 'grand_prize') ? '🏆 最優秀賞' : ((a.award_type === 'booby_prize') ? '😂 ブービー賞' : '🥈 優秀賞');
+                        let judgeIcon = (a.award_type === 'grand_prize') ? '📷' : ((a.award_type === 'booby_prize') ? '🕶️' : '⛳');
 
                         return `
                             <div class="award-item-block">
@@ -2536,15 +2528,12 @@
                                     <span>${awardLabel}</span>
                                     <span style="font-weight:700;">「${a.award_name}」</span>
                                 </div>
-                                
                                 <div style="font-size:12px; font-weight:700; color:var(--primary); margin-top:2px;">
                                     👤 受賞者: <strong>${a.target_user_name}</strong> さん （${a.courseName || ''}）
                                 </div>
-
                                 <div class="award-photo-container">
                                     <img src="${a.photoUrl}">
                                 </div>
-
                                 <div class="award-judge-bubble">
                                     <div class="award-judge-name">${judgeIcon} 審査員：${a.judge} の講評</div>
                                     <div>${a.comment}</div>
@@ -2560,15 +2549,12 @@
                                 <span>👑 月間AI映えアワード【${r.awardData.targetMonth}】</span>
                                 <span style="font-size:11px; font-weight:normal; opacity:0.9;">公式審査発表</span>
                             </div>
-
                             <div style="padding: 12px 16px 6px;">
                                 <p style="font-size:12px; color:var(--text-sub);">
                                     芝山キシン・泉ピンそば・ドンマイ小西による厳正なるAI写真審査結果です！🏌️‍♂️✨
                                 </p>
                             </div>
-
                             ${awardsHtml}
-
                             <div class="card-body" style="padding-top:6px;">
                                 <div class="card-action-bar">
                                     <div class="left-actions">
@@ -2593,16 +2579,13 @@
                     `;
                 }
 
-                // 通常のラウンド投稿
-                const mainScore = (r.players && r.players[0]) ? `${r.players[0].cart_name}: ${r.players[0].total_score}` : '';
-                // 変更後
+                // 通常のラウンド投稿（最新アイコンを反映）
                 const isMyPost = (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
                 const authorAvatar = isMyPost 
                     ? (myProfile.avatar || globalUsersMap[myProfile.name] || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150')
                     : (globalUsersMap[r.authorName] || r.authorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150');
                 const authorName = r.authorName || myProfile.name;
-                
-                const isMyPost = (r.authorId && r.authorId === myProfile.id) || (authorName === myProfile.name);
+                const mainScore = (r.players && r.players[0]) ? `${r.players[0].cart_name}: ${r.players[0].total_score}` : '';
                 const deleteBtnHtml = isMyPost ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ 削除</button>` : '';
 
                 const lineShareBtnHtml = isMyPost ? `
@@ -2638,9 +2621,7 @@
                             <div class="carousel-track" onscroll="handleCarouselScroll(this, ${idx})">
                                 ${slidesHtml}
                             </div>
-                            <div class="carousel-dots">
-                                ${dotsHtml}
-                            </div>
+                            <div class="carousel-dots">${dotsHtml}</div>
                         </div>
                     `;
                 } else {
@@ -2652,7 +2633,6 @@
                 return `
                     <div class="card">
                         ${deleteBtnHtml}
-                        
                         <div class="card-header-user">
                             <img src="${authorAvatar}" class="avatar-img">
                             <div>
@@ -2739,7 +2719,6 @@
             const myName = myProfile.name ? myProfile.name.trim() : '長原 健太';
             const myNameNoSpace = myName.replace(/\s+/g, '');
 
-            // 自分が参加しているラウンドのみを抽出
             const accessibleRounds = rounds.filter(r => {
                 if (r.isAwardPost) return false;
                 const isAuthor = (r.authorId && r.authorId === myProfile.id) || (r.authorName && r.authorName.trim().replace(/\s+/g, '') === myNameNoSpace);
@@ -2807,7 +2786,6 @@
                     `;
                 }).join('') || '<p style="color:var(--text-sub); text-align:center; padding:20px;">データがありません</p>';
             } else {
-                // ゴルフ場別
                 const courseMap = {};
                 accessibleRounds.forEach(r => {
                     const courseName = (r.courseName || '未設定コース').trim();
@@ -3127,7 +3105,7 @@
             });
         }
 
-        // 起動時に認証チェックを実行
+        // 初期化処理の実行
         checkUserAuth();
     </script>
 </body>
