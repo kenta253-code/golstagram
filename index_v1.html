@@ -1012,7 +1012,7 @@
                 <div class="manual-step-title">2. タイムラインで仲間と楽しむ</div>
                 <p>・<strong>横スワイプ</strong>: 複数写真は指で左右にスライドしてインスタ感覚で閲覧。<br>
                 ・<strong>リアクション</strong>: 「❤️ いいね！」や「💬 コメント」でチャット。<br>
-                ・<strong>月間AI映えアワード</strong>: 3人の個性的なAI審査員が毎月の映え写真を絶賛＆愛ある毒舌ツッコミ！</p>
+                ・<strong>月間ゴルスタ映えアワード</strong>: 3人の個性的なAI審査員が毎月の映え写真を絶賛＆愛ある毒舌ツッコミ！</p>
 
                 <div class="manual-step-title">3. 振り返り ＆ スタッツ分析</div>
                 <p>・<strong>Golsta Memory</strong>: 仲間別・ゴルフ場別の過去履歴をドリルダウン。<br>
@@ -2519,8 +2519,8 @@
 
                 await db.collection("rounds").doc(awardPostId).set(awardPostData);
                 
-                statusEl.innerText = `🎉 ${targetMonth} AI映えアワードの選出とタイムライン投稿が完了しました！`;
-                showToast(`🏆 ${targetMonth} 月間AIアワードを発表しました！`);
+                statusEl.innerText = `🎉 ${targetMonth} ゴルスタ映えアワードの選出とタイムライン投稿が完了しました！`;
+                showToast(`🏆 ${targetMonth} 月間ゴルスタ映えアワードを発表しました！`);
                 closeSettingsModal();
                 showScreen('screen-home');
 
@@ -2587,7 +2587,7 @@
                         <div class="card award-banner-card">
                             ${deleteBtnHtml}
                             <div class="award-badge-header">
-                                <span>👑 月間AI映えアワード【${r.awardData.targetMonth}】</span>
+                                <span>👑 月間ゴルスタ映えアワード【${r.awardData.targetMonth}】</span>
                                 <span style="font-size:11px; font-weight:normal; opacity:0.9;">公式審査発表</span>
                             </div>
                             <div style="padding: 12px 16px 6px;">
