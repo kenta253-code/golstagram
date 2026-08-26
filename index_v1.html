@@ -1759,17 +1759,26 @@
             });
         }
 
-        async function updateProfileAvatar(input) {
-            if (input.files && input.files[0]) {
+       async function updateProfileAvatar(input) {
+           if (input.files && input.files[0]) {
+                const file = input.files[0];
                 try {
-                    const compressed = await compressImageFile(input.files[0], 200, 0.8);
+                // ① 選択した瞬間に即座に丸いアイコン画像をプレビュー表示
+                    const previewUrl = URL.createObjectURL(file);
+                    const avatarImg = document.getElementById('myAvatarImg');
+                    if (avatarImg) avatarImg.src = previewUrl;
+
+                    // ② バックグラウンドで保存用の軽量圧縮を実行
+                    const compressed = await compressImageFile(file, 200, 0.8);
                     myProfile.avatar = compressed;
-                    document.getElementById('myAvatarImg').src = compressed;
-                } catch (e) {
-                    await showAppAlert('エラー', e.message);
-                }
-            }
+                    if (avatarImg) avatarImg.src = compressed;
+
+                    showToast('📸 アイコンを選択しました。「更新保存」を押してください');
+        } catch (e) {
+            await showAppAlert('エラー', '画像の読み込みに失敗しました: ' + e.message);
         }
+    }
+}
 
        async function saveMyProfile() {
     const nameInput = document.getElementById('myProfileName');
