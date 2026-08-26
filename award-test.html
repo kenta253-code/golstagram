@@ -1625,11 +1625,11 @@
             localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
             
             try {
-                await db.collection("users").doc(myProfile.name).set({
-                    name: myProfile.name,
-                    avatar: myProfile.avatar,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+               await db.collection("users_dev").doc(myProfile.name).set({
+                   name: myProfile.name,
+                   avatar: myProfile.avatar,
+                   updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+               });
             } catch (e) {
                 console.error("プロフィール同期エラー:", e);
             }
