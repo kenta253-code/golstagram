@@ -1562,12 +1562,16 @@
 
         function updateCourseDatalist() {
             const datalist = document.getElementById('pastCourseList');
-            const uniqueCourses = Array.from(new Set(rounds.map(r => r.courseName).filter(Boolean)));
+            if (!datalist) return;
+            const pastCourses = rounds
+                .filter(r => !r.isAwardPost && r.courseName)
+                .map(r => r.courseName.trim());
+            const uniqueCourses = Array.from(new Set(pastCourses)).filter(Boolean);
             if (uniqueCourses.length === 0) {
                 uniqueCourses.push('熱海ゴルフ倶楽部', '川奈ホテルゴルフコース', '太平洋クラブ');
             }
             datalist.innerHTML = uniqueCourses.map(course => `<option value="${course}">`).join('');
-        }
+}
 
         function initProfileScreen() {
             document.getElementById('myProfileName').value = myProfile.name;
