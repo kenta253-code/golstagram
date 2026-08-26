@@ -1169,7 +1169,7 @@
             }
 
             try {
-                await db.collection("rounds").doc(targetRound.id).update({
+                await db.collection("rounds_dev").doc(targetRound.id).update({
                     likes: likes
                 });
             } catch (err) {
@@ -1260,7 +1260,7 @@
             });
 
             try {
-                await db.collection("rounds").doc(activeCommentRoundId).update({
+                await db.collection("rounds_dev").doc(activeCommentRoundId).update({
                     comments: updatedComments
                 });
                 input.value = '';
@@ -1382,7 +1382,7 @@
             renderTimeline();
         });
 
-        db.collection("rounds").onSnapshot((snapshot) => {
+        db.collection("rounds_dev").onSnapshot((snapshot) => {
             rounds = [];
             snapshot.forEach((doc) => {
                 rounds.push({ id: doc.id, ...doc.data() });
@@ -2076,13 +2076,13 @@
 
             try {
                 if (editingRoundId) {
-                    await db.collection("rounds").doc(editingRoundId).update(roundData);
+                    await db.collection("rounds_dev").doc(editingRoundId).update(roundData);
                     showToast('🎉 ラウンド情報を更新しました！');
                 } else {
                     roundData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                     roundData.comments = [];
                     roundData.likes = [];
-                    await db.collection("rounds").doc(targetRoundId).set(roundData);
+                    await db.collection("rounds_dev").doc(targetRoundId).set(roundData);
                     showToast('🎉 ラウンドの想い出をクラウドに保存しました！');
 
                     if (visibilityVal !== 'private') {
@@ -2108,7 +2108,7 @@
             const ok = await showAppConfirm('削除の確認', 'この投稿・アワード記録を削除してもよろしいですか？');
             if (ok) {
                 try {
-                    await db.collection("rounds").doc(roundId).delete();
+                    await db.collection("rounds_dev").doc(roundId).delete();
                     showToast('🗑️ 削除しました');
                 } catch (err) {
                     await showAppAlert('削除エラー', err.message);
@@ -2325,7 +2325,7 @@
                     comments: []
                 };
 
-                await db.collection("rounds").doc(awardPostId).set(awardPostData);
+                await db.collection("rounds_dev").doc(awardPostId).set(awardPostData);
                 
                 statusEl.innerText = `🎉 ${targetMonth} AI映えアワードの選出とタイムライン投稿が完了しました！`;
                 showToast(`🏆 ${targetMonth} 月間AIアワードを発表しました！`);
