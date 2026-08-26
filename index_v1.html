@@ -967,10 +967,10 @@
             <!-- 🌟 管理者テスト用: 月間AI映えアワード手動実行セクション -->
             <div style="background: var(--gold-light); border: 2px solid var(--gold-border); border-radius: 10px; padding: 12px; margin-bottom: 16px;">
                 <h4 style="color: var(--primary); font-size: 13px; font-weight: 700; margin-bottom: 4px; display:flex; align-items:center; gap:4px;">
-                    🏆 月間AI映えアワード審査 (テスト実行)
+                    🏆月間ゴルスタ映えアワード審査
                 </h4>
                 <p style="font-size: 11px; color: var(--text-sub); margin-bottom: 10px;">
-                    対象月のカバー写真を集計し、芝山キシン・泉ピンそば・ドンマイ小西が審査・講評を行います。
+                    AI審査員の芝山キシン・泉ピンそば・ドンマイ小西がカバー写真から月間アワードを選出します！
                 </p>
                 <div style="display:flex; gap:8px; align-items:center;">
                     <input type="month" id="awardTargetMonth" class="form-control" style="padding:6px 10px; font-size:13px; flex:1;">
@@ -1272,7 +1272,7 @@
             const booby = awards.find(a => a.award_type === 'booby_prize');
             const appUrl = window.location.origin + window.location.pathname;
 
-            let text = `👑【Golstagram 月間AI映えアワード発表！】\n📅 対象月: ${r.awardData.targetMonth}\n\n`;
+            let text = `👑【月間ゴルスタ映えアワード発表！】\n📅 対象月: ${r.awardData.targetMonth}\n\n`;
             if (grand) {
                 text += `🏆 最優秀賞: 「${grand.award_name}」\n受賞者: ${grand.target_user_name}さん\n審査員: ${grand.judge}\n\n`;
             }
@@ -2393,7 +2393,7 @@
             try {
                 const parts = [
                     {
-                        text: `あなたはゴルフ思い出共有アプリ「Golstagram」の月間AI映えアワード審査委員会です。
+                        text: `あなたはtext: `あなたはゴルフ思い出共有アプリ「Golstagram」の月間ゴルスタ映えアワード審査委員会です。ゴルフ思い出共有アプリ「Golstagram」の月間AI映えアワード審査委員会です。
 対象月: ${targetMonth}。提供された ${targetCandidates.length} 枚のゴルフ写真から、以下の3人の審査員キャラクターとして「最優秀賞」「優秀賞」「ブービー賞」の計3つの賞を選出・講評してください。
 
 【審査員設定と選考基準】
