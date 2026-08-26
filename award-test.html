@@ -2606,122 +2606,144 @@
 
         function renderSummary(type) {
             const container = document.getElementById('summary-content');
-            const accessibleRounds = getMyAccessibleRounds();
+            const myName = myProfile.name ? myProfile.name.trim() : '長原 健太';
+            const myNameNoSpace = myName.replace(/\s+/g, '');
 
-            if (type === 'members') {
-                const memberMap = {};
-                accessibleRounds.forEach(r => {
-                    (r.players || []).forEach(p => {
-                        if (!memberMap[p.cart_name]) {
-                            memberMap[p.cart_name] = { count: 0, scores: [], rounds: [] };
-                        }
-                        memberMap[p.cart_name].count += 1;
-                        if (p.total_score) memberMap[p.cart_name].scores.push(p.total_score);
-                        memberMap[p.cart_name].rounds.push({
-                            roundId: r.id,
-                            courseName: r.courseName,
-                            playDate: r.playDate,
-                            score: p.total_score,
-                            isPrivate: (r.visibility === 'private'),
-                            photo: (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
-                        });
-                    });
-                });
+            // 自分が参加しているラウンドのみを抽出（投稿者本人 または 同伴プレイヤーに名前が含まれる）
+            const accessibleRounds = rounds.filter(r => {
+                if (r.isAwardPost) return false;
+            const isAuthor = (r.authorName && r.authorName.trim().replace(/\s+/g, '') === myNameNoSpace);
+            const isPlayer = (r.players || []).some(p => {
+            const pName = (p.cart_name || '').trim().replace(/\s+/g, '');
+            return pName === myNameNoSpace || pName.includes(myNameNoSpace);
+        });
+            return isAuthor || isPlayer;
+        });
 
-                container.innerHTML = Object.keys(memberMap).map((name, idx) => {
-                    const data = memberMap[name];
-                    const avg = data.scores.length ? (data.scores.reduce((a,b)=>a+b, 0) / data.scores.length).toFixed(1) : '-';
-                    const best = data.scores.length ? Math.min(...data.scores) : '-';
-
-                    const historyList = data.rounds.map(rd => `
-                        <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
-                            <img src="${rd.photo}" class="drilldown-thumb">
-                            <div style="flex:1;">
-                                <div style="font-weight:700; color:var(--primary);">${rd.courseName} ${rd.isPrivate ? '<span style="font-size:10px; color:var(--text-sub);">🔒非公開</span>' : ''}</div>
-                                <div style="color:var(--text-sub); font-size:11px;">📅 ${rd.playDate}</div>
-                            </div>
-                            <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:15px;">${rd.score}</div>
-                        </div>
-                    `).join('');
-
-                    return `
-                        <div class="card" style="padding:16px; margin-bottom:12px;">
-                            <div onclick="toggleDrilldown('drilldown-member-${idx}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-                                <div>
-                                    <div style="font-size:16px; font-weight:700; color:var(--primary);">👤 ${name}</div>
-                                    <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">
-                                        ラウンド: <strong>${data.count}回</strong> ｜ ベスト: <strong>${best}</strong> ｜ 平均: <strong>${avg}</strong>
-                                    </div>
-                                </div>
-                                <span style="font-size:12px; color:var(--gold); font-weight:700;">▼ 履歴</span>
-                            </div>
-                            
-                            <div class="drilldown-container" id="drilldown-member-${idx}">
-                                <div style="font-size:11px; font-weight:700; color:var(--text-sub); margin-bottom:6px;">過去のラウンド対戦履歴（タップで詳細）:</div>
-                                ${historyList}
-                            </div>
-                        </div>
-                    `;
-                }).join('') || '<p style="color:var(--text-sub); text-align:center; padding:20px;">データがありません</p>';
-            } else {
-                const courseMap = {};
-                accessibleRounds.forEach(r => {
-                    if (!courseMap[r.courseName]) {
-                        courseMap[r.courseName] = { count: 0, bestScore: 999, rounds: [] };
+        if (type === 'members') {
+            const memberMap = {};
+            accessibleRounds.forEach(r => {
+                (r.players || []).forEach(p => {
+                    const pName = (p.cart_name || 'プレイヤー').trim();
+                    if (!memberMap[pName]) {
+                    memberMap[pName] = { count: 0, scores: [], rounds: [] };
                     }
-                    courseMap[r.courseName].count += 1;
-                    const myPlayerObj = (r.players || []).find(p => p.cart_name === myName);
-                    const myScore = myPlayerObj ? myPlayerObj.total_score : null;
-                    
-                    if (myScore) {
-                        courseMap[r.courseName].bestScore = Math.min(courseMap[r.courseName].bestScore, myScore);
-                    }
-                    courseMap[r.courseName].rounds.push({
+                    memberMap[pName].count += 1;
+                    if (p.total_score) memberMap[pName].scores.push(p.total_score);
+                    memberMap[pName].rounds.push({
                         roundId: r.id,
-                        playDate: r.playDate,
-                        score: myScore,
+                        courseName: r.courseName || '未設定コース',
+                        playDate: r.playDate || '',
+                        score: p.total_score || '-',
                         isPrivate: (r.visibility === 'private'),
-                        playersCount: (r.players || []).length,
                         photo: (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
-                    });
                 });
+            });
+        });
 
-                container.innerHTML = Object.keys(courseMap).map((course, idx) => {
-                    const data = courseMap[course];
-                    const best = data.bestScore === 999 ? '-' : data.bestScore;
+        container.innerHTML = Object.keys(memberMap).map((name, idx) => {
+            const data = memberMap[name];
+            const avg = data.scores.length ? (data.scores.reduce((a,b)=>a+b, 0) / data.scores.length).toFixed(1) : '-';
+            const best = data.scores.length ? Math.min(...data.scores) : '-';
 
-                    const historyList = data.rounds.map(rd => `
-                        <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
-                            <img src="${rd.photo}" class="drilldown-thumb">
-                            <div style="flex:1;">
-                                <div style="font-weight:700; color:var(--primary);">📅 ${rd.playDate} ${rd.isPrivate ? '<span style="font-size:10px; color:var(--text-sub);">🔒非公開</span>' : ''}</div>
-                                <div style="color:var(--text-sub); font-size:11px;">同伴者数: ${rd.playersCount}名</div>
-                            </div>
-                            <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:15px;">スコア: ${rd.score || '-'}</div>
-                        </div>
-                    `).join('');
+            const historyList = data.rounds.map(rd => `
+                <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
+                    <img src="${rd.photo}" class="drilldown-thumb">
+                    <div style="flex:1;">
+                        <div style="font-weight:700; color:var(--primary);">${rd.courseName} ${rd.isPrivate ? '<span style="font-size:10px; color:var(--text-sub);">🔒非公開</span>' : ''}</div>
+                        <div style="color:var(--text-sub); font-size:11px;">📅 ${rd.playDate}</div>
+                    </div>
+                    <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:15px;">${rd.score}</div>
+                </div>
+            `).join('');
 
-                    return `
-                        <div class="card" style="padding:16px; margin-bottom:12px;">
-                            <div onclick="toggleDrilldown('drilldown-course-${idx}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-                                <div>
-                                    <div style="font-size:16px; font-weight:700; color:var(--primary);">⛳ ${course}</div>
-                                    <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">
-                                        訪問回数: <strong>${data.count}回</strong> ｜ ベストスコア: <strong>${best}</strong>
-                                    </div>
-                                </div>
-                                <span style="font-size:12px; color:var(--gold); font-weight:700;">▼ 履歴</span>
-                            </div>
-
-                            <div class="drilldown-container" id="drilldown-course-${idx}">
-                                <div style="font-size:11px; font-weight:700; color:var(--text-sub); margin-bottom:6px;">このコースでの過去ラウンド（タップで詳細）:</div>
-                                ${historyList}
+            return `
+                <div class="card" style="padding:16px; margin-bottom:12px;">
+                    <div onclick="toggleDrilldown('drilldown-member-${idx}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-size:16px; font-weight:700; color:var(--primary);">👤 ${name}</div>
+                            <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">
+                                ラウンド: <strong>${data.count}回</strong> ｜ ベスト: <strong>${best}</strong> ｜ 平均: <strong>${avg}</strong>
                             </div>
                         </div>
-                    `;
-                }).join('') || '<p style="color:var(--text-sub); text-align:center; padding:20px;">データがありません</p>';
+                        <span style="font-size:12px; color:var(--gold); font-weight:700;">▼ 履歴</span>
+                    </div>
+                    
+                    <div class="drilldown-container" id="drilldown-member-${idx}">
+                        <div style="font-size:11px; font-weight:700; color:var(--text-sub); margin-bottom:6px;">過去のラウンド対戦履歴（タップで詳細）:</div>
+                        ${historyList}
+                    </div>
+                </div>
+            `;
+        }).join('') || '<p style="color:var(--text-sub); text-align:center; padding:20px;">データがありません</p>';
+    } else {
+        // ゴルフ場別
+        const courseMap = {};
+        accessibleRounds.forEach(r => {
+            const courseName = (r.courseName || '未設定コース').trim();
+            if (!courseMap[courseName]) {
+                courseMap[courseName] = { count: 0, bestScore: 999, rounds: [] };
             }
-        }
+            courseMap[courseName].count += 1;
+
+            // 自分のスコアを取得（名前の一致、または自分が先頭プレイヤーの場合）
+            const myPlayerObj = (r.players || []).find(p => {
+                const pName = (p.cart_name || '').trim().replace(/\s+/g, '');
+                return pName === myNameNoSpace || pName.includes(myNameNoSpace);
+            }) || (r.players && r.players[0] ? r.players[0] : null);
+
+            const myScore = (myPlayerObj && myPlayerObj.total_score) ? myPlayerObj.total_score : null;
+
+            if (myScore) {
+                courseMap[courseName].bestScore = Math.min(courseMap[courseName].bestScore, myScore);
+            }
+
+            courseMap[courseName].rounds.push({
+                roundId: r.id,
+                playDate: r.playDate || '',
+                score: myScore || '-',
+                isPrivate: (r.visibility === 'private'),
+                playersCount: (r.players || []).length,
+                photo: (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
+            });
+        });
+
+        container.innerHTML = Object.keys(courseMap).map((course, idx) => {
+            const data = courseMap[course];
+            const best = data.bestScore === 999 ? '-' : data.bestScore;
+
+            const historyList = data.rounds.map(rd => `
+                <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
+                    <img src="${rd.photo}" class="drilldown-thumb">
+                    <div style="flex:1;">
+                        <div style="font-weight:700; color:var(--primary);">📅 ${rd.playDate} ${rd.isPrivate ? '<span style="font-size:10px; color:var(--text-sub);">🔒非公開</span>' : ''}</div>
+                        <div style="color:var(--text-sub); font-size:11px;">同伴者数: ${rd.playersCount}名</div>
+                    </div>
+                    <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:15px;">スコア: ${rd.score}</div>
+                </div>
+            `).join('');
+
+            return `
+                <div class="card" style="padding:16px; margin-bottom:12px;">
+                    <div onclick="toggleDrilldown('drilldown-course-${idx}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-size:16px; font-weight:700; color:var(--primary);">⛳ ${course}</div>
+                            <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">
+                                訪問回数: <strong>${data.count}回</strong> ｜ ベストスコア: <strong>${best}</strong>
+                            </div>
+                        </div>
+                        <span style="font-size:12px; color:var(--gold); font-weight:700;">▼ 履歴</span>
+                    </div>
+
+                    <div class="drilldown-container" id="drilldown-course-${idx}">
+                        <div style="font-size:11px; font-weight:700; color:var(--text-sub); margin-bottom:6px;">このコースでの過去ラウンド（タップで詳細）:</div>
+                        ${historyList}
+                    </div>
+                </div>
+            `;
+        }).join('') || '<p style="color:var(--text-sub); text-align:center; padding:20px;">データがありません</p>';
+    }
+}
 
         function renderAnalytics() {
             const accessibleRounds = getMyAccessibleRounds();
