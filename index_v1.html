@@ -1238,14 +1238,17 @@
 
             <div class="form-group" style="margin-bottom:12px;">
                 <label class="form-label" style="font-size:12px;">ユーザーID（半角英数字・変更不可）</label>
-                <input type="text" id="authUserIdInput" class="form-control" placeholder="例: kenta1971" style="text-transform: lowercase;">
+                <input type="text" id="authUserIdInput" class="form-control" style="text-transform: lowercase;">
             </div>
 
             <div class="form-group" style="margin-bottom:18px;">
                 <label class="form-label" style="font-size:12px;">お名前・ニックネーム（表示名）</label>
-                <input type="text" id="authUserNameInput" class="form-control" placeholder="例: 長原 健太">
+                <input type="text" id="authUserNameInput" class="form-control">
             </div>
 
+            <button class="btn-main" onclick="handleAuthSubmit()">Golstagram を始める</button>
+        </div>
+    </div>
             <button class="btn-main" onclick="handleAuthSubmit()">Golstagram を始める</button>
         </div>
     </div>
