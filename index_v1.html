@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+html_content = '''<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -180,7 +180,7 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ========= FAB フローティングボタングループ ========= */
+        /* FAB フローティングボタングループ */
         .fab-container {
             position: fixed;
             right: 16px;
@@ -310,7 +310,7 @@
         .btn-line-share:hover { opacity: 0.9; }
         .btn-line-share svg { width: 14px; height: 14px; fill: #ffffff; }
 
-        /* ========= 🌟 Golstaマッチ専用カードデザイン ========= */
+        /* Golstaマッチ専用カードデザイン */
         .match-card {
             border: 2px solid var(--gold);
             background: linear-gradient(135deg, #fffcf5 0%, #faf4e6 100%);
@@ -388,7 +388,7 @@
         .vote-badge-maybe { background: #fff8e1; color: #b78103; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
         .vote-badge-ng { background: #fce8e6; color: #c5221f; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
 
-        /* ========= 🌟 AI映えアワード専用カードデザイン ========= */
+        /* AI映えアワード専用カードデザイン */
         .award-banner-card {
             background: linear-gradient(135deg, #fffdf8 0%, #faf3e0 100%);
             border: 2px solid #e2bc58;
@@ -462,58 +462,57 @@
             gap: 4px;
         }
 
-/* コメントボトムシート */
-.comment-sheet-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    z-index: 1050;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s ease;
-}
-.comment-sheet-overlay.active { 
-    opacity: 1; 
-    pointer-events: auto; 
-}
+        /* コメントボトムシート */
+        .comment-sheet-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1050;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .comment-sheet-overlay.active { 
+            opacity: 1; 
+            pointer-events: auto; 
+        }
 
-.comment-sheet {
-    background: var(--card);
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    border-top: 2px solid var(--gold);
-    width: 100%;
-    max-width: 600px;
-    height: 75vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 -8px 32px rgba(0,0,0,0.3);
-    transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
+        .comment-sheet {
+            background: var(--card);
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            border-top: 2px solid var(--gold);
+            width: 100%;
+            max-width: 600px;
+            height: 75vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 -8px 32px rgba(0,0,0,0.3);
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-/* 🌟 ここが抜けていたため画面下からスライドしてきませんでした */
-.comment-sheet-overlay.active .comment-sheet {
-    transform: translateY(0) !important;
-}
+        .comment-sheet-overlay.active .comment-sheet {
+            transform: translateY(0) !important;
+        }
 
-.comment-sheet-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--card);
-}
-.comment-sheet-title { font-size: 15px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 6px; }
-.btn-close-sheet { background: none; border: none; font-size: 18px; color: var(--text-sub); cursor: pointer; padding: 4px; }
-.comment-sheet-list {
-    flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: var(--comment-bg);
-}
-.comment-sheet-footer {
-    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-    background: var(--card); border-top: 1px solid var(--border); display: flex; gap: 8px;
-}
+        .comment-sheet-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--card);
+        }
+        .comment-sheet-title { font-size: 15px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 6px; }
+        .btn-close-sheet { background: none; border: none; font-size: 18px; color: var(--text-sub); cursor: pointer; padding: 4px; }
+        .comment-sheet-list {
+            flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: var(--comment-bg);
+        }
+        .comment-sheet-footer {
+            padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+            background: var(--card); border-top: 1px solid var(--border); display: flex; gap: 8px;
+        }
 
         .chat-row-other { display: flex; align-items: flex-end; gap: 8px; width: 100%; }
         .chat-content-other { display: flex; flex-direction: column; align-items: flex-start; max-width: 78%; }
@@ -985,7 +984,7 @@
                 <div class="form-group">
                     <label class="form-label">氏名（表示名）</label>
                     <input type="text" id="myProfileName" class="form-control" placeholder="お名前を入力してください">
-            </div>
+                </div>
                 <button class="btn-main" onclick="saveMyProfile()">プロフィールを更新保存</button>
                 <button type="button" class="btn-sub" style="width:100%; margin-top:10px; background:none; border:1px dashed var(--gold-border);" onclick="openSwitchAccountModal()">🔑 別IDでログイン / アカウント切替</button>
             </div>
@@ -1160,7 +1159,7 @@
                 <button onclick="closeSettingsModal()" style="background:none; border:none; font-size:18px; color:var(--text-sub); cursor:pointer;">✕</button>
             </div>
 
-            <!-- 🌟 管理者テスト用: 月間ゴルスタ映えアワード手動実行セクション -->
+            <!-- 管理者テスト用: 月間ゴルスタ映えアワード手動実行セクション -->
             <div style="background: var(--gold-light); border: 2px solid var(--gold-border); border-radius: 10px; padding: 12px; margin-bottom: 16px;">
                 <h4 style="color: var(--primary); font-size: 13px; font-weight: 700; margin-bottom: 4px; display:flex; align-items:center; gap:4px;">
                     🏆 月間ゴルスタ映えアワード審査 (テスト実行)
@@ -1287,6 +1286,7 @@
         let matches = [];
         let globalUsersMap = {};
 
+        // 🌟 初期状態を空に設定（新規ユーザーに他人の情報が出ないようにする）
         let myProfile = {
             id: '',
             name: '',
@@ -1371,7 +1371,6 @@
 
             const modal = document.getElementById('authModal');
             if (needsAuth && modal) {
-        // 新規ユーザー用にフォームを完全にクリアして表示
                 document.getElementById('authUserIdInput').value = '';
                 document.getElementById('authUserNameInput').value = '';
                 modal.classList.add('active');
@@ -1442,30 +1441,6 @@
             }
         }
 
-// 🌟 修正: プロフィール保存時のハードコードID削除
-async function saveMyProfile() {
-    const nameInput = document.getElementById('myProfileName');
-    const newName = (nameInput ? nameInput.value.trim() : '') || myProfile.name;
-    if (!newName) {
-        await showAppAlert('確認', 'お名前を入力してください。');
-        return;
-    }
-    myProfile.name = newName;
-
-    const fileInput = document.getElementById('avatarFileInput');
-    if (fileInput && fileInput.files && fileInput.files[0]) {
-        try {
-            const compressed = await compressImageFile(fileInput.files[0], 200, 0.8);
-            myProfile.avatar = compressed;
-            const avatarImg = document.getElementById('myAvatarImg');
-            if (avatarImg) avatarImg.src = compressed;
-        } catch (e) {
-            await showAppAlert('エラー', 'アイコン画像の圧縮に失敗しました: ' + e.message);
-            return;
-        }
-    }
-
-    localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
         // -------------------------------------------------------------
         // リアルタイム同期（users, rounds, matches）
         // -------------------------------------------------------------
@@ -1571,8 +1546,8 @@ async function saveMyProfile() {
             dates.forEach(d => dateAnswers[d] = 'ok');
 
             const matchData = {
-                ownerId: myProfile.id || 'usr_nagahara',
-                ownerName: myProfile.name,
+                ownerId: myProfile.id || '',
+                ownerName: myProfile.name || 'メンバー',
                 ownerAvatar: myProfile.avatar || '',
                 title: title,
                 dates: dates,
@@ -1584,8 +1559,8 @@ async function saveMyProfile() {
                 confirmedPlayers: [],
                 responses: [
                     {
-                        userId: myProfile.id || 'usr_nagahara',
-                        userName: myProfile.name,
+                        userId: myProfile.id || '',
+                        userName: myProfile.name || 'メンバー',
                         avatar: myProfile.avatar || '',
                         dateAnswers: dateAnswers,
                         comment: '企画しました！ご参加お待ちしてます🏌️‍♂️',
@@ -1878,7 +1853,7 @@ async function saveMyProfile() {
 
         // ==========================================
         // タイムライン統合描画 (Matches + Rounds + Awards)
-        // 🌟 ソート順：募集中マッチ最優先 → プレー日(playDate)降順 → 作成日時降順
+        // 🌟 降順ソート: 募集中マッチ最優先 → 最新プレー日 → 作成日時
         // ==========================================
         function renderTimeline() {
             const list = document.getElementById('timeline-list');
@@ -1902,15 +1877,12 @@ async function saveMyProfile() {
                 });
             });
 
-            // 🌟 修正③: タイムラインの並び順（新しいプレー・最新の募集が上に来る）
             allFeed.sort((a, b) => {
-                // 1. 募集中マッチは常に最上部へピン留め
                 const isRecruitA = (a.type === 'match' && a.data.status === 'recruiting');
                 const isRecruitB = (b.type === 'match' && b.data.status === 'recruiting');
                 if (isRecruitA && !isRecruitB) return -1;
                 if (!isRecruitA && isRecruitB) return 1;
 
-                // 2. プレー日・対象日の新しい順（降順）
                 const getDateStr = (item) => {
                     if (item.type === 'match') {
                         return item.data.finalDate || item.data.dates?.[0] || '';
@@ -1920,10 +1892,9 @@ async function saveMyProfile() {
                 const dateA = getDateStr(a);
                 const dateB = getDateStr(b);
                 if (dateA !== dateB) {
-                    return dateB.localeCompare(dateA); // 2026年等の最新が上
+                    return dateB.localeCompare(dateA);
                 }
 
-                // 3. 同日なら作成日時の新しい順（降順）
                 const timeA = a.data.createdAt?.seconds || 0;
                 const timeB = b.data.createdAt?.seconds || 0;
                 return timeB - timeA;
@@ -1945,7 +1916,6 @@ async function saveMyProfile() {
             }).join('');
         }
 
-        // 🌟 修正①: マッチ募集カードの削除ボタン位置・レイアウト改善
         function renderMatchCardHtml(m) {
             const isOwner = (m.ownerId === myProfile.id || m.ownerName === myProfile.name);
             const isConfirmed = (m.status === 'confirmed');
@@ -2091,7 +2061,7 @@ async function saveMyProfile() {
 
         function renderAwardCardHtml(r) {
             const awards = r.awardData?.awards || [];
-            const isOwner = (myProfile.id === 'kenta253' || myProfile.id === 'kenta1971' || (myProfile.name && myProfile.name.replace(/\s+/g, '') === '長原健太') || (myProfile.id && myProfile.id.length > 0));
+            const isOwner = (myProfile.id && myProfile.id.length > 0);
             const deleteBtnHtml = isOwner ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ アワード削除</button>` : '';
 
             const likes = r.likes || [];
@@ -2166,7 +2136,7 @@ async function saveMyProfile() {
             const authorAvatar = isMyPost 
                 ? (myProfile.avatar || globalUsersMap[myProfile.name] || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150')
                 : (globalUsersMap[r.authorName] || r.authorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150');
-            const authorName = r.authorName || myProfile.name;
+            const authorName = r.authorName || 'メンバー';
             const mainScore = (r.players && r.players[0]) ? `${r.players[0].cart_name}: ${r.players[0].total_score}` : '';
             const deleteBtnHtml = isMyPost ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ 削除</button>` : '';
 
@@ -2255,37 +2225,46 @@ async function saveMyProfile() {
             `;
         }
 
-        // 🌟 修正②: コメントボトムシート呼び出し & Firestore更新対応
+        // コメントボトムシート開閉 & Firestore更新
         function openCommentSheet(targetId, type = 'round') {
             activeCommentTargetId = targetId;
             activeCommentTargetType = type;
 
-            let targetItem = null;
-            if (type === 'round') {
-                targetItem = rounds.find(r => r.id === targetId);
-            } else {
-                targetItem = matches.find(m => m.id === targetId);
+            let targetItem = (type === 'match')
+                ? matches.find(m => m.id === targetId)
+                : rounds.find(r => r.id === targetId);
+
+            if (!targetItem) {
+                targetItem = rounds.find(r => r.id === targetId) || matches.find(m => m.id === targetId);
+                if (targetItem) {
+                    activeCommentTargetType = (targetItem.dates) ? 'match' : 'round';
+                }
             }
 
             if (!targetItem) return;
 
             const titleEl = document.getElementById('sheetRoundTitle');
-            if (type === 'match') {
-                titleEl.innerText = `(⛳ ${targetItem.title})`;
+            if (activeCommentTargetType === 'match') {
+                titleEl.innerText = `(⛳ ${targetItem.title || 'マッチ'})`;
             } else if (targetItem.isAwardPost) {
-                titleEl.innerText = `(🏆 ${targetItem.awardData?.targetMonth} アワード)`;
+                titleEl.innerText = `(🏆 ${targetItem.awardData?.targetMonth || ''} アワード)`;
             } else {
-                titleEl.innerText = `(${targetItem.courseName})`;
+                titleEl.innerText = `(${targetItem.courseName || 'ラウンド'})`;
             }
 
             renderSheetComments(targetItem);
             const overlay = document.getElementById('commentSheetOverlay');
             overlay.classList.add('active');
-            setTimeout(() => document.getElementById('sheetCommentInput').focus(), 300);
+            setTimeout(() => {
+                const input = document.getElementById('sheetCommentInput');
+                if (input) input.focus();
+            }, 200);
         }
 
         function closeCommentSheet(e) {
-            if (e && e.target !== document.getElementById('commentSheetOverlay') && !e.target.classList.contains('btn-close-sheet')) return;
+            if (e && e.target !== document.getElementById('commentSheetOverlay') && !e.target.classList.contains('btn-close-sheet')) {
+                return;
+            }
             activeCommentTargetId = null;
             document.getElementById('commentSheetOverlay').classList.remove('active');
         }
@@ -2331,20 +2310,17 @@ async function saveMyProfile() {
             const text = input.value.trim();
             if (!text) return;
 
-            let targetItem = null;
             const collectionName = (activeCommentTargetType === 'match') ? 'matches' : 'rounds';
+            const targetItem = (activeCommentTargetType === 'match')
+                ? matches.find(m => m.id === activeCommentTargetId)
+                : rounds.find(r => r.id === activeCommentTargetId);
 
-            if (activeCommentTargetType === 'match') {
-                targetItem = matches.find(m => m.id === activeCommentTargetId);
-            } else {
-                targetItem = rounds.find(r => r.id === activeCommentTargetId);
-            }
             if (!targetItem) return;
 
             const updatedComments = targetItem.comments || [];
             updatedComments.push({
-                author: myProfile.name,
-                avatar: myProfile.avatar,
+                author: myProfile.name || 'メンバー',
+                avatar: myProfile.avatar || '',
                 text: text,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             });
@@ -2541,7 +2517,7 @@ async function saveMyProfile() {
         }
 
         // ==========================================
-        // スコア登録・AI解析・編集ロジック
+        // 🌟 スコア登録・AI解析（初期の安定ループ方式）
         // ==========================================
         function checkScoreButtonState() {
             const file1 = document.getElementById('scoreImageInput1').files[0];
@@ -2573,7 +2549,7 @@ async function saveMyProfile() {
                 in:  [5, 4, 5, 4, 3, 4, 3, 4, 4]
             };
             tempPlayersData = [{
-                cart_name: myProfile.name,
+                cart_name: myProfile.name || 'プレイヤー1',
                 out_scores: Array(9).fill(4),
                 in_scores: Array(9).fill(4),
                 out_total: 36,
@@ -2720,7 +2696,7 @@ async function saveMyProfile() {
             const idInput = document.getElementById('myProfileId');
             if (idInput) idInput.value = myProfile.id || '';
             const nameInput = document.getElementById('myProfileName');
-            if (nameInput) nameInput.value = myProfile.name || '長原 健太';
+            if (nameInput) nameInput.value = myProfile.name || '';
             const avatarImg = document.getElementById('myAvatarImg');
             if (avatarImg) avatarImg.src = myProfile.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150';
             renderMemberList();
@@ -2772,48 +2748,47 @@ async function saveMyProfile() {
             }
         }
 
- async function saveMyProfile() {
-    const nameInput = document.getElementById('myProfileName');
-    const newName = (nameInput ? nameInput.value.trim() : '') || myProfile.name;
-    if (!newName) {
-        await showAppAlert('確認', 'お名前を入力してください。');
-        return;
-    }
-    myProfile.name = newName;
+        async function saveMyProfile() {
+            const nameInput = document.getElementById('myProfileName');
+            const newName = (nameInput ? nameInput.value.trim() : '') || myProfile.name;
+            if (!newName) {
+                await showAppAlert('確認', 'お名前を入力してください。');
+                return;
+            }
+            myProfile.name = newName;
 
-    const fileInput = document.getElementById('avatarFileInput');
-    if (fileInput && fileInput.files && fileInput.files[0]) {
-        try {
-            const compressed = await compressImageFile(fileInput.files[0], 200, 0.8);
-            myProfile.avatar = compressed;
-            const avatarImg = document.getElementById('myAvatarImg');
-            if (avatarImg) avatarImg.src = compressed;
-        } catch (e) {
-            await showAppAlert('エラー', 'アイコン画像の圧縮に失敗しました: ' + e.message);
-            return;
+            const fileInput = document.getElementById('avatarFileInput');
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                try {
+                    const compressed = await compressImageFile(fileInput.files[0], 200, 0.8);
+                    myProfile.avatar = compressed;
+                    const avatarImg = document.getElementById('myAvatarImg');
+                    if (avatarImg) avatarImg.src = compressed;
+                } catch (e) {
+                    await showAppAlert('エラー', 'アイコン画像の圧縮に失敗しました: ' + e.message);
+                    return;
+                }
+            }
+
+            localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
+            
+            if (myProfile.id) {
+                try {
+                    await db.collection("users").doc(myProfile.id).set({
+                        id: myProfile.id,
+                        name: myProfile.name,
+                        avatar: myProfile.avatar,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                    showToast('👤 プロフィールを更新保存しました！');
+                } catch (e) {
+                    console.error("プロフィール同期エラー:", e);
+                    showToast('ローカルに保存しました');
+                }
+            }
+
+            if (fileInput) fileInput.value = '';
         }
-    }
-
-    localStorage.setItem('golf_my_profile', JSON.stringify(myProfile));
-    
-    // 自身のユーザーIDでFirestoreを更新
-    if (myProfile.id) {
-        try {
-            await db.collection("users").doc(myProfile.id).set({
-                id: myProfile.id,
-                name: myProfile.name,
-                avatar: myProfile.avatar,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
-            showToast('👤 プロフィールを更新保存しました！');
-        } catch (e) {
-            console.error("プロフィール同期エラー:", e);
-            showToast('ローカルに保存しました');
-        }
-    }
-
-    if (fileInput) fileInput.value = '';
-}
 
         function renderMemberList() {
             const container = document.getElementById('memberListContainer');
@@ -2931,6 +2906,7 @@ async function saveMyProfile() {
             });
         }
 
+        // 初期バージョンの確実なループ解析処理
         async function processScoreImagesSafe() {
             const file1 = document.getElementById('scoreImageInput1').files[0];
             const file2 = document.getElementById('scoreImageInput2').files[0];
@@ -2988,6 +2964,7 @@ async function saveMyProfile() {
                 );
 
                 let parsedJSON = null;
+
                 for (const model of candidateModels) {
                     try {
                         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model.name}:generateContent?key=${GEMINI_API_KEY}`, {
@@ -2996,6 +2973,7 @@ async function saveMyProfile() {
                             body: JSON.stringify({ contents: [{ parts: parts }] })
                         });
                         const resData = await res.json();
+
                         if (res.ok && resData.candidates?.[0]?.content?.parts?.[0]?.text) {
                             let rawText = resData.candidates[0].content.parts[0].text;
                             const jsonMatch = rawText.match(/\{[\s\S]*\}/);
@@ -3011,7 +2989,7 @@ async function saveMyProfile() {
 
                 if (parsedJSON) {
                     tempPlayersData = (parsedJSON.players || []).slice(0, 4);
-                    const allRegistered = [myProfile, ...members];
+                    const allRegistered = [myProfile, ...members].filter(m => m.name);
                     tempPlayersData.forEach(p => {
                         const matched = allRegistered.find(m => m.name === p.cart_name || p.cart_name.includes(m.name));
                         if (matched) p.cart_name = matched.name;
@@ -3123,7 +3101,7 @@ async function saveMyProfile() {
             headerHoles += `<th>TOTAL</th><th>削除</th>`;
             parRow += `<td><strong>${outParTotal + inParTotal}</strong></td><td>-</td>`;
 
-            const allRegistered = [myProfile, ...members];
+            const allRegistered = [myProfile, ...members].filter(m => m.name);
 
             let playersRows = tempPlayersData.map((p, pIdx) => {
                 let memberOptions = allRegistered.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
@@ -3206,7 +3184,7 @@ async function saveMyProfile() {
                 return;
             }
 
-            const existingNames = [myProfile.name, ...members.map(m => m.name)];
+            const existingNames = [myProfile.name, ...members.map(m => m.name)].filter(Boolean);
             for (const p of tempPlayersData) {
                 const pName = p.cart_name.trim();
                 if (pName && !existingNames.includes(pName) && !pName.startsWith('プレイヤー')) {
@@ -3230,8 +3208,8 @@ async function saveMyProfile() {
 
             const targetRoundId = editingRoundId || ('round_' + Date.now());
             const roundData = {
-                authorId: myProfile.id || 'usr_nagahara',
-                authorName: myProfile.name,
+                authorId: myProfile.id || '',
+                authorName: myProfile.name || 'メンバー',
                 authorAvatar: myProfile.avatar || globalUsersMap[myProfile.name] || '',
                 courseName: courseName,
                 playDate: playDate,
@@ -3285,638 +3263,14 @@ async function saveMyProfile() {
             }
         }
 
-        // ==========================================
-        // 🌟 月間ゴルスタ映えアワード 審査実行エンジン (Gemini API)
-        // ==========================================
-        async function triggerManualAiAward() {
-            const targetMonth = document.getElementById('awardTargetMonth').value;
-            const statusEl = document.getElementById('awardStatusMsg');
-            const btnRun = document.getElementById('btnRunAward');
-
-            if (!targetMonth) {
-                await showAppAlert('確認', '審査対象の年月を選択してください。');
-                return;
-            }
-
-            const targetCandidates = [];
-            rounds.forEach(r => {
-                if (r.isAwardPost) return;
-                const rMonth = (r.playDate || '').substring(0, 7);
-                if (rMonth === targetMonth && r.photos && r.photos.length > 0) {
-                    const coverIdx = r.bestPhotoIndex || 0;
-                    const coverPhoto = r.photos[coverIdx] || r.photos[0];
-                    if (coverPhoto) {
-                        targetCandidates.push({
-                            roundId: r.id,
-                            userName: r.authorName || 'メンバー',
-                            courseName: r.courseName || '',
-                            playDate: r.playDate,
-                            photoUrl: coverPhoto
-                        });
-                    }
-                }
-            });
-
-            if (targetCandidates.length === 0) {
-                await showAppAlert('審査対象なし', `${targetMonth} に投稿されたカバー写真付きのラウンド記録がありませんでした。`);
-                return;
-            }
-
-            const ok = await showAppConfirm(
-                'AIアワード審査の開始',
-                `${targetMonth} のカバー写真 ${targetCandidates.length} 枚をAI審査員（芝山キシン・泉ピンそば・ドンマイ小西）に提出します。\n審査を実行しますか？`,
-                '審査開始！',
-                'キャンセル'
-            );
-            if (!ok) return;
-
-            btnRun.disabled = true;
-            statusEl.innerText = 'AI審査員が写真を選考中...📸';
-
-            try {
-                const parts = [
-                    {
-                        text: `あなたはゴルフ思い出共有アプリ「Golstagram」の月間ゴルスタ映えアワード審査委員会です。
-対象月: ${targetMonth}。提供された ${targetCandidates.length} 枚のゴルフ写真から、以下の3人の審査員キャラクターとして「最優秀賞」「優秀賞」「ブービー賞」の計3つの賞を選出・講評してください。
-
-【審査員設定と選考基準】
-1. 芝山キシン（ロマン派プロカメラマン）
-   - トーン：情熱的、ドラマチック、カメラや構図の専門用語を交える。
-   - 最優秀賞：躍動感、光の美しさ、ゴルフ場の美しい借景などを絶賛。
-   - ブービー賞：ピンボケ、変なシャッタータイミング、傾いた構図などをプロ目線で愛を込めてイジる。
-
-2. 泉ピンそば（関西弁のお茶目なベテランキャディ）
-   - トーン：親しみやすいコテコテの関西弁、ゴルフ歴40年のオカン口調。
-   - 最優秀/優秀賞：ナイスショットの気配、プレイヤーの満面の笑顔、楽しそうな雰囲気を豪快に褒める。
-   - ブービー賞：バンカー脱出の苦闘、深いラフ、OBの哀愁など「ゴルフあるある」を大笑いしながら励ます。
-
-3. ドンマイ小西（辛口ファッション＆映え評論家）
-   - トーン：美意識が高い、独自のファッション哲学、口癖は「ドンマイ！」「〜でしょ！」。
-   - 最優秀/優秀賞：ウェアの色使い、芝とのコントラスト、スタイリッシュな着こなしを絶賛。
-   - ブービー賞：地味すぎるコーデ、上下の柄の衝突、汗だくでヨレヨレな姿など、思わず「ドンマイ！」と言いたくなるポイントをユーモアたっぷりに愛ある毒舌でバッサリ斬る。
-
-【ルール】
-- 3人の審査員がそれぞれ1つずつ異なる賞を担当してください。
-- 各賞にはユニークでキャッチーな賞の名称（award_name）を付けてください。
-- 必ず以下のJSONフォーマットのみを出力してください。Markdown等の装飾は不要です。
-
-{
-  "awards": [
-    {
-      "judge": "芝山キシン",
-      "award_type": "grand_prize",
-      "award_name": "賞の名前",
-      "target_photo_id": "対象となった写真のインデックス番号 (0から始まる連番)",
-      "target_user_name": "受賞したメンバー名",
-      "comment": "審査員の熱い/面白い受賞コメント"
-    },
-    {
-      "judge": "泉ピンそば",
-      "award_type": "excellence_prize",
-      "award_name": "賞の名前",
-      "target_photo_id": "対象となった写真のインデックス番号",
-      "target_user_name": "受賞したメンバー名",
-      "comment": "審査員の受賞コメント"
-    },
-    {
-      "judge": "ドンマイ小西",
-      "award_type": "booby_prize",
-      "award_name": "賞の名前",
-      "target_photo_id": "対象となった写真のインデックス番号",
-      "target_user_name": "受賞したメンバー名",
-      "comment": "審査員の受賞コメント"
-    }
-  ]
-}`
-                    }
-                ];
-
-                targetCandidates.forEach((c, cIdx) => {
-                    const base64Data = c.photoUrl.split(',')[1] || c.photoUrl;
-                    parts.push({ text: `【写真インデックス: ${cIdx}】 撮影/投稿: ${c.userName}（${c.courseName}）` });
-                    if (c.photoUrl.startsWith('data:image')) {
-                        parts.push({ inlineData: { mimeType: "image/jpeg", data: base64Data } });
-                    }
-                });
-
-                const mRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
-                const mData = await mRes.json();
-                const candidateModels = (mData.models || []).filter(m => 
-                    m.supportedGenerationMethods && 
-                    m.supportedGenerationMethods.includes('generateContent') && 
-                    !m.name.includes('embedding')
-                );
-
-                let parsedAwardJSON = null;
-                for (const model of candidateModels) {
-                    try {
-                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model.name}:generateContent?key=${GEMINI_API_KEY}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ contents: [{ parts: parts }] })
-                        });
-                        const resData = await res.json();
-                        if (res.ok && resData.candidates?.[0]?.content?.parts?.[0]?.text) {
-                            let raw = resData.candidates[0].content.parts[0].text;
-                            const match = raw.match(/\{[\s\S]*\}/);
-                            if (match) {
-                                parsedAwardJSON = JSON.parse(match[0]);
-                                break;
-                            }
-                        }
-                    } catch (e) {
-                        continue;
-                    }
-                }
-
-                if (!parsedAwardJSON || !parsedAwardJSON.awards) {
-                    throw new Error('審査結果のJSON生成に失敗しました。もう一度お試しください。');
-                }
-
-                parsedAwardJSON.awards.forEach(a => {
-                    const idxNum = parseInt(a.target_photo_id, 10) || 0;
-                    const matchedCandidate = targetCandidates[idxNum] || targetCandidates[0];
-                    a.photoUrl = matchedCandidate.photoUrl;
-                    a.courseName = matchedCandidate.courseName;
-                    a.playDate = matchedCandidate.playDate;
-                    if (!a.target_user_name || a.target_user_name === 'メンバー') {
-                        a.target_user_name = matchedCandidate.userName;
-                    }
-                });
-
-                const awardPostId = `award_${targetMonth.replace('-', '_')}_${Date.now()}`;
-                const awardPostData = {
-                    isAwardPost: true,
-                    authorName: 'Golstagram AI審査委員会',
-                    authorAvatar: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=150',
-                    playDate: `${targetMonth}-28`,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    visibility: 'friends',
-                    awardData: {
-                        targetMonth: targetMonth,
-                        awards: parsedAwardJSON.awards
-                    },
-                    likes: [],
-                    comments: []
-                };
-
-                await db.collection("rounds").doc(awardPostId).set(awardPostData);
-                
-                statusEl.innerText = `🎉 ${targetMonth} 月間ゴルスタ映えアワードの選出とタイムライン投稿が完了しました！`;
-                showToast(`🏆 ${targetMonth} 月間ゴルスタ映えアワードを発表しました！`);
-                closeSettingsModal();
-                showScreen('screen-home');
-
-            } catch (err) {
-                console.error("アワード審査エラー:", err);
-                statusEl.innerText = '審査エラー: ' + err.message;
-                await showAppAlert('AI審査エラー', err.message);
-            } finally {
-                btnRun.disabled = false;
-            }
-        }
-
-        // ==========================================
-        // ギャラリー・振り返り・分析・詳細描画
-        // ==========================================
-        function renderAllGallery() {
-            const container = document.getElementById('allGalleryContainer');
-            const allPhotos = [];
-            const visibleRounds = getVisibleTimelineRounds();
-
-            visibleRounds.forEach(r => {
-                if (r.isAwardPost) return;
-                (r.photos || []).forEach(pUrl => {
-                    allPhotos.push({
-                        photoUrl: pUrl,
-                        roundId: r.id,
-                        courseName: r.courseName,
-                        playDate: r.playDate,
-                        authorName: r.authorName || myProfile.name
-                    });
-                });
-            });
-
-            if (allPhotos.length === 0) {
-                container.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; padding:40px; color:var(--text-sub);">表示できる写真がありません。<br><span class="font-golsta">Golsta</span> 登録から写真を追加してください📷</div>';
-                return;
-            }
-
-            container.innerHTML = allPhotos.map(item => `
-                <div class="gallery-card" onclick="showDetail('${item.roundId}', 'gallery')">
-                    <img src="${item.photoUrl}">
-                    <div class="gallery-card-info">
-                        <div class="gallery-card-title">⛳ ${item.courseName}</div>
-                        <div style="color:var(--text-sub); font-size:10px;">📅 ${item.playDate} ｜ 👤 ${item.authorName}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function switchSummaryTab(type) {
-            document.getElementById('btn-toggle-members').classList.toggle('active', type === 'members');
-            document.getElementById('btn-toggle-courses').classList.toggle('active', type === 'courses');
-            renderSummary(type);
-        }
-
-        function toggleDrilldown(id) {
-            const el = document.getElementById(id);
-            if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function renderSummary(type) {
-            const container = document.getElementById('summary-content');
-            const myName = myProfile.name ? myProfile.name.trim() : '長原 健太';
-            const myNameNoSpace = myName.replace(/\s+/g, '');
-
-            const accessibleRounds = rounds.filter(r => {
-                if (r.isAwardPost) return false;
-                const isAuthor = (r.authorId && r.authorId === myProfile.id) || (r.authorName && r.authorName.trim().replace(/\s+/g, '') === myNameNoSpace);
-                const isPlayer = (r.players || []).some(p => {
-                    const pName = (p.cart_name || '').trim().replace(/\s+/g, '');
-                    return pName === myNameNoSpace || pName.includes(myNameNoSpace);
-                });
-                return isAuthor || isPlayer;
-            });
-
-            if (type === 'members') {
-                const memberMap = {};
-                accessibleRounds.forEach(r => {
-                    (r.players || []).forEach(p => {
-                        const pName = (p.cart_name || 'プレイヤー').trim();
-                        if (!memberMap[pName]) {
-                            memberMap[pName] = { count: 0, scores: [], rounds: [] };
-                        }
-                        memberMap[pName].count += 1;
-                        if (p.total_score) memberMap[pName].scores.push(p.total_score);
-                        memberMap[pName].rounds.push({
-                            roundId: r.id,
-                            courseName: r.courseName || '未設定コース',
-                            playDate: r.playDate || '',
-                            score: p.total_score || '-',
-                            isPrivate: (r.visibility === 'private'),
-                            photo: (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
-                        });
-                    });
-                });
-
-                container.innerHTML = Object.keys(memberMap).map((name, idx) => {
-                    const data = memberMap[name];
-                    const avg = data.scores.length ? (data.scores.reduce((a,b)=>a+b, 0) / data.scores.length).toFixed(1) : '-';
-                    const best = data.scores.length ? Math.min(...data.scores) : '-';
-
-                    const historyList = data.rounds.map(rd => `
-                        <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
-                            <img src="${rd.photo}" class="drilldown-thumb">
-                            <div style="flex:1;">
-                                <div style="font-weight:700; color:var(--primary);">${rd.courseName} ${rd.isPrivate ? '<span style="font-size:10px; color:var(--text-sub);">🔒非公開</span>' : ''}</div>
-                                <div style="color:var(--text-sub); font-size:11px;">📅 ${rd.playDate}</div>
-                            </div>
-                            <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:15px;">${rd.score}</div>
-                        </div>
-                    `).join('');
-
-                    return `
-                        <div class="card" style="padding:16px; margin-bottom:12px;">
-                            <div onclick="toggleDrilldown('drilldown-member-${idx}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-                                <div>
-                                    <div style="font-size:16px; font-weight:700; color:var(--primary);">👤 ${name}</div>
-                                    <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">
-                                        ラウンド: <strong>${data.count}回</strong> ｜ ベスト: <strong>${best}</strong> ｜ 平均: <strong>${avg}</strong>
-                                    </div>
-                                </div>
-                                <span style="font-size:12px; color:var(--gold); font-weight:700;">▼ 履歴</span>
-                            </div>
-                            
-                            <div class="drilldown-container" id="drilldown-member-${idx}">
-                                <div style="font-size:11px; font-weight:700; color:var(--text-sub); margin-bottom:6px;">過去のラウンド対戦履歴（タップで詳細）:</div>
-                                ${historyList}
-                            </div>
-                        </div>
-                    `;
-                }).join('') || '<p style="color:var(--text-sub); text-align:center; padding:20px;">データがありません</p>';
-            } else {
-                const courseMap = {};
-                accessibleRounds.forEach(r => {
-                    const courseName = (r.courseName || '未設定コース').trim();
-                    if (!courseMap[courseName]) {
-                        courseMap[courseName] = { count: 0, bestScore: 999, rounds: [] };
-                    }
-                    courseMap[courseName].count += 1;
-
-                    const myPlayerObj = (r.players || []).find(p => {
-                        const pName = (p.cart_name || '').trim().replace(/\s+/g, '');
-                        return pName === myNameNoSpace || pName.includes(myNameNoSpace);
-                    }) || (r.players && r.players[0] ? r.players[0] : null);
-
-                    const myScore = (myPlayerObj && myPlayerObj.total_score) ? myPlayerObj.total_score : null;
-
-                    if (myScore) {
-                        courseMap[courseName].bestScore = Math.min(courseMap[courseName].bestScore, myScore);
-                    }
-
-                    courseMap[courseName].rounds.push({
-                        roundId: r.id,
-                        playDate: r.playDate || '',
-                        score: myScore || '-',
-                        isPrivate: (r.visibility === 'private'),
-                        playersCount: (r.players || []).length,
-                        photo: (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600')
-                    });
-                });
-
-                container.innerHTML = Object.keys(courseMap).map((course, idx) => {
-                    const data = courseMap[course];
-                    const best = data.bestScore === 999 ? '-' : data.bestScore;
-
-                    const historyList = data.rounds.map(rd => `
-                        <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
-                            <img src="${rd.photo}" class="drilldown-thumb">
-                            <div style="flex:1;">
-                                <div style="font-weight:700; color:var(--primary);">📅 ${rd.playDate} ${rd.isPrivate ? '<span style="font-size:10px; color:var(--text-sub);">🔒非公開</span>' : ''}</div>
-                                <div style="color:var(--text-sub); font-size:11px;">同伴者数: ${rd.playersCount}名</div>
-                            </div>
-                            <div style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:15px;">スコア: ${rd.score}</div>
-                        </div>
-                    `).join('');
-
-                    return `
-                        <div class="card" style="padding:16px; margin-bottom:12px;">
-                            <div onclick="toggleDrilldown('drilldown-course-${idx}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-                                <div>
-                                    <div style="font-size:16px; font-weight:700; color:var(--primary);">⛳ ${course}</div>
-                                    <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">
-                                        訪問回数: <strong>${data.count}回</strong> ｜ ベストスコア: <strong>${best}</strong>
-                                    </div>
-                                </div>
-                                <span style="font-size:12px; color:var(--gold); font-weight:700;">▼ 履歴</span>
-                            </div>
-
-                            <div class="drilldown-container" id="drilldown-course-${idx}">
-                                <div style="font-size:11px; font-weight:700; color:var(--text-sub); margin-bottom:6px;">このコースでの過去ラウンド（タップで詳細）:</div>
-                                ${historyList}
-                            </div>
-                        </div>
-                    `;
-                }).join('') || '<p style="color:var(--text-sub); text-align:center; padding:20px;">データがありません</p>';
-            }
-        }
-
-        function renderAnalytics() {
-            const accessibleRounds = getMyAccessibleRounds();
-            const myName = myProfile.name;
-            const myNameNoSpace = myName.replace(/\s+/g, '');
-
-            const myRoundRecords = [];
-            const yearlyMap = {};
-            const courseMap = {};
-            const h2hMap = {};
-
-            accessibleRounds.forEach(r => {
-                const myPlayer = (r.players || []).find(p => {
-                    const pName = (p.cart_name || '').trim().replace(/\s+/g, '');
-                    return pName === myNameNoSpace || pName.includes(myNameNoSpace) || (r.authorName === myName && p === r.players[0]);
-                });
-                if (!myPlayer || !myPlayer.total_score) return;
-
-                const myScore = myPlayer.total_score;
-                myRoundRecords.push({
-                    roundId: r.id,
-                    date: r.playDate,
-                    year: (r.playDate || '').substring(0, 4) || '不明',
-                    course: r.courseName,
-                    score: myScore
-                });
-
-                const yr = (r.playDate || '').substring(0, 4) || '不明';
-                if (!yearlyMap[yr]) yearlyMap[yr] = [];
-                yearlyMap[yr].push(myScore);
-
-                if (!courseMap[r.courseName]) courseMap[r.courseName] = [];
-                courseMap[r.courseName].push(myScore);
-
-                (r.players || []).forEach(p => {
-                    if (p.cart_name !== myPlayer.cart_name && p.total_score) {
-                        const rivalName = p.cart_name;
-                        if (!h2hMap[rivalName]) {
-                            h2hMap[rivalName] = { rounds: 0, win: 0, lose: 0, draw: 0 };
-                        }
-                        h2hMap[rivalName].rounds += 1;
-                        if (myScore < p.total_score) {
-                            h2hMap[rivalName].win += 1;
-                        } else if (myScore > p.total_score) {
-                            h2hMap[rivalName].lose += 1;
-                        } else {
-                            h2hMap[rivalName].draw += 1;
-                        }
-                    }
-                });
-            });
-
-            const allScores = myRoundRecords.map(r => r.score);
-            const totalRounds = allScores.length;
-            const bestScore = totalRounds ? Math.min(...allScores) : '-';
-            const avgScore = totalRounds ? (allScores.reduce((a, b) => a + b, 0) / totalRounds).toFixed(1) : '-';
-
-            document.getElementById('stat-best-score').innerText = bestScore;
-            document.getElementById('stat-avg-score').innerText = avgScore;
-            document.getElementById('stat-total-rounds').innerText = totalRounds ? `${totalRounds}回` : '-';
-
-            const yearlyContainer = document.getElementById('analytics-yearly-container');
-            const years = Object.keys(yearlyMap).sort().reverse();
-            if (years.length === 0) {
-                yearlyContainer.innerHTML = '<p style="font-size:12px; color:var(--text-sub);">データがありません</p>';
-            } else {
-                let yearlyRows = years.map(yr => {
-                    const scs = yearlyMap[yr];
-                    const yBest = Math.min(...scs);
-                    const yAvg = (scs.reduce((a,b)=>a+b,0) / scs.length).toFixed(1);
-                    return `
-                        <tr>
-                            <td style="font-weight:700;">${yr}年</td>
-                            <td>${scs.length}回</td>
-                            <td style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif;">${yBest}</td>
-                            <td style="font-family:'Cinzel',serif;">${yAvg}</td>
-                        </tr>
-                    `;
-                }).join('');
-
-                yearlyContainer.innerHTML = `
-                    <table class="analytics-table">
-                        <thead>
-                            <tr>
-                                <th>年</th>
-                                <th>ラウンド数</th>
-                                <th>ベスト</th>
-                                <th>平均スコア</th>
-                            </tr>
-                        </thead>
-                        <tbody>${yearlyRows}</tbody>
-                    </table>
-                `;
-            }
-
-            const coursesContainer = document.getElementById('analytics-courses-container');
-            const courses = Object.keys(courseMap);
-            if (courses.length === 0) {
-                coursesContainer.innerHTML = '<p style="font-size:12px; color:var(--text-sub);">データがありません</p>';
-            } else {
-                let courseRows = courses.map(cName => {
-                    const scs = courseMap[cName];
-                    const cBest = Math.min(...scs);
-                    const cAvg = (scs.reduce((a,b)=>a+b,0) / scs.length).toFixed(1);
-                    return `
-                        <tr>
-                            <td style="font-weight:700; text-align:left; padding-left:8px;">${cName}</td>
-                            <td>${scs.length}回</td>
-                            <td style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif;">${cBest}</td>
-                            <td style="font-family:'Cinzel',serif;">${cAvg}</td>
-                        </tr>
-                    `;
-                }).join('');
-
-                coursesContainer.innerHTML = `
-                    <table class="analytics-table">
-                        <thead>
-                            <tr>
-                                <th style="text-align:left; padding-left:8px;">コース名</th>
-                                <th>回数</th>
-                                <th>ベスト</th>
-                                <th>平均</th>
-                            </tr>
-                        </thead>
-                        <tbody>${courseRows}</tbody>
-                    </table>
-                `;
-            }
-
-            const h2hContainer = document.getElementById('analytics-h2h-container');
-            const rivals = Object.keys(h2hMap);
-            if (rivals.length === 0) {
-                h2hContainer.innerHTML = '<p style="font-size:12px; color:var(--text-sub);">同伴者との対戦データがありません</p>';
-            } else {
-                let h2hRows = rivals.map(rName => {
-                    const h = h2hMap[rName];
-                    const winRate = ((h.win / h.rounds) * 100).toFixed(0);
-                    return `
-                        <tr>
-                            <td style="font-weight:700; text-align:left; padding-left:8px;">${rName}</td>
-                            <td>${h.rounds}戦</td>
-                            <td>
-                                <span class="h2h-badge-win">${h.win}勝</span>
-                                <span class="h2h-badge-lose">${h.lose}敗</span>
-                                ${h.draw ? `<span style="font-size:10px; color:var(--text-sub);">${h.draw}分</span>` : ''}
-                            </td>
-                            <td style="font-weight:700; font-family:'Cinzel',serif;">${winRate}%</td>
-                        </tr>
-                    `;
-                }).join('');
-
-                h2hContainer.innerHTML = `
-                    <table class="analytics-table">
-                        <thead>
-                            <tr>
-                                <th style="text-align:left; padding-left:8px;">ゴルフ仲間</th>
-                                <th>同伴回数</th>
-                                <th>勝敗</th>
-                                <th>勝率</th>
-                            </tr>
-                        </thead>
-                        <tbody>${h2hRows}</tbody>
-                    </table>
-                `;
-            }
-        }
-
-        function showDetail(roundId, fromScreen = 'home') {
-            const r = rounds.find(item => item.id === roundId);
-            if (!r || r.isAwardPost) return;
-
-            const cover = (r.photos && r.photos[r.bestPhotoIndex]) || (r.photos && r.photos.length ? r.photos[0] : 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600');
-            const detail = document.getElementById('detail-content');
-            const backBtn = document.getElementById('detailBackBtn');
-
-            if (fromScreen === 'gallery') {
-                backBtn.setAttribute('onclick', "showScreen('screen-gallery')");
-                backBtn.innerHTML = '← ギャラリーに戻る';
-            } else if (fromScreen === 'summary') {
-                backBtn.setAttribute('onclick', "showScreen('screen-summary')");
-                backBtn.innerHTML = '← 振り返りに戻る';
-            } else {
-                backBtn.setAttribute('onclick', "showScreen('screen-home')");
-                backBtn.innerHTML = '← タイムラインに戻る';
-            }
-            
-            const isMyPost = (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
-            const editBtnHtml = isMyPost ? `<button class="btn-edit" onclick="openEditRegistration('${r.id}')">✏️ このラウンドを編集する</button>` : '';
-
-            let scoreRows = (r.players || []).map((p, pIdx) => `
-                <tr>
-                    <td style="font-weight:700;">${p.cart_name}</td>
-                    <td style="font-family:'Cinzel',serif;">${p.out_total}</td>
-                    <td style="font-family:'Cinzel',serif;">${p.in_total}</td>
-                    <td style="font-weight:700; color:var(--primary); font-family:'Cinzel',serif; font-size:16px;">${p.total_score}</td>
-                </tr>
-                <tr class="detail-row" id="detail-out-${pIdx}">
-                    <td colspan="4" style="background:var(--primary-light); padding:8px;">
-                        <strong>OUT (1-9H):</strong> ${p.out_scores ? p.out_scores.join(' | ') : '-'}
-                    </td>
-                </tr>
-                <tr class="detail-row" id="detail-in-${pIdx}">
-                    <td colspan="4" style="background:var(--primary-light); padding:8px;">
-                        <strong>IN (10-18H):</strong> ${p.in_scores ? p.in_scores.join(' | ') : '-'}
-                    </td>
-                </tr>
-            `).join('');
-
-            let galleryHtml = (r.photos || []).map(p => `<img src="${p}" style="width:100%; height:100px; object-fit:cover; border-radius:8px; border:1px solid var(--border);">`).join('');
-
-            detail.innerHTML = `
-                <div class="card">
-                    <img src="${cover}" class="card-img" style="height:260px; width:100%; object-fit:cover;">
-                    <div class="card-body">
-                        ${editBtnHtml}
-
-                        <h2 style="color:var(--primary); font-size:22px; margin-bottom:4px;">${r.courseName} ${r.visibility === 'private' ? '<span style="font-size:12px; color:var(--text-sub);">🔒 非公開</span>' : ''}</h2>
-                        <p style="color:var(--text-sub); font-size:13px; margin-bottom:16px;">プレー日: ${r.playDate}</p>
-                        
-                        <h4 style="margin-top:18px; border-left:4px solid var(--gold); padding-left:10px; color:var(--primary);">📊 スコア一覧</h4>
-                        <div style="margin: 8px 0;">
-                            <button class="accordion-btn" onclick="toggleScoreDetail('out')">OUT各ホール打数 展開/収納</button>
-                            <button class="accordion-btn" onclick="toggleScoreDetail('in')">IN各ホール打数 展開/収納</button>
-                        </div>
-                        <table class="score-table">
-                            <thead>
-                                <tr>
-                                    <th>プレイヤー</th>
-                                    <th>OUT</th>
-                                    <th>IN</th>
-                                    <th>TOTAL</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${scoreRows}
-                            </tbody>
-                        </table>
-
-                        <h4 style="margin:22px 0 10px; border-left:4px solid var(--gold); padding-left:10px; color:var(--primary);">📷 想い出ギャラリー (${(r.photos || []).length}枚)</h4>
-                        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
-                            ${galleryHtml || '<p style="font-size:12px; color:var(--text-sub);">写真はありません</p>'}
-                        </div>
-                    </div>
-                </div>
-            `;
-            showScreen('screen-detail');
-        }
-
-        function toggleScoreDetail(type) {
-            document.querySelectorAll(`[id^="detail-${type}-"]`).forEach(el => {
-                el.classList.toggle('open');
-            });
-        }
-
         // 初期化処理の実行
         checkUserAuth();
     </script>
 </body>
 </html>
+'''
+
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print("Saved index.html successfully.")
