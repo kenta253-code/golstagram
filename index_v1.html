@@ -2891,27 +2891,22 @@
             });
         }
 
-async function processScoreImagesSafe() {
-    const file1 = document.getElementById('scoreImageInput1').files[0];
-    const file2 = document.getElementById('scoreImageInput2').files[0];
-    const status = document.getElementById('aiStatus');
-    const btn = document.getElementById('aiAnalyzeBtn');
-    if (!file1) return;
+        async function processScoreImagesSafe() {
+            const file1 = document.getElementById('scoreImageInput1').files[0];
+            const file2 = document.getElementById('scoreImageInput2').files[0];
+            const status = document.getElementById('aiStatus');
+            if (!file1) return;
 
-    isEditingRound = true;
-    btn.disabled = true;
-    status.innerText = '⚡ 画像を最適化中...';
+            isEditingRound = true;
+            status.innerText = 'AIがスコア画像を解析中...⛳';
 
-    try {
-        // 画像を軽量化 (800px / quality 0.65)
-        const base641 = (await compressImageFile(file1, 800, 0.65)).split(',')[1];
-        let base642 = file2 ? (await compressImageFile(file2, 800, 0.65)).split(',')[1] : null;
+            try {
+                const base641 = (await compressImageFile(file1, 1024, 0.8)).split(',')[1];
+                let base642 = file2 ? (await compressImageFile(file2, 1024, 0.8)).split(',')[1] : null;
 
-        status.innerText = '⛳ AIがスコアを解析中 (約3〜5秒)...';
-
-        const promptText = `提供されたスコアカード（またはカート画面）の画像を解析し、ゴルフ場名・プレー日・各ホールのPAR・各プレイヤー打数（1〜18H、OUT計、IN計、TOTAL）を抽出してください。
+                const promptText = `提供されたスコアカード（またはカート画面）の画像を解析し、ゴルフ場名・プレー日・各ホールのPAR・各プレイヤー打数（1〜18H、OUT計、IN計、TOTAL）を抽出してください。
 2枚ある場合はOUTとINを統合してください。プレイヤー数は最大4名までとします。
-必ず以下のJSON形式のみを出力してください。Markdown（\`\`\`json等）や前後の挨拶は一切不要です。
+必ず以下のJSON形式のみを出力してください。挨拶やMarkdown等の装飾は不要です。
 {
   "course_name": "ゴルフ場名",
   "play_date": "YYYY-MM-DD",
@@ -2931,81 +2926,79 @@ async function processScoreImagesSafe() {
   ]
 }`;
 
-        const parts = [
-            { text: promptText },
-            { inlineData: { mimeType: "image/jpeg", data: base641 } }
-        ];
-        if (base642) {
-            parts.push({ inlineData: { mimeType: "image/jpeg", data: base642 } });
-        }
+                const parts = [
+                    { text: promptText },
+                    { inlineData: { mimeType: "image/jpeg", data: base641 } }
+                ];
+                if (base642) {
+                    parts.push({ inlineData: { mimeType: "image/jpeg", data: base642 } });
+                }
 
-        // ① 利用可能なモデル一覧を高速取得 (0.2秒)
-        const mRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
-        const mData = await mRes.json();
-        
-        if (!mData.models || mData.models.length === 0) {
-            throw new Error('利用可能なAIモデルが見つかりません');
-        }
+                const mRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
+                const mData = await mRes.json();
+                
+                if (!mData.models || mData.models.length === 0) {
+                    throw new Error('利用可能なモデルが見つかりません。APIキーを確認してください。');
+                }
 
-        // generateContentに対応したモデルを抽出
-        const validModels = mData.models.filter(m => 
-            m.supportedGenerationMethods && 
-            m.supportedGenerationMethods.includes('generateContent') &&
-            !m.name.includes('embedding')
-        );
+                const candidateModels = mData.models.filter(m => 
+                    m.supportedGenerationMethods && 
+                    m.supportedGenerationMethods.includes('generateContent') && 
+                    !m.name.includes('embedding')
+                );
 
-        // 最も高速な flash モデルを優先選択（なければ対応モデルの先頭）
-        const selectedModel = validModels.find(m => m.name.includes('flash')) || validModels[0];
-        const modelName = selectedModel.name.replace('models/', '');
+                let parsedJSON = null;
+                for (const model of candidateModels) {
+                    try {
+                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model.name}:generateContent?key=${GEMINI_API_KEY}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ contents: [{ parts: parts }] })
+                        });
+                        const resData = await res.json();
+                        if (res.ok && resData.candidates?.[0]?.content?.parts?.[0]?.text) {
+                            let rawText = resData.candidates[0].content.parts[0].text;
+                            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+                            if (jsonMatch) {
+                                parsedJSON = JSON.parse(jsonMatch[0]);
+                                break;
+                            }
+                        }
+                    } catch (err) {
+                        continue;
+                    }
+                }
 
-        // ② 選ばれた最適モデルで単発即時実行
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: parts }] })
-        });
+                if (parsedJSON) {
+                    tempPlayersData = (parsedJSON.players || []).slice(0, 4);
+                    const allRegistered = [myProfile, ...members];
+                    tempPlayersData.forEach(p => {
+                        const matched = allRegistered.find(m => m.name === p.cart_name || p.cart_name.includes(m.name));
+                        if (matched) p.cart_name = matched.name;
+                    });
 
-        const resData = await res.json();
-        
-        if (!res.ok || !resData.candidates?.[0]?.content?.parts?.[0]?.text) {
-            const errDetail = resData.error?.message || 'APIレスポンスの取得に失敗しました';
-            throw new Error(errDetail);
-        }
-
-        const rawText = resData.candidates[0].content.parts[0].text;
-        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('JSONの抽出に失敗しました');
-
-        const parsedJSON = JSON.parse(jsonMatch[0]);
-
-        if (parsedJSON) {
-            tempPlayersData = (parsedJSON.players || []).slice(0, 4);
-            const allRegistered = [myProfile, ...members];
-            tempPlayersData.forEach(p => {
-                const matched = allRegistered.find(m => m.name === p.cart_name || p.cart_name.includes(m.name));
-                if (matched) p.cart_name = matched.name;
-            });
-
-            if (parsedJSON.par && parsedJSON.par.out) {
-                tempParData = parsedJSON.par;
+                    if (parsedJSON.par && parsedJSON.par.out) {
+                        tempParData = parsedJSON.par;
+                    }
+                    
+                    document.getElementById('courseName').value = parsedJSON.course_name || '';
+                    document.getElementById('playDate').value = parsedJSON.play_date || new Date().toISOString().split('T')[0];
+                    renderScorecardEditor();
+                    document.getElementById('parsedResultSection').style.display = 'block';
+                    document.getElementById('initialCancelSection').style.display = 'none';
+                    status.innerText = `✅ AI解析完了（${tempPlayersData.length}名分のスコアを読み込みました）`;
+                } else {
+                    status.innerText = '⚠️ 自動解析できませんでした。手動で入力してください。';
+                    document.getElementById('parsedResultSection').style.display = 'block';
+                    document.getElementById('initialCancelSection').style.display = 'none';
+                }
+            } catch (e) {
+                status.innerText = '解析エラー: ' + e.message;
+                document.getElementById('parsedResultSection').style.display = 'block';
+                document.getElementById('initialCancelSection').style.display = 'none';
             }
-            
-            document.getElementById('courseName').value = parsedJSON.course_name || '';
-            document.getElementById('playDate').value = parsedJSON.play_date || new Date().toISOString().split('T')[0];
-            renderScorecardEditor();
-            document.getElementById('parsedResultSection').style.display = 'block';
-            document.getElementById('initialCancelSection').style.display = 'none';
-            status.innerText = `✅ 解析完了！（${tempPlayersData.length}名分のスコアを反映しました）`;
         }
-    } catch (e) {
-        console.error("スコア解析エラー詳細:", e);
-        status.innerText = `⚠️ 解析エラー (${e.message})。手動で入力してください。`;
-        document.getElementById('parsedResultSection').style.display = 'block';
-        document.getElementById('initialCancelSection').style.display = 'none';
-    } finally {
-        btn.disabled = false;
-    }
-}
+
         function setScoreViewMode(mode) {
             scoreViewMode = mode;
             document.getElementById('btn-view-out').classList.toggle('active', mode === 'out');
