@@ -364,48 +364,64 @@
             gap: 6px;
         }
 
-        .match-vote-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-            margin: 10px 0;
-            background: var(--card);
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
-        .match-vote-table th, .match-vote-table td {
-            border: 1px solid var(--border);
-            padding: 8px 6px;
-            text-align: center;
-        }
-        .match-vote-table th {
-            background: var(--gold-light);
-            color: var(--primary);
-            font-weight: 700;
-        }
-        /* 通常（セピア・ライト）時のバッジスタイル */
-        .vote-badge-ok { background: #e6f4ea; color: #137333; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
-        .vote-badge-maybe { background: #fff8e1; color: #b78103; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
-        .vote-badge-ng { background: #fce8e6; color: #c5221f; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
+        /* ========= 投票テーブル基本スタイル ========= */
+.match-vote-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin: 10px 0;
+    background: var(--card);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+.match-vote-table th, .match-vote-table td {
+    border: 1px solid var(--border);
+    padding: 8px 6px;
+    text-align: center;
+}
+.match-vote-table th {
+    background: var(--gold-light);
+    color: var(--primary);
+    font-weight: 700;
+}
 
-        /* 🌙 ダークモード時のバッジスタイル（ダーク調に最適化） */
-        body[data-theme="dark"] .vote-badge-ok { 
-            background: rgba(34, 197, 94, 0.2); 
-            color: #4ade80; 
-            border: 1px solid rgba(74, 222, 128, 0.35); 
-        }
-        body[data-theme="dark"] .vote-badge-maybe { 
-            background: rgba(234, 179, 8, 0.2); 
-            color: #facc15; 
-            border: 1px solid rgba(250, 204, 21, 0.35); 
-        }
-        body[data-theme="dark"] .vote-badge-ng { 
-            background: rgba(239, 68, 68, 0.2); 
-            color: #f87171; 
-            border: 1px solid rgba(248, 113, 113, 0.35); 
-        }
+/* 通常（セピア・ライト）時のバッジ */
+.vote-badge-ok { background: #e6f4ea; color: #137333; font-weight: 800; padding: 3px 7px; border-radius: 4px; }
+.vote-badge-maybe { background: #fff8e1; color: #b78103; font-weight: 800; padding: 3px 7px; border-radius: 4px; }
+.vote-badge-ng { background: #fce8e6; color: #c5221f; font-weight: 800; padding: 3px 7px; border-radius: 4px; }
 
+/* 🌙 ダークモード時の完全最適化スタイル（カード背景と同化） */
+body[data-theme="dark"] .match-vote-table {
+    background: #1e293b; /* カードと同色 */
+    border-color: #334155;
+}
+body[data-theme="dark"] .match-vote-table th {
+    background: #0f172a; /* ヘッダーを一段引き締め */
+    color: #facc15;
+    border-color: #334155;
+}
+body[data-theme="dark"] .match-vote-table td {
+    border-color: #334155;
+    color: #f1f5f9;
+}
+
+/* バッジ背景をカード色（#1e293b）と一体化させ、枠線と文字色だけで表現 */
+body[data-theme="dark"] .vote-badge-ok { 
+    background: transparent; 
+    color: #4ade80; 
+    border: 1px solid #22c55e; 
+}
+body[data-theme="dark"] .vote-badge-maybe { 
+    background: transparent; 
+    color: #facc15; 
+    border: 1px solid #eab308; 
+}
+body[data-theme="dark"] .vote-badge-ng { 
+    background: transparent; 
+    color: #f87171; 
+    border: 1px solid #ef4444; 
+}
         /* ========= 🌟 AI映えアワード専用カードデザイン ========= */
         .award-banner-card {
             background: linear-gradient(135deg, #fffdf8 0%, #faf3e0 100%);
