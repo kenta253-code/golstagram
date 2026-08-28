@@ -3916,6 +3916,26 @@ body[data-theme="dark"] .vote-badge-ng {
             });
         }
 
+        async function executeLogout() {
+            const ok = await showAppConfirm(
+                'ログアウトの確認',
+                'ログアウトしますか？\n端末内のログイン情報がクリアされ、初期画面に戻ります。',
+                'ログアウト',
+                'キャンセル'
+            );
+            if (!ok) return;
+
+            // 端末内のプロフィール保存データを削除
+            localStorage.removeItem('golf_my_profile');
+
+            showToast('🚪 ログアウトしました');
+
+            // 画面をリロードして初期状態（ログイン・登録画面）を呼び出す
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        }
+        
         // 初期化処理の実行
         checkUserAuth();
     </script>
