@@ -2907,7 +2907,7 @@ async function processScoreImagesSafe() {
         const base641 = (await compressImageFile(file1, 800, 0.65)).split(',')[1];
         let base642 = file2 ? (await compressImageFile(file2, 800, 0.65)).split(',')[1] : null;
 
-        status.innerText = '⛳ AIがスコアを爆速解析中 (約3〜5秒)...';
+        status.innerText = '⛳ AIがスコアを解析中 (約3〜5秒)...';
 
         const promptText = `提供されたスコアカード（またはカート画面）の画像を解析し、ゴルフ場名・プレー日・各ホールのPAR・各プレイヤー打数（1〜18H、OUT計、IN計、TOTAL）を抽出してください。
 2枚ある場合はOUTとINを統合してください。プレイヤー数は最大4名までとします。
@@ -2939,15 +2939,30 @@ async function processScoreImagesSafe() {
             parts.push({ inlineData: { mimeType: "image/jpeg", data: base642 } });
         }
 
-        // 🌟 正式名称: gemini-1.5-flash で単発直接コール
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        // ① 利用可能なモデル一覧を高速取得 (0.2秒)
+        const mRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
+        const mData = await mRes.json();
+        
+        if (!mData.models || mData.models.length === 0) {
+            throw new Error('利用可能なAIモデルが見つかりません');
+        }
 
-        const res = await fetch(apiUrl, {
+        // generateContentに対応したモデルを抽出
+        const validModels = mData.models.filter(m => 
+            m.supportedGenerationMethods && 
+            m.supportedGenerationMethods.includes('generateContent') &&
+            !m.name.includes('embedding')
+        );
+
+        // 最も高速な flash モデルを優先選択（なければ対応モデルの先頭）
+        const selectedModel = validModels.find(m => m.name.includes('flash')) || validModels[0];
+        const modelName = selectedModel.name.replace('models/', '');
+
+        // ② 選ばれた最適モデルで単発即時実行
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: parts }]
-            })
+            body: JSON.stringify({ contents: [{ parts: parts }] })
         });
 
         const resData = await res.json();
@@ -2980,7 +2995,7 @@ async function processScoreImagesSafe() {
             renderScorecardEditor();
             document.getElementById('parsedResultSection').style.display = 'block';
             document.getElementById('initialCancelSection').style.display = 'none';
-            status.innerText = `✅ 解析完了！（${tempPlayersData.length}名分のスコアを瞬時に反映しました）`;
+            status.innerText = `✅ 解析完了！（${tempPlayersData.length}名分のスコアを反映しました）`;
         }
     } catch (e) {
         console.error("スコア解析エラー詳細:", e);
