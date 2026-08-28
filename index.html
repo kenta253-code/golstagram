@@ -364,30 +364,68 @@
             gap: 6px;
         }
 
-        .match-vote-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-            margin: 10px 0;
-            background: var(--card);
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
-        .match-vote-table th, .match-vote-table td {
-            border: 1px solid var(--border);
-            padding: 8px 6px;
-            text-align: center;
-        }
-        .match-vote-table th {
-            background: var(--gold-light);
-            color: var(--primary);
-            font-weight: 700;
-        }
-        .vote-badge-ok { background: #e6f4ea; color: #137333; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
-        .vote-badge-maybe { background: #fff8e1; color: #b78103; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
-        .vote-badge-ng { background: #fce8e6; color: #c5221f; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
+        /* ========= 投票テーブル基本スタイル ========= */
+.match-vote-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin: 10px 0;
+    background: var(--card);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+.match-vote-table th, .match-vote-table td {
+    border: 1px solid var(--border);
+    padding: 8px 6px;
+    text-align: center;
+}
+.match-vote-table th {
+    background: var(--gold-light);
+    color: var(--primary);
+    font-weight: 700;
+}
 
+/* ========= 投票ステータス表示（全テーマ共通・枠線＆背景なし） ========= */
+.vote-badge-ok,
+.vote-badge-maybe,
+.vote-badge-ng {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    font-weight: 800;
+}
+/* セピア & ライトモード時の文字色 */
+.vote-badge-ok { color: #15803d; }
+.vote-badge-maybe { color: #b45309; }
+.vote-badge-ng { color: #b91c1c; }
+
+/* 🌙 ダークモード時の文字色（視認性の高いトーン） */
+body[data-theme="dark"] .vote-badge-ok { color: #4ade80; }
+body[data-theme="dark"] .vote-badge-maybe { color: #facc15; }
+body[data-theme="dark"] .vote-badge-ng { color: #f87171; }
+
+ 
+/* バッジ背景をカード色（#1e293b）と一体化させ、枠線と文字色だけで表現 */
+/* 🌙 ダークモード時のバッジスタイル（枠線なし・背景透過） */
+body[data-theme="dark"] .vote-badge-ok { 
+    background: transparent; 
+    color: #4ade80; 
+    border: none;
+    padding: 0;
+}
+body[data-theme="dark"] .vote-badge-maybe { 
+    background: transparent; 
+    color: #facc15; 
+    border: none;
+    padding: 0;
+}
+body[data-theme="dark"] .vote-badge-ng { 
+    background: transparent; 
+    color: #f87171; 
+    border: none;
+    padding: 0;
+}
         /* ========= 🌟 AI映えアワード専用カードデザイン ========= */
         .award-banner-card {
             background: linear-gradient(135deg, #fffdf8 0%, #faf3e0 100%);
@@ -1228,7 +1266,7 @@
     </div>
 
     <!-- 🔑 初回ログイン・登録モーダル -->
-    <div id="authModal" class="app-modal-overlay">
+     <div id="authModal" class="app-modal-overlay">
         <div class="app-modal-box" style="text-align: left;">
             <h3 style="color:var(--primary); font-size:18px; margin-bottom:6px; text-align:center;">
                 ⛳ <span class="font-golsta">Golstagram</span> へようこそ
@@ -1239,12 +1277,12 @@
 
             <div class="form-group" style="margin-bottom:12px;">
                 <label class="form-label" style="font-size:12px;">ユーザーID（半角英数字・変更不可）</label>
-                <input type="text" id="authUserIdInput" class="form-control" placeholder="例: kenta1971" style="text-transform: lowercase;">
+                <input type="text" id="authUserIdInput" class="form-control" style="text-transform: lowercase;">
             </div>
 
             <div class="form-group" style="margin-bottom:18px;">
                 <label class="form-label" style="font-size:12px;">お名前・ニックネーム（表示名）</label>
-                <input type="text" id="authUserNameInput" class="form-control" placeholder="例: 長原 健太">
+                <input type="text" id="authUserNameInput" class="form-control">
             </div>
 
             <button class="btn-main" onclick="handleAuthSubmit()">Golstagram を始める</button>
