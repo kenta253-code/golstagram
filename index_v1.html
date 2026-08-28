@@ -195,8 +195,8 @@
             color: #ffffff;
             border: 2px solid var(--gold);
             border-radius: 34px;
-            padding: 14px 20px;
-            font-size: 14px;
+            padding: 14px 18px;
+            font-size: 13px;
             font-weight: 800;
             box-shadow: 0 8px 24px rgba(30, 70, 32, 0.45);
             cursor: pointer;
@@ -214,8 +214,8 @@
             color: #ffffff;
             border: 2px solid #ff80ab;
             border-radius: 34px;
-            padding: 14px 22px;
-            font-size: 14px;
+            padding: 14px 20px;
+            font-size: 13px;
             font-weight: 800;
             box-shadow: 0 8px 24px rgba(233, 30, 99, 0.45);
             cursor: pointer;
@@ -325,7 +325,7 @@
         .match-header-bar {
             background: linear-gradient(135deg, #23382b 0%, #344d3d 100%);
             color: #ffffff;
-            padding: 10px 16px;
+            padding: 10px 14px;
             font-size: 13px;
             font-weight: 800;
             display: flex;
@@ -337,17 +337,14 @@
             background: #ffeb3b;
             color: #795548;
             font-size: 11px;
-            padding: 2px 8px;
+            padding: 3px 8px;
             border-radius: 12px;
             font-weight: 900;
-            animation: pulseBadge 1.8s infinite;
-        }
-        @keyframes pulseBadge {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.85; }
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
         }
 
-        /* 満員御礼・日程決定スタイル */
         .match-confirmed-banner {
             background: linear-gradient(135deg, #b8860b 0%, #d4af37 50%, #aa7c11 100%);
             color: #ffffff;
@@ -357,9 +354,9 @@
             box-shadow: 0 4px 14px rgba(0,0,0,0.15);
         }
         .match-confirmed-title {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 900;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.04em;
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
             display: flex;
             align-items: center;
@@ -1299,7 +1296,9 @@
         let isEditingRound = false;
         let editingRoundId = null;
 
-        let activeCommentRoundId = null;
+        let activeCommentTargetId = null;
+        let activeCommentTargetType = 'round'; // round | match
+
         let currentRespondingMatchId = null;
         let currentConfirmingMatchId = null;
 
@@ -1451,39 +1450,30 @@
             snapshot.forEach((doc) => {
                 rounds.push({ id: doc.id, ...doc.data() });
             });
-            rounds.sort((a, b) => {
-                const dateA = a.playDate || '';
-                const dateB = b.playDate || '';
-                if (dateA !== dateB) return dateB.localeCompare(dateA);
-                const timeA = a.createdAt?.seconds || 0;
-                const timeB = b.createdAt?.seconds || 0;
-                return timeB - timeA;
-            });
             renderTimeline();
             renderAllGallery();
             renderAnalytics();
             updateCourseDatalist();
 
-            if (activeCommentRoundId) {
-                const updated = rounds.find(r => r.id === activeCommentRoundId);
+            if (activeCommentTargetId && activeCommentTargetType === 'round') {
+                const updated = rounds.find(r => r.id === activeCommentTargetId);
                 if (updated) renderSheetComments(updated);
             }
         }, (err) => {
             console.error("Firestore同期エラー(rounds):", err);
         });
 
-        // ⛳ matchesコレクション同期
         db.collection("matches").onSnapshot((snapshot) => {
             matches = [];
             snapshot.forEach((doc) => {
                 matches.push({ id: doc.id, ...doc.data() });
             });
-            matches.sort((a, b) => {
-                const timeA = a.createdAt?.seconds || 0;
-                const timeB = b.createdAt?.seconds || 0;
-                return timeB - timeA;
-            });
             renderTimeline();
+
+            if (activeCommentTargetId && activeCommentTargetType === 'match') {
+                const updated = matches.find(m => m.id === activeCommentTargetId);
+                if (updated) renderSheetComments(updated);
+            }
         }, (err) => {
             console.error("Firestore同期エラー(matches):", err);
         });
@@ -1535,7 +1525,6 @@
 
             const matchId = `match_${Date.now()}`;
             
-            // オーナー本人の初期投票（両候補日OK）
             const dateAnswers = {};
             dates.forEach(d => dateAnswers[d] = 'ok');
 
@@ -1547,7 +1536,7 @@
                 dates: dates,
                 course: course,
                 note: note,
-                status: 'recruiting', // recruiting | confirmed
+                status: 'recruiting',
                 finalDate: '',
                 finalCourse: '',
                 confirmedPlayers: [],
@@ -1571,7 +1560,6 @@
                 closeMatchModal();
                 showToast('⛳ Golstaマッチの募集を投稿しました！');
 
-                // LINE共有の確認
                 const ok = await showAppConfirm('LINEで案内', 'ゴルフ仲間にLINEでマッチ案内を送りますか？', '🟢 LINEで送る', 'あとで');
                 if (ok) {
                     shareMatchInviteToLine(matchData);
@@ -1613,7 +1601,6 @@
                 document.getElementById('labelVoteDate2').innerText = `📅 ${m.dates[1]} の出欠`;
             }
 
-            // 過去回答の復元
             const myResp = (m.responses || []).find(r => r.userName === myProfile.name);
             if (myResp) {
                 if (myResp.dateAnswers[m.dates[0]]) document.getElementById('selectVoteDate1').value = myResp.dateAnswers[m.dates[0]];
@@ -1666,14 +1653,13 @@
                 updatedResponses.push(myRespData);
             }
 
-            // 🌟 4名自動マッチ判定ロジック
+            // 4名自動マッチ判定ロジック
             let newStatus = m.status;
             let finalDate = m.finalDate || '';
             let finalCourse = m.finalCourse || (m.course.includes('未定') ? '' : m.course);
             let confirmedPlayers = m.confirmedPlayers || [];
 
             if (newStatus === 'recruiting') {
-                // 各日程のOK人数を集計
                 const okPlayersD1 = updatedResponses.filter(r => r.dateAnswers[d1] === 'ok').map(r => r.userName);
                 const okPlayersD2 = d2 ? updatedResponses.filter(r => r.dateAnswers[d2] === 'ok').map(r => r.userName) : [];
 
@@ -1747,7 +1733,6 @@
                 .filter(r => r.dateAnswers[finalDate] === 'ok')
                 .map(r => r.userName);
             
-            // OKが足りない場合は参加者を順に補完
             const confirmedPlayers = okPlayers.length ? okPlayers.slice(0, 4) : [m.ownerName];
 
             try {
@@ -1777,7 +1762,7 @@
         }
 
         async function deleteMatch(e, matchId) {
-            e.stopPropagation();
+            if (e) e.stopPropagation();
             const ok = await showAppConfirm('マッチ削除', 'このマッチ募集を削除してもよろしいですか？');
             if (ok) {
                 try {
@@ -1851,6 +1836,7 @@
 
         // ==========================================
         // タイムライン統合描画 (Matches + Rounds + Awards)
+        // 🌟 ソート順：募集中マッチ最優先 → プレー日(playDate)降順 → 作成日時降順
         // ==========================================
         function renderTimeline() {
             const list = document.getElementById('timeline-list');
@@ -1859,26 +1845,47 @@
             const visibleRounds = getVisibleTimelineRounds();
             const allFeed = [];
 
-            // マッチ投稿をFeedに追加
             matches.forEach(m => {
                 allFeed.push({
                     type: 'match',
-                    data: m,
-                    sortTime: m.createdAt?.seconds || 0
+                    data: m
                 });
             });
 
-            // ラウンド・アワード投稿をFeedに追加
             visibleRounds.forEach((r, idx) => {
                 allFeed.push({
                     type: r.isAwardPost ? 'award' : 'round',
                     data: r,
-                    roundIndex: idx,
-                    sortTime: r.createdAt?.seconds || 0
+                    roundIndex: idx
                 });
             });
 
-            allFeed.sort((a, b) => b.sortTime - a.sortTime);
+            // 🌟 修正③: タイムラインの並び順（新しいプレー・最新の募集が上に来る）
+            allFeed.sort((a, b) => {
+                // 1. 募集中マッチは常に最上部へピン留め
+                const isRecruitA = (a.type === 'match' && a.data.status === 'recruiting');
+                const isRecruitB = (b.type === 'match' && b.data.status === 'recruiting');
+                if (isRecruitA && !isRecruitB) return -1;
+                if (!isRecruitA && isRecruitB) return 1;
+
+                // 2. プレー日・対象日の新しい順（降順）
+                const getDateStr = (item) => {
+                    if (item.type === 'match') {
+                        return item.data.finalDate || item.data.dates?.[0] || '';
+                    }
+                    return item.data.playDate || '';
+                };
+                const dateA = getDateStr(a);
+                const dateB = getDateStr(b);
+                if (dateA !== dateB) {
+                    return dateB.localeCompare(dateA); // 2026年等の最新が上
+                }
+
+                // 3. 同日なら作成日時の新しい順（降順）
+                const timeA = a.data.createdAt?.seconds || 0;
+                const timeB = b.data.createdAt?.seconds || 0;
+                return timeB - timeA;
+            });
 
             if (allFeed.length === 0) {
                 list.innerHTML = '<div style="text-align:center; padding:50px 20px; color:var(--text-sub);">まだ投稿がありません。<br>右下のボタンからマッチ募集やスコア登録を行ってください⛳</div>';
@@ -1896,12 +1903,11 @@
             }).join('');
         }
 
+        // 🌟 修正①: マッチ募集カードの削除ボタン位置・レイアウト改善
         function renderMatchCardHtml(m) {
             const isOwner = (m.ownerId === myProfile.id || m.ownerName === myProfile.name);
             const isConfirmed = (m.status === 'confirmed');
-            const deleteBtnHtml = isOwner ? `<button class="btn-card-delete" onclick="deleteMatch(event, '${m.id}')">🗑️ 募集削除</button>` : '';
 
-            // 回答テーブル
             const responses = m.responses || [];
             const d1 = m.dates[0];
             const d2 = m.dates[1];
@@ -1928,10 +1934,12 @@
                 `;
             }).join('');
 
+            const comments = m.comments || [];
+            const commentCount = comments.length;
+
             if (isConfirmed) {
                 return `
                     <div class="card match-card">
-                        ${deleteBtnHtml}
                         <div class="match-confirmed-banner">
                             <div class="match-confirmed-title">
                                 <span>🎉 満員御礼！ 日程＆メンバー決定！</span>
@@ -1955,7 +1963,18 @@
                             </div>
 
                             <div class="card-action-bar" style="margin-top:0; padding-top:8px;">
-                                <span style="font-size:11px; color:var(--text-sub);">企画者: ${m.ownerName}</span>
+                                <div class="left-actions">
+                                    <button class="btn-action" onclick="openCommentSheet('${m.id}', 'match')">
+                                        <span>💬</span>
+                                        <span>コメント</span>
+                                        ${commentCount > 0 ? `<span>${commentCount}</span>` : ''}
+                                    </button>
+                                    ${isOwner ? `
+                                        <button class="btn-sub" style="padding:5px 9px; font-size:11px; color:var(--danger); border-color:var(--border);" onclick="deleteMatch(event, '${m.id}')">
+                                            🗑️ 削除
+                                        </button>
+                                    ` : ''}
+                                </div>
                                 <button class="btn-line-share" onclick="shareMatchConfirmedToLine(${JSON.stringify(m).replace(/"/g, '&quot;')})">
                                     <svg viewBox="0 0 24 24"><path d="M24 10.3c0-4.6-4.9-8.3-11-8.3S2 5.7 2 10.3c0 4.1 3.6 7.6 8.6 8.2.3.1.8.2.9.6.1.3.1.8 0 1.1-.1.4-.4 1.5-.5 1.8-.1.6-.6 2.3 2 1.3 2.6-1.1 7-4.1 9.6-7 1.4-1.6 2.4-3.4 2.4-5z"/></svg>
                                     確定内容をLINEに報告
@@ -1968,10 +1987,11 @@
 
             return `
                 <div class="card match-card">
-                    ${deleteBtnHtml}
                     <div class="match-header-bar">
                         <span>⛳ <span class="font-golsta">Golsta</span> マッチ募集中！</span>
-                        <span class="match-status-badge">枠状況: ${slotIcons} (${maxOk}/4)</span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="match-status-badge">枠: ${slotIcons} (${maxOk}/4)</span>
+                        </div>
                     </div>
 
                     <div class="card-body">
@@ -2005,7 +2025,18 @@
                         </div>
 
                         <div class="card-action-bar">
-                            <span style="font-size:11px; color:var(--text-sub);">4名揃うと自動で「満員御礼」成立！</span>
+                            <div class="left-actions">
+                                <button class="btn-action" onclick="openCommentSheet('${m.id}', 'match')">
+                                    <span>💬</span>
+                                    <span>コメント</span>
+                                    ${commentCount > 0 ? `<span>${commentCount}</span>` : ''}
+                                </button>
+                                ${isOwner ? `
+                                    <button class="btn-sub" style="padding:5px 9px; font-size:11px; color:var(--danger); border-color:var(--border);" onclick="deleteMatch(event, '${m.id}')">
+                                        🗑️ 削除
+                                    </button>
+                                ` : ''}
+                            </div>
                             <button class="btn-line-share" onclick="shareMatchInviteToLine(${JSON.stringify(m).replace(/"/g, '&quot;')})">
                                 <svg viewBox="0 0 24 24"><path d="M24 10.3c0-4.6-4.9-8.3-11-8.3S2 5.7 2 10.3c0 4.1 3.6 7.6 8.6 8.2.3.1.8.2.9.6.1.3.1.8 0 1.1-.1.4-.4 1.5-.5 1.8-.1.6-.6 2.3 2 1.3 2.6-1.1 7-4.1 9.6-7 1.4-1.6 2.4-3.4 2.4-5z"/></svg>
                                 LINEでお誘い
@@ -2020,6 +2051,11 @@
             const awards = r.awardData?.awards || [];
             const isOwner = (myProfile.id === 'kenta253' || myProfile.id === 'kenta1971' || (myProfile.name && myProfile.name.replace(/\s+/g, '') === '長原健太') || (myProfile.id && myProfile.id.length > 0));
             const deleteBtnHtml = isOwner ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ アワード削除</button>` : '';
+
+            const likes = r.likes || [];
+            const isLikedByMe = likes.includes(myProfile.name);
+            const likeCount = likes.length;
+            const commentCount = (r.comments || []).length;
 
             const awardsHtml = awards.map(a => {
                 let badgeClass = (a.award_type === 'grand_prize') ? 'badge-grand' : ((a.award_type === 'booby_prize') ? 'badge-booby' : 'badge-excellence');
@@ -2062,8 +2098,15 @@
                     <div class="card-body" style="padding-top:6px;">
                         <div class="card-action-bar">
                             <div class="left-actions">
-                                <button class="btn-action" onclick="openCommentSheet('${r.id}')">
-                                    <span>💬 コメント</span>
+                                <button class="btn-action ${isLikedByMe ? 'liked' : ''}" onclick="toggleLikeDirect('${r.id}')">
+                                    <span>${isLikedByMe ? '❤️' : '🤍'}</span>
+                                    <span>いいね！</span>
+                                    ${likeCount > 0 ? `<span>${likeCount}</span>` : ''}
+                                </button>
+                                <button class="btn-action" onclick="openCommentSheet('${r.id}', 'round')">
+                                    <span>💬</span>
+                                    <span>コメント</span>
+                                    ${commentCount > 0 ? `<span>${commentCount}</span>` : ''}
                                 </button>
                             </div>
                             <button class="btn-line-share" onclick="shareAwardToLine('${r.id}')">
@@ -2152,12 +2195,12 @@
 
                         <div class="card-action-bar">
                             <div class="left-actions">
-                                <button class="btn-action ${isLikedByMe ? 'liked' : ''}" onclick="toggleLike(${idx})">
+                                <button class="btn-action ${isLikedByMe ? 'liked' : ''}" onclick="toggleLikeDirect('${r.id}')">
                                     <span>${isLikedByMe ? '❤️' : '🤍'}</span>
                                     <span>いいね！</span>
                                     ${likeCount > 0 ? `<span>${likeCount}</span>` : ''}
                                 </button>
-                                <button class="btn-action" onclick="openCommentSheet('${r.id}')">
+                                <button class="btn-action" onclick="openCommentSheet('${r.id}', 'round')">
                                     <span>💬</span>
                                     <span>コメント</span>
                                     ${commentCount > 0 ? `<span>${commentCount}</span>` : ''}
@@ -2170,7 +2213,124 @@
             `;
         }
 
-        // 既存処理群のヘルパー
+        // 🌟 修正②: コメントボトムシート呼び出し & Firestore更新対応
+        function openCommentSheet(targetId, type = 'round') {
+            activeCommentTargetId = targetId;
+            activeCommentTargetType = type;
+
+            let targetItem = null;
+            if (type === 'round') {
+                targetItem = rounds.find(r => r.id === targetId);
+            } else {
+                targetItem = matches.find(m => m.id === targetId);
+            }
+
+            if (!targetItem) return;
+
+            const titleEl = document.getElementById('sheetRoundTitle');
+            if (type === 'match') {
+                titleEl.innerText = `(⛳ ${targetItem.title})`;
+            } else if (targetItem.isAwardPost) {
+                titleEl.innerText = `(🏆 ${targetItem.awardData?.targetMonth} アワード)`;
+            } else {
+                titleEl.innerText = `(${targetItem.courseName})`;
+            }
+
+            renderSheetComments(targetItem);
+            const overlay = document.getElementById('commentSheetOverlay');
+            overlay.classList.add('active');
+            setTimeout(() => document.getElementById('sheetCommentInput').focus(), 300);
+        }
+
+        function closeCommentSheet(e) {
+            if (e && e.target !== document.getElementById('commentSheetOverlay') && !e.target.classList.contains('btn-close-sheet')) return;
+            activeCommentTargetId = null;
+            document.getElementById('commentSheetOverlay').classList.remove('active');
+        }
+
+        function renderSheetComments(targetItem) {
+            const listEl = document.getElementById('sheetCommentList');
+            const comments = targetItem.comments || [];
+            if (comments.length === 0) {
+                listEl.innerHTML = '<div style="color:var(--text-sub); font-size:12px; text-align:center; padding:30px 0;">まだコメントはありません。<br>一番最初にメッセージを送りましょう！🏌️‍♂️</div>';
+                return;
+            }
+            listEl.innerHTML = comments.map(c => {
+                const isMyComment = (c.author === myProfile.name);
+                const timeStr = c.time || '';
+                if (isMyComment) {
+                    return `
+                        <div class="chat-row-my">
+                            <span class="chat-time">${timeStr}</span>
+                            <div class="chat-bubble-my">${c.text}</div>
+                        </div>
+                    `;
+                } else {
+                    const cAvatar = globalUsersMap[c.author] || c.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150';
+                    return `
+                        <div class="chat-row-other">
+                            <img src="${cAvatar}" class="avatar-img-sm">
+                            <div class="chat-content-other">
+                                <span class="chat-author-name">${c.author}</span>
+                                <div class="chat-bubble-other">${c.text}</div>
+                            </div>
+                            <span class="chat-time">${timeStr}</span>
+                        </div>
+                    `;
+                }
+            }).join('');
+            setTimeout(() => { listEl.scrollTop = listEl.scrollHeight; }, 50);
+        }
+
+        async function submitSheetComment(e) {
+            e.preventDefault();
+            if (!activeCommentTargetId) return;
+            const input = document.getElementById('sheetCommentInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            let targetItem = null;
+            const collectionName = (activeCommentTargetType === 'match') ? 'matches' : 'rounds';
+
+            if (activeCommentTargetType === 'match') {
+                targetItem = matches.find(m => m.id === activeCommentTargetId);
+            } else {
+                targetItem = rounds.find(r => r.id === activeCommentTargetId);
+            }
+            if (!targetItem) return;
+
+            const updatedComments = targetItem.comments || [];
+            updatedComments.push({
+                author: myProfile.name,
+                avatar: myProfile.avatar,
+                text: text,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+
+            try {
+                await db.collection(collectionName).doc(activeCommentTargetId).update({ comments: updatedComments });
+                input.value = '';
+                renderSheetComments(targetItem);
+            } catch (err) {
+                await showAppAlert('送信エラー', err.message);
+            }
+        }
+
+        async function toggleLikeDirect(roundId) {
+            const targetRound = rounds.find(r => r.id === roundId);
+            if (!targetRound) return;
+            let likes = targetRound.likes || [];
+            const myName = myProfile.name;
+            const index = likes.indexOf(myName);
+            if (index > -1) likes.splice(index, 1);
+            else likes.push(myName);
+            try {
+                await db.collection("rounds").doc(roundId).update({ likes: likes });
+            } catch (err) {
+                console.error("いいね更新エラー:", err);
+            }
+        }
+
         function handleCarouselScroll(trackEl, roundIdx) {
             const scrollLeft = trackEl.scrollLeft;
             const slideWidth = trackEl.clientWidth;
@@ -2210,97 +2370,6 @@
             if (booby) text += `😂 ブービー賞: 「${booby.award_name}」\n受賞者: ${booby.target_user_name}さん\nコメント: ${booby.comment}\n\n`;
             text += `👇 全ての審査結果と写真はこちら\n${appUrl}`;
             window.open(`https://line.me/R/msg/text/?${encodeURIComponent(text)}`, '_blank');
-        }
-
-        async function toggleLike(roundIndex) {
-            const visibleRounds = getVisibleTimelineRounds();
-            const targetRound = visibleRounds[roundIndex];
-            if (!targetRound) return;
-            let likes = targetRound.likes || [];
-            const myName = myProfile.name;
-            const index = likes.indexOf(myName);
-            if (index > -1) likes.splice(index, 1);
-            else likes.push(myName);
-            try {
-                await db.collection("rounds").doc(targetRound.id).update({ likes: likes });
-            } catch (err) {
-                console.error("いいね更新エラー:", err);
-            }
-        }
-
-        function openCommentSheet(roundId) {
-            const r = rounds.find(item => item.id === roundId);
-            if (!r) return;
-            activeCommentRoundId = roundId;
-            document.getElementById('sheetRoundTitle').innerText = r.isAwardPost ? `(🏆 ${r.awardData.targetMonth} アワード)` : `(${r.courseName})`;
-            renderSheetComments(r);
-            const overlay = document.getElementById('commentSheetOverlay');
-            overlay.classList.add('active');
-            setTimeout(() => document.getElementById('sheetCommentInput').focus(), 300);
-        }
-
-        function closeCommentSheet(e) {
-            if (e && e.target !== document.getElementById('commentSheetOverlay') && !e.target.classList.contains('btn-close-sheet')) return;
-            activeCommentRoundId = null;
-            document.getElementById('commentSheetOverlay').classList.remove('active');
-        }
-
-        function renderSheetComments(targetRound) {
-            const listEl = document.getElementById('sheetCommentList');
-            const comments = targetRound.comments || [];
-            if (comments.length === 0) {
-                listEl.innerHTML = '<div style="color:var(--text-sub); font-size:12px; text-align:center; padding:30px 0;">まだコメントはありません。<br>一番最初にメッセージを送りましょう！🏌️‍♂️</div>';
-                return;
-            }
-            listEl.innerHTML = comments.map(c => {
-                const isMyComment = (c.author === myProfile.name);
-                const timeStr = c.time || '';
-                if (isMyComment) {
-                    return `
-                        <div class="chat-row-my">
-                            <span class="chat-time">${timeStr}</span>
-                            <div class="chat-bubble-my">${c.text}</div>
-                        </div>
-                    `;
-                } else {
-                    const cAvatar = globalUsersMap[c.author] || c.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150';
-                    return `
-                        <div class="chat-row-other">
-                            <img src="${cAvatar}" class="avatar-img-sm">
-                            <div class="chat-content-other">
-                                <span class="chat-author-name">${c.author}</span>
-                                <div class="chat-bubble-other">${c.text}</div>
-                            </div>
-                            <span class="chat-time">${timeStr}</span>
-                        </div>
-                    `;
-                }
-            }).join('');
-            setTimeout(() => { listEl.scrollTop = listEl.scrollHeight; }, 50);
-        }
-
-        async function submitSheetComment(e) {
-            e.preventDefault();
-            if (!activeCommentRoundId) return;
-            const input = document.getElementById('sheetCommentInput');
-            const text = input.value.trim();
-            if (!text) return;
-            const targetRound = rounds.find(r => r.id === activeCommentRoundId);
-            if (!targetRound) return;
-            const updatedComments = targetRound.comments || [];
-            updatedComments.push({
-                author: myProfile.name,
-                avatar: myProfile.avatar,
-                text: text,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            });
-            try {
-                await db.collection("rounds").doc(activeCommentRoundId).update({ comments: updatedComments });
-                input.value = '';
-                renderSheetComments(targetRound);
-            } catch (err) {
-                await showAppAlert('送信エラー', err.message);
-            }
         }
 
         function showToast(msg) {
@@ -3154,7 +3223,7 @@
         }
 
         async function deleteRound(e, roundId) {
-            e.stopPropagation();
+            if (e) e.stopPropagation();
             const ok = await showAppConfirm('削除の確認', 'この投稿・アワード記録を削除してもよろしいですか？');
             if (ok) {
                 try {
