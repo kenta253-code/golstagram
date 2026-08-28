@@ -384,9 +384,27 @@
             color: var(--primary);
             font-weight: 700;
         }
+        /* 通常（セピア・ライト）時のバッジスタイル */
         .vote-badge-ok { background: #e6f4ea; color: #137333; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
         .vote-badge-maybe { background: #fff8e1; color: #b78103; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
         .vote-badge-ng { background: #fce8e6; color: #c5221f; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
+
+        /* 🌙 ダークモード時のバッジスタイル（ダーク調に最適化） */
+        body[data-theme="dark"] .vote-badge-ok { 
+            background: rgba(34, 197, 94, 0.2); 
+            color: #4ade80; 
+            border: 1px solid rgba(74, 222, 128, 0.35); 
+        }
+        body[data-theme="dark"] .vote-badge-maybe { 
+            background: rgba(234, 179, 8, 0.2); 
+            color: #facc15; 
+            border: 1px solid rgba(250, 204, 21, 0.35); 
+        }
+        body[data-theme="dark"] .vote-badge-ng { 
+            background: rgba(239, 68, 68, 0.2); 
+            color: #f87171; 
+            border: 1px solid rgba(248, 113, 113, 0.35); 
+        }
 
         /* ========= 🌟 AI映えアワード専用カードデザイン ========= */
         .award-banner-card {
