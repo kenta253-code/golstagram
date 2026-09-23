@@ -595,6 +595,42 @@
             display: inline-flex; align-items: center; gap: 4px;
         }
 
+        /* ========= AI解析ステータス表示の大型強調スタイル ========= */
+        #aiStatus {
+            display: none;
+            margin-top: 14px;
+            padding: 14px 18px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.5;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        }
+        #aiStatus.status-loading {
+            display: block;
+            background: #fff8e1;
+            color: #b45309;
+            border: 2px solid #f59e0b;
+            animation: statusPulse 1.4s infinite ease-in-out;
+        }
+        #aiStatus.status-success {
+            display: block;
+            background: #e8f5e9;
+            color: #166534;
+            border: 2px solid #22c55e;
+        }
+        #aiStatus.status-error {
+            display: block;
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.75; transform: scale(0.99); }
+        }
+
         .score-editor-wrapper {
             overflow-x: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x;
             margin: 10px 0 18px; border: 1px solid var(--gold-border); border-radius: 8px; background: var(--card);
@@ -880,7 +916,7 @@
                     </div>
                     
                     <button class="btn-main" id="aiAnalyzeBtn" onclick="processScoreImagesSafe()" style="background:#b0bec5; cursor:not-allowed;" disabled>AIでスコアを解析する</button>
-                    <div id="aiStatus" style="font-size: 13px; color: var(--primary); font-weight: 700; margin-top: 10px;"></div>
+                    <div id="aiStatus"></div>
 
                     <div style="text-align: center; margin-top: 16px;">
                         <button type="button" class="btn-sub" onclick="openManualInput()">手動でスコア・写真を入力する →</button>
@@ -2732,7 +2768,12 @@
             document.getElementById('scoreImageInput1').value = '';
             document.getElementById('scoreImageInput2').value = '';
             document.getElementById('photoGalleryInput').value = '';
-            document.getElementById('aiStatus').innerText = '';
+            const status = document.getElementById('aiStatus');
+            if (status) {
+                status.innerText = '';
+                status.className = '';
+                status.style.display = 'none';
+            }
             document.getElementById('parsedResultSection').style.display = 'none';
             document.getElementById('initialCancelSection').style.display = 'block';
             checkScoreButtonState();
@@ -2986,10 +3027,16 @@
             const file1 = document.getElementById('scoreImageInput1').files[0];
             const file2 = document.getElementById('scoreImageInput2').files[0];
             const status = document.getElementById('aiStatus');
+            const btn = document.getElementById('aiAnalyzeBtn');
             if (!file1) return;
 
             isEditingRound = true;
-            status.innerText = 'AIがスコア画像を解析中...⛳';
+
+            // 🌟 解析中の強調表示
+            status.className = 'status-loading';
+            status.innerHTML = '⏳ <strong>AIがスコア画像を解析中です...</strong><br><span style="font-size:12px; font-weight:normal;">数十秒ほどお待ちください🏌️‍♂️</span>';
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
 
             try {
                 const base641 = (await compressImageFile(file1, 1024, 0.8)).split(',')[1];
@@ -3077,16 +3124,24 @@
                     renderScorecardEditor();
                     document.getElementById('parsedResultSection').style.display = 'block';
                     document.getElementById('initialCancelSection').style.display = 'none';
-                    status.innerText = `✅ AI解析完了（${tempPlayersData.length}名分のスコアを読み込みました）`;
+
+                    // 🌟 成功時の強調表示
+                    status.className = 'status-success';
+                    status.innerHTML = `✅ <strong>AI解析完了！</strong><br><span style="font-size:12px; font-weight:normal;">${tempPlayersData.length}名分のスコアを読み込みました</span>`;
                 } else {
-                    status.innerText = '⚠️ 自動解析できませんでした。手動で入力してください。';
+                    status.className = 'status-error';
+                    status.innerHTML = '⚠️ <strong>自動解析できませんでした</strong><br><span style="font-size:12px; font-weight:normal;">下の手動入力欄をご確認・ご入力ください</span>';
                     document.getElementById('parsedResultSection').style.display = 'block';
                     document.getElementById('initialCancelSection').style.display = 'none';
                 }
             } catch (e) {
-                status.innerText = '解析エラー: ' + e.message;
+                status.className = 'status-error';
+                status.innerHTML = `❌ <strong>解析エラーが発生しました</strong><br><span style="font-size:12px; font-weight:normal;">${e.message}</span>`;
                 document.getElementById('parsedResultSection').style.display = 'block';
                 document.getElementById('initialCancelSection').style.display = 'none';
+            } finally {
+                btn.disabled = false;
+                btn.style.opacity = '1';
             }
         }
 
@@ -3530,7 +3585,7 @@
         // ==========================================
         // ギャラリー・振り返り・分析・詳細描画
         // ==========================================
-       function renderAllGallery() {
+        function renderAllGallery() {
             const container = document.getElementById('allGalleryContainer');
             const allPhotos = [];
             const visibleRounds = getVisibleTimelineRounds();
@@ -3556,7 +3611,6 @@
                 return;
             }
 
-            // 🌟 ギャラリー写真をタップした際、ラウンド詳細ではなく拡大モーダル（openPhotoModal）を表示
             container.innerHTML = allPhotos.map(item => `
                 <div class="gallery-card" onclick="openPhotoModal('${item.photoUrl}')">
                     <img src="${item.photoUrl}" loading="lazy">
