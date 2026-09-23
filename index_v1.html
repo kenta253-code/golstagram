@@ -3530,7 +3530,7 @@
         // ==========================================
         // ギャラリー・振り返り・分析・詳細描画
         // ==========================================
-        function renderAllGallery() {
+       function renderAllGallery() {
             const container = document.getElementById('allGalleryContainer');
             const allPhotos = [];
             const visibleRounds = getVisibleTimelineRounds();
@@ -3542,16 +3542,30 @@
                         photoUrl: pUrl,
                         roundId: r.id,
                         courseName: r.courseName,
-                        playDate: r.playDate,
+                        playDate: r.playDate || '',
                         authorName: r.authorName || myProfile.name
                     });
                 });
             });
 
+            // 🌟 プレー日が新しい順（降順）にソート
+            allPhotos.sort((a, b) => (b.playDate || '').localeCompare(a.playDate || ''));
+
             if (allPhotos.length === 0) {
                 container.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; padding:40px; color:var(--text-sub);">表示できる写真がありません。<br><span class="font-golsta">Golsta</span> 登録から写真を追加してください📷</div>';
                 return;
             }
+
+            container.innerHTML = allPhotos.map(item => `
+                <div class="gallery-card" onclick="openPhotoModal('${item.photoUrl}')">
+                    <img src="${item.photoUrl}" loading="lazy">
+                    <div class="gallery-card-info">
+                        <div class="gallery-card-title">⛳ ${item.courseName}</div>
+                        <div style="color:var(--text-sub); font-size:10px;">📅 ${item.playDate} ｜ 👤 ${item.authorName}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
 
             // 🌟 ギャラリー写真をタップした際、ラウンド詳細ではなく拡大モーダル（openPhotoModal）を表示
             container.innerHTML = allPhotos.map(item => `
