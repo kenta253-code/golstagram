@@ -2985,7 +2985,7 @@
             document.getElementById('photoCountLabel').innerText = '圧縮中...';
             for (const file of filesToProcess) {
                 try {
-                    const compressed = await compressImageFile(file, 600, 0.6);
+                    const compressed = await compressImageFile(file, 480, 0.5);
                     tempPhotos.push(compressed);
                 } catch (e) {
                     await showAppAlert('エラー', '写真「' + file.name + '」: ' + e.message);
