@@ -300,6 +300,31 @@
         .btn-action:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
         .btn-action.liked { background: #fde8e8; border-color: #fca5a5; color: #dc2626; }
 
+        /* ========= 💬 未読コメント用バッジスタイル ========= */
+        .btn-action.has-unread-comments {
+            border-color: #ff4081 !important;
+            background: rgba(255, 64, 129, 0.08) !important;
+            position: relative;
+        }
+        .unread-comment-badge {
+            background: #ff4081;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 10px;
+            margin-left: 4px;
+            box-shadow: 0 0 8px rgba(255, 64, 129, 0.6);
+            animation: unreadPulse 1.8s infinite ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        @keyframes unreadPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.85; }
+        }
+
         .btn-line-share {
             display: inline-flex; align-items: center; gap: 5px;
             background-color: var(--line-green); color: #ffffff;
@@ -688,7 +713,7 @@
         .btn-remove-photo {
             position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.65);
             color: white; border: none; border-radius: 50%; width: 22px; height: 22px;
-            font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5;
+            font-size: 11px; cursor: flex; align-items: center; justify-content: center; z-index: 5;
         }
 
         .toggle-group { display: flex; background: var(--border); border-radius: 10px; padding: 4px; margin-bottom: 18px; }
@@ -1472,6 +1497,22 @@
         }
 
         // -------------------------------------------------------------
+        // 💬 未読コメント数判定 & 既読記録ロジック
+        // -------------------------------------------------------------
+        function getUnreadCommentCount(targetId, currentCommentsCount) {
+            if (!currentCommentsCount || currentCommentsCount === 0) return 0;
+            const readMap = JSON.parse(localStorage.getItem('golf_read_comments_map') || '{}');
+            const lastReadCount = readMap[targetId] || 0;
+            return Math.max(0, currentCommentsCount - lastReadCount);
+        }
+
+        function markCommentsAsRead(targetId, currentCommentsCount) {
+            const readMap = JSON.parse(localStorage.getItem('golf_read_comments_map') || '{}');
+            readMap[targetId] = currentCommentsCount;
+            localStorage.setItem('golf_read_comments_map', JSON.stringify(readMap));
+        }
+
+        // -------------------------------------------------------------
         // 🔑 ユーザー認証チェック & ログイン処理
         // -------------------------------------------------------------
         function checkUserAuth() {
@@ -2064,6 +2105,15 @@
 
             const comments = m.comments || [];
             const commentCount = comments.length;
+            const unreadMatchCount = getUnreadCommentCount(m.id, commentCount);
+            const matchCommentBtnHtml = `
+                <button class="btn-action ${unreadMatchCount > 0 ? 'has-unread-comments' : ''}" onclick="openCommentSheet('${m.id}', 'match')">
+                    <span>💬</span>
+                    <span>コメント</span>
+                    ${commentCount > 0 ? `<span>${commentCount}</span>` : ''}
+                    ${unreadMatchCount > 0 ? `<span class="unread-comment-badge">${unreadMatchCount} NEW</span>` : ''}
+                </button>
+            `;
 
             if (isConfirmed) {
                 return `
@@ -2092,11 +2142,7 @@
 
                             <div class="card-action-bar" style="margin-top:0; padding-top:8px;">
                                 <div class="left-actions">
-                                    <button class="btn-action" onclick="openCommentSheet('${m.id}', 'match')">
-                                        <span>💬</span>
-                                        <span>コメント</span>
-                                        ${commentCount > 0 ? `<span>${commentCount}</span>` : ''}
-                                    </button>
+                                    ${matchCommentBtnHtml}
                                     ${isOwner ? `
                                         <button class="btn-sub" style="padding:5px 9px; font-size:11px; color:var(--danger); border-color:var(--border);" onclick="deleteMatch(event, '${m.id}')">
                                             🗑️ 削除
@@ -2154,11 +2200,7 @@
 
                         <div class="card-action-bar">
                             <div class="left-actions">
-                                <button class="btn-action" onclick="openCommentSheet('${m.id}', 'match')">
-                                    <span>💬</span>
-                                    <span>コメント</span>
-                                    ${commentCount > 0 ? `<span>${commentCount}</span>` : ''}
-                                </button>
+                                ${matchCommentBtnHtml}
                                 ${isOwner ? `
                                     <button class="btn-sub" style="padding:5px 9px; font-size:11px; color:var(--danger); border-color:var(--border);" onclick="deleteMatch(event, '${m.id}')">
                                         🗑️ 削除
@@ -2184,6 +2226,7 @@
             const isLikedByMe = likes.includes(myProfile.name);
             const likeCount = likes.length;
             const commentCount = (r.comments || []).length;
+            const unreadCount = getUnreadCommentCount(r.id, commentCount);
 
             const awardsHtml = awards.map(a => {
                 let badgeClass = (a.award_type === 'grand_prize') ? 'badge-grand' : ((a.award_type === 'booby_prize') ? 'badge-booby' : 'badge-excellence');
@@ -2231,10 +2274,11 @@
                                     <span>いいね！</span>
                                     ${likeCount > 0 ? `<span>${likeCount}</span>` : ''}
                                 </button>
-                                <button class="btn-action" onclick="openCommentSheet('${r.id}', 'round')">
+                                <button class="btn-action ${unreadCount > 0 ? 'has-unread-comments' : ''}" onclick="openCommentSheet('${r.id}', 'round')">
                                     <span>💬</span>
                                     <span>コメント</span>
                                     ${commentCount > 0 ? `<span>${commentCount}</span>` : ''}
+                                    ${unreadCount > 0 ? `<span class="unread-comment-badge">${unreadCount} NEW</span>` : ''}
                                 </button>
                             </div>
                             <button class="btn-line-share" onclick="shareAwardToLine('${r.id}')">
@@ -2260,6 +2304,16 @@
             const isLikedByMe = likes.includes(myProfile.name);
             const likeCount = likes.length;
             const commentCount = (r.comments || []).length;
+            const unreadCount = getUnreadCommentCount(r.id, commentCount);
+
+            const commentBtnHtml = `
+                <button class="btn-action ${unreadCount > 0 ? 'has-unread-comments' : ''}" onclick="openCommentSheet('${r.id}', 'round')">
+                    <span>💬</span>
+                    <span>コメント</span>
+                    ${commentCount > 0 ? `<span>${commentCount}</span>` : ''}
+                    ${unreadCount > 0 ? `<span class="unread-comment-badge">${unreadCount} NEW</span>` : ''}
+                </button>
+            `;
 
             const lineShareBtnHtml = isMyPost ? `
                 <button class="btn-line-share" onclick="shareToLine('${r.id}')">
@@ -2328,11 +2382,7 @@
                                     <span>いいね！</span>
                                     ${likeCount > 0 ? `<span>${likeCount}</span>` : ''}
                                 </button>
-                                <button class="btn-action" onclick="openCommentSheet('${r.id}', 'round')">
-                                    <span>💬</span>
-                                    <span>コメント</span>
-                                    ${commentCount > 0 ? `<span>${commentCount}</span>` : ''}
-                                </button>
+                                ${commentBtnHtml}
                             </div>
                             ${lineShareBtnHtml}
                         </div>
@@ -2345,14 +2395,16 @@
             activeCommentTargetId = targetId;
             activeCommentTargetType = type;
 
-            let targetItem = null;
-            if (type === 'round') {
-                targetItem = rounds.find(r => r.id === targetId);
-            } else {
-                targetItem = matches.find(m => m.id === targetId);
-            }
+            let targetItem = (type === 'round') 
+                ? rounds.find(r => r.id === targetId) 
+                : matches.find(m => m.id === targetId);
 
             if (!targetItem) return;
+
+            // 🌟 コメントシートを開いた瞬間に既読化（バッジを消す）
+            const count = (targetItem.comments || []).length;
+            markCommentsAsRead(targetId, count);
+            renderTimeline();
 
             const titleEl = document.getElementById('sheetRoundTitle');
             if (type === 'match') {
@@ -2437,6 +2489,8 @@
             try {
                 await db.collection(collectionName).doc(activeCommentTargetId).update({ comments: updatedComments });
                 input.value = '';
+                // 自分が送信した直後も既読として同期
+                markCommentsAsRead(activeCommentTargetId, updatedComments.length);
                 renderSheetComments(targetItem);
             } catch (err) {
                 await showAppAlert('送信エラー', err.message);
@@ -2826,7 +2880,7 @@
             renderMemberList();
         }
 
-        function compressImageFile(file, maxWidth = 600, quality = 0.6) {
+        function compressImageFile(file, maxWidth = 480, quality = 0.5) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -2985,6 +3039,7 @@
             document.getElementById('photoCountLabel').innerText = '圧縮中...';
             for (const file of filesToProcess) {
                 try {
+                    // 🌟 1MB制限エラーを防ぐため軽量化 (幅480px / 画質0.5)
                     const compressed = await compressImageFile(file, 480, 0.5);
                     tempPhotos.push(compressed);
                 } catch (e) {
