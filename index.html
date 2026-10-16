@@ -2297,7 +2297,16 @@
                 ? (myProfile.avatar || globalUsersMap[myProfile.name] || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150')
                 : (globalUsersMap[r.authorName] || r.authorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150');
             const authorName = r.authorName || myProfile.name;
-            const mainScore = (r.players && r.players[0]) ? `${r.players[0].cart_name}: ${r.players[0].total_score}` : '';
+
+            // 🌟 投稿者本人のスコアを優先して取得（見つからない場合は先頭）
+            const authorCleanName = (authorName || '').replace(/\s+/g, '');
+            const targetPlayer = (r.players || []).find(p => {
+                const pCleanName = (p.cart_name || '').replace(/\s+/g, '');
+                return pCleanName === authorCleanName || pCleanName.includes(authorCleanName) || authorCleanName.includes(pCleanName);
+            }) || (r.players && r.players[0] ? r.players[0] : null);
+
+            const mainScore = targetPlayer ? `${targetPlayer.cart_name}: ${targetPlayer.total_score}` : '';
+
             const deleteBtnHtml = isMyPost ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ 削除</button>` : '';
 
             const likes = r.likes || [];
