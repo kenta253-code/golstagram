@@ -3846,9 +3846,10 @@
             const h2hMap = {};
 
             accessibleRounds.forEach(r => {
+                // 🌟 投稿者本人の名前（空白除去）と一致するプレイヤーを確実に抽出
                 const myPlayer = (r.players || []).find(p => {
                     const pName = (p.cart_name || '').trim().replace(/\s+/g, '');
-                    return pName === myNameNoSpace || pName.includes(myNameNoSpace) || (r.authorName === myName && p === r.players[0]);
+                    return pName === myNameNoSpace || pName.includes(myNameNoSpace) || myNameNoSpace.includes(pName);
                 });
                 if (!myPlayer || !myPlayer.total_score) return;
 
