@@ -22,6 +22,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
+    <!-- 👇 追加：ピンチズーム用軽量ライブラリ -->
+    <script src="https://cdn.jsdelivr.net/npm/pinch-zoom-js@2.3.5/dist/pinch-zoom.min.js"></script>
+
     <style>
         :root, body[data-theme="sepia"] {
             --primary: #23382b;
@@ -713,7 +716,7 @@
         .btn-remove-photo {
             position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.65);
             color: white; border: none; border-radius: 50%; width: 22px; height: 22px;
-            font-size: 11px; cursor: flex; align-items: center; justify-content: center; z-index: 5;
+            font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5;
         }
 
         .toggle-group { display: flex; background: var(--border); border-radius: 10px; padding: 4px; margin-bottom: 18px; }
@@ -761,11 +764,6 @@
             object-fit: contain;
             border-radius: 8px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            transform: scale(0.95);
-            transition: transform 0.25s ease;
-        }
-        .photo-lightbox-overlay.active img {
-            transform: scale(1);
         }
         .btn-close-lightbox {
             position: absolute;
@@ -1156,9 +1154,12 @@
     </div>
 
     <!-- 📷 写真拡大フルスクリーンモーダル（ライトボックス） -->
-    <div id="photoPreviewModal" class="photo-lightbox-overlay" onclick="closePhotoModal()">
-        <button class="btn-close-lightbox" onclick="closePhotoModal()">✕</button>
-        <img id="lightboxImage" src="" alt="拡大写真" onclick="event.stopPropagation()">
+    <div id="photoPreviewModal" class="photo-lightbox-overlay" onclick="closePhotoModal(event)">
+        <button class="btn-close-lightbox" onclick="closePhotoModal(event)">✕</button>
+        <!-- 👇 追加：PinchZoom用のラッパー -->
+        <div id="pinchZoomWrapper" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+            <img id="lightboxImage" src="" alt="拡大写真">
+        </div>
     </div>
 
     <!-- ⛳ Golsta マッチ作成モーダル -->
@@ -1401,7 +1402,8 @@
     <div id="customToast" class="app-toast"></div>
 
     <script>
-        const GEMINI_API_KEY = 'AQ.Ab8RN6LH_mcr7iYXSl1x4uIR0ZKG17SkpTar3ePPnSShSSMylw';
+        // 🌟 新しく発行した安全なGemini APIキーを設定してください
+        const GEMINI_API_KEY = 'AQ.Ab8RN6I1tLWYo8mkcNaOxH3t_cYrzPyXX16_v3E5NR9i3hvrig';
 
         // Firebase 初期化
         const firebaseConfig = {
@@ -1481,19 +1483,49 @@
         initAppTheme();
 
         // -------------------------------------------------------------
-        // 📷 写真拡大フルスクリーンモーダル表示制御
+        // 📷 写真拡大フルスクリーンモーダル表示制御 ＆ ピンチズーム設定
         // -------------------------------------------------------------
+        let currentPinchZoom = null;
+
         function openPhotoModal(imgSrc) {
             const modal = document.getElementById('photoPreviewModal');
             const imgEl = document.getElementById('lightboxImage');
             if (!modal || !imgEl) return;
+            
             imgEl.src = imgSrc;
             modal.classList.add('active');
+
+            // PinchZoomの初期化（初回のみ）
+            if (!currentPinchZoom) {
+                const el = document.getElementById('pinchZoomWrapper');
+                currentPinchZoom = new PinchZoom(el, {
+                    use2d: false, // 滑らかなGPU制御
+                    draggableUnzoomed: false, // 拡大していない時は動かさない
+                    maxZoom: 5 // 最大5倍まで拡大可能
+                });
+            } else {
+                // 別の画像を開いた際にズーム状態と位置をリセット
+                currentPinchZoom.offset.x = 0;
+                currentPinchZoom.offset.y = 0;
+                currentPinchZoom.zoomFactor = 1;
+                currentPinchZoom.update();
+            }
         }
 
-        function closePhotoModal() {
+        function closePhotoModal(e) {
+            // 画像自体をタップ／スワイプした時は閉じないようにする（背景や✕ボタンなら閉じる）
+            if (e && e.target && e.target.id === 'lightboxImage') return;
+            
             const modal = document.getElementById('photoPreviewModal');
             if (modal) modal.classList.remove('active');
+            
+            // 閉じた瞬間にズームをリセットして次回の表示崩れを防ぐ
+            if (currentPinchZoom) {
+                currentPinchZoom.offset.x = 0;
+                currentPinchZoom.offset.y = 0;
+                currentPinchZoom.zoomFactor = 1;
+                currentPinchZoom.update();
+            }
         }
 
         // -------------------------------------------------------------
@@ -2297,7 +2329,16 @@
                 ? (myProfile.avatar || globalUsersMap[myProfile.name] || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150')
                 : (globalUsersMap[r.authorName] || r.authorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150');
             const authorName = r.authorName || myProfile.name;
-            const mainScore = (r.players && r.players[0]) ? `${r.players[0].cart_name}: ${r.players[0].total_score}` : '';
+
+            // 🌟 投稿者本人のスコアを優先して特定（見つからない場合は先頭）
+            const authorCleanName = (authorName || '').replace(/\s+/g, '');
+            const targetPlayer = (r.players || []).find(p => {
+                const pCleanName = (p.cart_name || '').replace(/\s+/g, '');
+                return pCleanName === authorCleanName || pCleanName.includes(authorCleanName) || authorCleanName.includes(pCleanName);
+            }) || (r.players && r.players[0] ? r.players[0] : null);
+
+            const mainScore = targetPlayer ? `${targetPlayer.cart_name}: ${targetPlayer.total_score}` : '';
+
             const deleteBtnHtml = isMyPost ? `<button class="btn-card-delete" onclick="deleteRound(event, '${r.id}')">🗑️ 削除</button>` : '';
 
             const likes = r.likes || [];
@@ -2489,7 +2530,6 @@
             try {
                 await db.collection(collectionName).doc(activeCommentTargetId).update({ comments: updatedComments });
                 input.value = '';
-                // 自分が送信した直後も既読として同期
                 markCommentsAsRead(activeCommentTargetId, updatedComments.length);
                 renderSheetComments(targetItem);
             } catch (err) {
@@ -3127,38 +3167,26 @@
                     parts.push({ inlineData: { mimeType: "image/jpeg", data: base642 } });
                 }
 
-                const mRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
-                const mData = await mRes.json();
+                // 🌟 直接モデルを指定して高速呼び出し
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
                 
-                if (!mData.models || mData.models.length === 0) {
-                    throw new Error('利用可能なモデルが見つかりません。APIキーを確認してください。');
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: parts }] })
+                });
+
+                const resData = await res.json();
+                if (!res.ok) {
+                    throw new Error(resData.error?.message || 'API呼び出しに失敗しました');
                 }
 
-                const candidateModels = mData.models.filter(m => 
-                    m.supportedGenerationMethods && 
-                    m.supportedGenerationMethods.includes('generateContent') && 
-                    !m.name.includes('embedding')
-                );
-
                 let parsedJSON = null;
-                for (const model of candidateModels) {
-                    try {
-                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model.name}:generateContent?key=${GEMINI_API_KEY}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ contents: [{ parts: parts }] })
-                        });
-                        const resData = await res.json();
-                        if (res.ok && resData.candidates?.[0]?.content?.parts?.[0]?.text) {
-                            let rawText = resData.candidates[0].content.parts[0].text;
-                            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-                            if (jsonMatch) {
-                                parsedJSON = JSON.parse(jsonMatch[0]);
-                                break;
-                            }
-                        }
-                    } catch (err) {
-                        continue;
+                if (resData.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    let rawText = resData.candidates[0].content.parts[0].text;
+                    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        parsedJSON = JSON.parse(jsonMatch[0]);
                     }
                 }
 
@@ -3560,33 +3588,24 @@
                     }
                 });
 
-                const mRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
-                const mData = await mRes.json();
-                const candidateModels = (mData.models || []).filter(m => 
-                    m.supportedGenerationMethods && 
-                    m.supportedGenerationMethods.includes('generateContent') && 
-                    !m.name.includes('embedding')
-                );
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: parts }] })
+                });
+
+                const resData = await res.json();
+                if (!res.ok) {
+                    throw new Error(resData.error?.message || 'API呼び出しに失敗しました');
+                }
 
                 let parsedAwardJSON = null;
-                for (const model of candidateModels) {
-                    try {
-                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model.name}:generateContent?key=${GEMINI_API_KEY}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ contents: [{ parts: parts }] })
-                        });
-                        const resData = await res.json();
-                        if (res.ok && resData.candidates?.[0]?.content?.parts?.[0]?.text) {
-                            let raw = resData.candidates[0].content.parts[0].text;
-                            const match = raw.match(/\{[\s\S]*\}/);
-                            if (match) {
-                                parsedAwardJSON = JSON.parse(match[0]);
-                                break;
-                            }
-                        }
-                    } catch (e) {
-                        continue;
+                if (resData.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    let raw = resData.candidates[0].content.parts[0].text;
+                    const match = raw.match(/\{[\s\S]*\}/);
+                    if (match) {
+                        parsedAwardJSON = JSON.parse(match[0]);
                     }
                 }
 
@@ -3837,9 +3856,10 @@
             const h2hMap = {};
 
             accessibleRounds.forEach(r => {
+                // 🌟 本人の名前と一致するプレイヤーを確実に抽出
                 const myPlayer = (r.players || []).find(p => {
                     const pName = (p.cart_name || '').trim().replace(/\s+/g, '');
-                    return pName === myNameNoSpace || pName.includes(myNameNoSpace) || (r.authorName === myName && p === r.players[0]);
+                    return pName === myNameNoSpace || pName.includes(myNameNoSpace) || myNameNoSpace.includes(pName);
                 });
                 if (!myPlayer || !myPlayer.total_score) return;
 
@@ -4033,7 +4053,6 @@
                 </tr>
             `).join('');
 
-            // 詳細画面の想い出ギャラリー写真もタップで拡大モーダルを表示
             let galleryHtml = (r.photos || []).map(p => `
                 <img src="${p}" style="width:100%; height:100px; object-fit:cover; border-radius:8px; border:1px solid var(--border); cursor:pointer;" onclick="openPhotoModal('${p}')">
             `).join('');
