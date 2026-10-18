@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -21,9 +21,6 @@
     <!-- Firebase SDK (v9 compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-    <!-- 👇 追加：ピンチズーム用軽量ライブラリ -->
-    <script src="https://cdn.jsdelivr.net/npm/pinch-zoom-js@2.3.5/dist/pinch-zoom.min.js"></script>
 
     <style>
         :root, body[data-theme="sepia"] {
@@ -764,6 +761,18 @@
             object-fit: contain;
             border-radius: 8px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95);
+            transition: transform 0.25s ease;
+            cursor: zoom-in;
+            touch-action: manipulation;
+        }
+        .photo-lightbox-overlay.active img {
+            transform: scale(1);
+        }
+        /* 📷 ダブルタップ時の拡大表示 */
+        .photo-lightbox-overlay img.zoomed {
+            transform: scale(2.2) !important;
+            cursor: zoom-out;
         }
         .btn-close-lightbox {
             position: absolute;
@@ -1154,12 +1163,9 @@
     </div>
 
     <!-- 📷 写真拡大フルスクリーンモーダル（ライトボックス） -->
-    <div id="photoPreviewModal" class="photo-lightbox-overlay" onclick="closePhotoModal(event)">
-        <button class="btn-close-lightbox" onclick="closePhotoModal(event)">✕</button>
-        <!-- 👇 追加：PinchZoom用のラッパー -->
-        <div id="pinchZoomWrapper" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
-            <img id="lightboxImage" src="" alt="拡大写真">
-        </div>
+    <div id="photoPreviewModal" class="photo-lightbox-overlay" onclick="closePhotoModal()">
+        <button class="btn-close-lightbox" onclick="closePhotoModal()">✕</button>
+        <img id="lightboxImage" src="" alt="拡大写真" onclick="handlePhotoDoubleTap(event)">
     </div>
 
     <!-- ⛳ Golsta マッチ作成モーダル -->
@@ -1483,48 +1489,38 @@
         initAppTheme();
 
         // -------------------------------------------------------------
-        // 📷 写真拡大フルスクリーンモーダル表示制御 ＆ ピンチズーム設定
+        // 📷 写真拡大フルスクリーンモーダル表示制御＆ダブルタップズーム
         // -------------------------------------------------------------
-        let currentPinchZoom = null;
-
         function openPhotoModal(imgSrc) {
             const modal = document.getElementById('photoPreviewModal');
             const imgEl = document.getElementById('lightboxImage');
             if (!modal || !imgEl) return;
-            
             imgEl.src = imgSrc;
+            imgEl.classList.remove('zoomed');
             modal.classList.add('active');
-
-            // PinchZoomの初期化（初回のみ）
-            if (!currentPinchZoom) {
-                const el = document.getElementById('pinchZoomWrapper');
-                currentPinchZoom = new PinchZoom(el, {
-                    use2d: false, // 滑らかなGPU制御
-                    draggableUnzoomed: false, // 拡大していない時は動かさない
-                    maxZoom: 5 // 最大5倍まで拡大可能
-                });
-            } else {
-                // 別の画像を開いた際にズーム状態と位置をリセット
-                currentPinchZoom.offset.x = 0;
-                currentPinchZoom.offset.y = 0;
-                currentPinchZoom.zoomFactor = 1;
-                currentPinchZoom.update();
-            }
         }
 
-        function closePhotoModal(e) {
-            // 画像自体をタップ／スワイプした時は閉じないようにする（背景や✕ボタンなら閉じる）
-            if (e && e.target && e.target.id === 'lightboxImage') return;
-            
+        function closePhotoModal() {
             const modal = document.getElementById('photoPreviewModal');
+            const imgEl = document.getElementById('lightboxImage');
+            if (imgEl) imgEl.classList.remove('zoomed');
             if (modal) modal.classList.remove('active');
-            
-            // 閉じた瞬間にズームをリセットして次回の表示崩れを防ぐ
-            if (currentPinchZoom) {
-                currentPinchZoom.offset.x = 0;
-                currentPinchZoom.offset.y = 0;
-                currentPinchZoom.zoomFactor = 1;
-                currentPinchZoom.update();
+        }
+
+        let lastPhotoTapTime = 0;
+        function handlePhotoDoubleTap(e) {
+            e.stopPropagation();
+            const now = Date.now();
+            const imgEl = e.currentTarget;
+
+            if (now - lastPhotoTapTime < 350) {
+                imgEl.classList.toggle('zoomed');
+                lastPhotoTapTime = 0;
+            } else {
+                if (imgEl.classList.contains('zoomed')) {
+                    imgEl.classList.remove('zoomed');
+                }
+                lastPhotoTapTime = now;
             }
         }
 
@@ -3168,7 +3164,7 @@
                 }
 
                 // 🌟 直接モデルを指定して高速呼び出し
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`;
                 
                 const res = await fetch(apiUrl, {
                     method: 'POST',
@@ -3588,7 +3584,7 @@
                     }
                 });
 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`;
                 const res = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
