@@ -909,25 +909,29 @@
         .app-modal-title { font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
         .app-modal-text { font-size: 13px; color: var(--text-main); line-height: 1.5; margin-bottom: 18px; white-space: pre-wrap; }
         .app-modal-buttons { display: flex; gap: 10px; }
+        /* 中央表示に変更したトースト通知 */
         .app-toast {
             position: fixed;
-            top: 50%; /* 画面の縦中央 */
-            left: 50%; /* 画面の横中央 */
-            transform: translate(-50%, -50%) scale(0.9); /* 中心を基準に少し縮小状態で待機 */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
             background: linear-gradient(135deg, #23382b 0%, #344d3d 100%);
             color: #ffffff;
             border: 1px solid var(--gold);
-            padding: 14px 28px;
-            border-radius: 30px;
-            font-size: 15px; /* 少し見やすく大きく */
+            padding: 16px 24px; /* 上下少し広め */
+            border-radius: 20px; /* 改行されても綺麗に見えるように丸みを少し緩める */
+            font-size: 14px; /* スマホで改行された時に見やすいサイズ */
             font-weight: 700;
+            line-height: 1.5; /* 👇 追加：改行時の行間 */
+            width: 85%; /* 👇 追加：スマホ画面の幅の85%までに制限 */
+            max-width: 320px; /* 👇 追加：最大幅の設定 */
             box-shadow: var(--shadow-lg);
-            z-index: 2000; /* 他の要素より手前に */
+            z-index: 2000;
             opacity: 0;
             pointer-events: none;
             transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-align: center;
-            white-space: nowrap;
+            /* white-space: nowrap; は削除しました */
         }
         .app-toast.active {
             transform: translate(-50%, -50%) scale(1); /* 実寸大で表示 */
@@ -4233,7 +4237,7 @@
             document.execCommand('copy');
             document.body.removeChild(tempInput);
             
-            showToast('📋 共有コードをコピーしました！新規ラウンド登録の際にペーストしてください。');
+            showToast('📋 共有コードをコピーしました！\n新規ラウンド登録の際にペーストしてください。');
         }
 
         // 取り込みモーダルを開く
