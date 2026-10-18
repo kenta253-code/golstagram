@@ -3878,6 +3878,7 @@
                     const data = memberMap[name];
                     const avg = data.scores.length ? (data.scores.reduce((a,b)=>a+b, 0) / data.scores.length).toFixed(1) : '-';
                     const best = data.scores.length ? Math.min(...data.scores) : '-';
+                    data.rounds.sort((a, b) => (b.playDate || '').localeCompare(a.playDate || ''));
 
                     const historyList = data.rounds.map(rd => `
                         <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
@@ -3942,6 +3943,7 @@
                 container.innerHTML = Object.keys(courseMap).map((course, idx) => {
                     const data = courseMap[course];
                     const best = data.bestScore === 999 ? '-' : data.bestScore;
+                    data.rounds.sort((a, b) => (b.playDate || '').localeCompare(a.playDate || ''));
 
                     const historyList = data.rounds.map(rd => `
                         <div class="drilldown-item" onclick="showDetail('${rd.roundId}', 'summary')">
