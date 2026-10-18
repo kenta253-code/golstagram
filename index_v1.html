@@ -43,7 +43,8 @@
             border-radius: 50%;
         }
         .score-par {
-            /* 装飾なし */
+            border: 1.5px solid #22c55e; /* 緑丸枠 */
+            border-radius: 50%;
         }
         .score-bogey {
             border: 1.5px solid #3b82f6; /* 青四角枠 */
@@ -2746,6 +2747,17 @@
             });
         }
 
+        // 🌟 スコア記号判定ヘルパー関数
+        function formatScoreWithSymbol(score, par) {
+            if (!score) return '-';
+            if (!par) return `<span class="score-badge">${score}</span>`; // PAR不明時はそのまま表示
+            const diff = score - par;
+            if (diff <= -2) return `<span class="score-badge score-eagle">${score}</span>`; // イーグル以上 (◎)
+            if (diff === -1) return `<span class="score-badge score-birdie">${score}</span>`; // バーディー (〇)
+            if (diff === 0)  return `<span class="score-badge score-par">${score}</span>`;    // パー (緑丸)
+            if (diff === 1)  return `<span class="score-badge score-bogey">${score}</span>`;  // ボギー (□)
+            return `<span class="score-badge score-double">${score}</span>`;                  // ダボ以上 (二重四角)
+        }
 
 　       // 🌟 スコア記号判定ヘルパー関数
         function formatScoreWithSymbol(score, par) {
@@ -4073,7 +4085,7 @@
             const isMyPost = (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
             const editBtnHtml = isMyPost ? `<button class="btn-edit" onclick="openEditRegistration('${r.id}')">✏️ このラウンドを編集する</button>` : '';
 
-           const outPars = r.par?.out || [4,5,3,5,4,4,3,4,4];
+            const outPars = r.par?.out || [4,5,3,5,4,4,3,4,4];
             const inPars = r.par?.in || [5,4,5,4,3,4,3,4,4];
 
             let scoreRows = (r.players || []).map((p, pIdx) => {
