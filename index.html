@@ -2779,7 +2779,7 @@
         }
 
         function getMyAccessibleRounds() {
-            return rounds.filter(r => {
+            let accessible = rounds.filter(r => {
                 if (r.isAwardPost) return false;
                 if (r.visibility === 'private') return (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
                 if (r.visibility === 'members_only') {
@@ -2789,6 +2789,24 @@
                 }
                 return true;
             });
+
+            // 🌟 【重複排除ロジック（アプローチC）】
+            const myAuthoredRounds = accessible.filter(r => (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name));
+            const uniqueRounds = [];
+
+            accessible.forEach(r => {
+                const isMyPost = (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
+                if (isMyPost) {
+                    uniqueRounds.push(r);
+                } else {
+                    const hasMyPostSameDayCourse = myAuthoredRounds.some(myR => myR.playDate === r.playDate && myR.courseName === r.courseName);
+                    if (!hasMyPostSameDayCourse) {
+                        uniqueRounds.push(r);
+                    }
+                }
+            });
+
+            return uniqueRounds;
         }
 
         // 🌟 スコア記号判定ヘルパー関数
@@ -3802,20 +3820,38 @@
             if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
         }
 
-        function renderSummary(type) {
+       function renderSummary(type) {
             const container = document.getElementById('summary-content');
             const myName = myProfile.name ? myProfile.name.trim() : '長原 健太';
             const myNameNoSpace = myName.replace(/\s+/g, '');
 
-            const accessibleRounds = rounds.filter(r => {
+            // 自分が参加しているラウンドのみを抽出
+            let accessibleRounds = rounds.filter(r => {
                 if (r.isAwardPost) return false;
-                const isAuthor = (r.authorId && r.authorId === myProfile.id) || (r.authorName && r.authorName.trim().replace(/\s+/g, '') === myNameNoSpace);
+                const isAuthor = (r.authorName && r.authorName.trim().replace(/\s+/g, '') === myNameNoSpace);
                 const isPlayer = (r.players || []).some(p => {
                     const pName = (p.cart_name || '').trim().replace(/\s+/g, '');
                     return pName === myNameNoSpace || pName.includes(myNameNoSpace);
                 });
                 return isAuthor || isPlayer;
             });
+
+            // 🌟 【重複排除ロジック（アプローチC）】
+            const myAuthoredRounds = accessibleRounds.filter(r => (r.authorId && r.authorId === myProfile.id) || (r.authorName && r.authorName.trim().replace(/\s+/g, '') === myNameNoSpace));
+            const uniqueRounds = [];
+
+            accessibleRounds.forEach(r => {
+                const isMyPost = (r.authorId && r.authorId === myProfile.id) || (r.authorName && r.authorName.trim().replace(/\s+/g, '') === myNameNoSpace);
+                if (isMyPost) {
+                    uniqueRounds.push(r);
+                } else {
+                    const hasMyPostSameDayCourse = myAuthoredRounds.some(myR => myR.playDate === r.playDate && myR.courseName === r.courseName);
+                    if (!hasMyPostSameDayCourse) {
+                        uniqueRounds.push(r);
+                    }
+                }
+            });
+            accessibleRounds = uniqueRounds;
 
             if (type === 'members') {
                 const memberMap = {};
