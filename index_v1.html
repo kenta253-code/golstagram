@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -22,12 +22,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-    <!-- 👇 追加：ピンチズーム用軽量ライブラリ -->
-    <script src="https://cdn.jsdelivr.net/npm/pinch-zoom-js@2.3.5/dist/pinch-zoom.min.js"></script>
-
     <style>
         
-    /* ========= ⛳ スコア記号表示スタイル ========= */
+　　　　/* ========= ⛳ スコア記号表示スタイル ========= */
         .score-badge {
             display: inline-flex;
             align-items: center;
@@ -796,6 +793,18 @@
             object-fit: contain;
             border-radius: 8px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95);
+            transition: transform 0.25s ease;
+            cursor: zoom-in;
+            touch-action: manipulation;
+        }
+        .photo-lightbox-overlay.active img {
+            transform: scale(1);
+        }
+        /* 📷 ダブルタップ時の拡大表示 */
+        .photo-lightbox-overlay img.zoomed {
+            transform: scale(2.2) !important;
+            cursor: zoom-out;
         }
         .btn-close-lightbox {
             position: absolute;
@@ -900,7 +909,6 @@
         .app-modal-title { font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
         .app-modal-text { font-size: 13px; color: var(--text-main); line-height: 1.5; margin-bottom: 18px; white-space: pre-wrap; }
         .app-modal-buttons { display: flex; gap: 10px; }
-
         /* 中央表示に変更したトースト通知 */
         .app-toast {
             position: fixed;
@@ -910,25 +918,25 @@
             background: linear-gradient(135deg, #23382b 0%, #344d3d 100%);
             color: #ffffff;
             border: 1px solid var(--gold);
-            padding: 16px 24px;
-            border-radius: 20px;
-            font-size: 14px;
+            padding: 16px 24px; /* 上下少し広め */
+            border-radius: 20px; /* 改行されても綺麗に見えるように丸みを少し緩める */
+            font-size: 14px; /* スマホで改行された時に見やすいサイズ */
             font-weight: 700;
-            line-height: 1.5;
-            width: 85%;
-            max-width: 320px;
+            line-height: 1.5; /* 👇 追加：改行時の行間 */
+            width: 85%; /* 👇 追加：スマホ画面の幅の85%までに制限 */
+            max-width: 320px; /* 👇 追加：最大幅の設定 */
             box-shadow: var(--shadow-lg);
             z-index: 2000;
             opacity: 0;
             pointer-events: none;
             transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-align: center;
+            /* white-space: nowrap; は削除しました */
         }
         .app-toast.active {
-            transform: translate(-50%, -50%) scale(1);
+            transform: translate(-50%, -50%) scale(1); /* 実寸大で表示 */
             opacity: 1;
         }
-
         /* 紙吹雪Canvas */
         #confettiCanvas {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -998,7 +1006,7 @@
                     </div>
                     
                     <button class="btn-main" id="aiAnalyzeBtn" onclick="processScoreImagesSafe()" style="background:#b0bec5; cursor:not-allowed;" disabled>AIでスコアを解析する</button>
-                    <div id="aiStatus" style="font-size: 13px; color: var(--primary); font-weight: 700; margin-top: 10px;"></div>
+                    <div id="aiStatus"></div>
 
                     <div style="text-align: center; margin-top: 16px;">
                         <button type="button" class="btn-sub" onclick="openManualInput()">手動でスコア・写真を入力する →</button>
@@ -1213,12 +1221,9 @@
     </div>
 
     <!-- 📷 写真拡大フルスクリーンモーダル（ライトボックス） -->
-    <div id="photoPreviewModal" class="photo-lightbox-overlay" onclick="closePhotoModal(event)">
-        <button class="btn-close-lightbox" onclick="closePhotoModal(event)">✕</button>
-        <!-- 👇 追加：PinchZoom用のラッパー -->
-        <div id="pinchZoomWrapper" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
-            <img id="lightboxImage" src="" alt="拡大写真">
-        </div>
+    <div id="photoPreviewModal" class="photo-lightbox-overlay" onclick="closePhotoModal()">
+        <button class="btn-close-lightbox" onclick="closePhotoModal()">✕</button>
+        <img id="lightboxImage" src="" alt="拡大写真" onclick="handlePhotoDoubleTap(event)">
     </div>
 
     <!-- ⛳ Golsta マッチ作成モーダル -->
@@ -1560,44 +1565,38 @@
         initAppTheme();
 
         // -------------------------------------------------------------
-        // 📷 写真拡大フルスクリーンモーダル表示制御 ＆ ピンチズーム設定
+        // 📷 写真拡大フルスクリーンモーダル表示制御＆ダブルタップズーム
         // -------------------------------------------------------------
-        let currentPinchZoom = null;
-
         function openPhotoModal(imgSrc) {
             const modal = document.getElementById('photoPreviewModal');
             const imgEl = document.getElementById('lightboxImage');
             if (!modal || !imgEl) return;
-            
             imgEl.src = imgSrc;
+            imgEl.classList.remove('zoomed');
             modal.classList.add('active');
-
-            if (!currentPinchZoom) {
-                const el = document.getElementById('pinchZoomWrapper');
-                currentPinchZoom = new PinchZoom(el, {
-                    use2d: false, 
-                    draggableUnzoomed: false, 
-                    maxZoom: 5 
-                });
-            } else {
-                currentPinchZoom.offset.x = 0;
-                currentPinchZoom.offset.y = 0;
-                currentPinchZoom.zoomFactor = 1;
-                currentPinchZoom.update();
-            }
         }
 
-        function closePhotoModal(e) {
-            if (e && e.target && e.target.id === 'lightboxImage') return;
-            
+        function closePhotoModal() {
             const modal = document.getElementById('photoPreviewModal');
+            const imgEl = document.getElementById('lightboxImage');
+            if (imgEl) imgEl.classList.remove('zoomed');
             if (modal) modal.classList.remove('active');
-            
-            if (currentPinchZoom) {
-                currentPinchZoom.offset.x = 0;
-                currentPinchZoom.offset.y = 0;
-                currentPinchZoom.zoomFactor = 1;
-                currentPinchZoom.update();
+        }
+
+        let lastPhotoTapTime = 0;
+        function handlePhotoDoubleTap(e) {
+            e.stopPropagation();
+            const now = Date.now();
+            const imgEl = e.currentTarget;
+
+            if (now - lastPhotoTapTime < 350) {
+                imgEl.classList.toggle('zoomed');
+                lastPhotoTapTime = 0;
+            } else {
+                if (imgEl.classList.contains('zoomed')) {
+                    imgEl.classList.remove('zoomed');
+                }
+                lastPhotoTapTime = now;
             }
         }
 
@@ -2779,7 +2778,6 @@
             return rounds.filter(isRoundVisibleInTimeline);
         }
 
-        // 🌟 重複排除ロジック（アプローチC）適用済み
         function getMyAccessibleRounds() {
             let accessible = rounds.filter(r => {
                 if (r.isAwardPost) return false;
@@ -2792,6 +2790,7 @@
                 return true;
             });
 
+            // 🌟 【重複排除ロジック（アプローチC）】
             const myAuthoredRounds = accessible.filter(r => (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name));
             const uniqueRounds = [];
 
@@ -2822,6 +2821,17 @@
             return `<span class="score-badge score-double">${score}</span>`;                  // ダボ以上 (二重四角)
         }
 
+　       // 🌟 スコア記号判定ヘルパー関数
+        function formatScoreWithSymbol(score, par) {
+            if (!score) return '-';
+            if (!par) return `<span class="score-badge score-par">${score}</span>`;
+            const diff = score - par;
+            if (diff <= -2) return `<span class="score-badge score-eagle">${score}</span>`; // イーグル以上 (◎)
+            if (diff === -1) return `<span class="score-badge score-birdie">${score}</span>`; // バーディー (〇)
+            if (diff === 0)  return `<span class="score-badge score-par">${score}</span>`;    // パー
+            if (diff === 1)  return `<span class="score-badge score-bogey">${score}</span>`;  // ボギー (□)
+            return `<span class="score-badge score-double">${score}</span>`;                  // ダボ以上 (二重四角)
+        }
         // ==========================================
         // スコア登録・AI解析・編集ロジック
         // ==========================================
@@ -3810,11 +3820,12 @@
             if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
         }
 
-        function renderSummary(type) {
+       function renderSummary(type) {
             const container = document.getElementById('summary-content');
             const myName = myProfile.name ? myProfile.name.trim() : '長原 健太';
             const myNameNoSpace = myName.replace(/\s+/g, '');
 
+            // 自分が参加しているラウンドのみを抽出
             let accessibleRounds = rounds.filter(r => {
                 if (r.isAwardPost) return false;
                 const isAuthor = (r.authorName && r.authorName.trim().replace(/\s+/g, '') === myNameNoSpace);
@@ -3825,7 +3836,7 @@
                 return isAuthor || isPlayer;
             });
 
-            // 🌟 重複排除ロジック（アプローチC）
+            // 🌟 【重複排除ロジック（アプローチC）】
             const myAuthoredRounds = accessibleRounds.filter(r => (r.authorId && r.authorId === myProfile.id) || (r.authorName && r.authorName.trim().replace(/\s+/g, '') === myNameNoSpace));
             const uniqueRounds = [];
 
@@ -3867,8 +3878,6 @@
                     const data = memberMap[name];
                     const avg = data.scores.length ? (data.scores.reduce((a,b)=>a+b, 0) / data.scores.length).toFixed(1) : '-';
                     const best = data.scores.length ? Math.min(...data.scores) : '-';
-
-                    // 🌟 新しいラウンド順（降順）にソート
                     data.rounds.sort((a, b) => (b.playDate || '').localeCompare(a.playDate || ''));
 
                     const historyList = data.rounds.map(rd => `
@@ -3934,8 +3943,6 @@
                 container.innerHTML = Object.keys(courseMap).map((course, idx) => {
                     const data = courseMap[course];
                     const best = data.bestScore === 999 ? '-' : data.bestScore;
-
-                    // 🌟 新しいラウンド順（降順）にソート
                     data.rounds.sort((a, b) => (b.playDate || '').localeCompare(a.playDate || ''));
 
                     const historyList = data.rounds.map(rd => `
@@ -3982,6 +3989,7 @@
             const h2hMap = {};
 
             accessibleRounds.forEach(r => {
+                // 🌟 本人の名前と一致するプレイヤーを確実に抽出
                 const myPlayer = (r.players || []).find(p => {
                     const pName = (p.cart_name || '').trim().replace(/\s+/g, '');
                     return pName === myNameNoSpace || pName.includes(myNameNoSpace) || myNameNoSpace.includes(pName);
@@ -4188,7 +4196,7 @@
                     </tr>
                 `;
             }).join('');
-
+            
             let galleryHtml = (r.photos || []).map(p => `
                 <img src="${p}" style="width:100%; height:100px; object-fit:cover; border-radius:8px; border:1px solid var(--border); cursor:pointer;" onclick="openPhotoModal('${p}')">
             `).join('');
@@ -4198,7 +4206,7 @@
                     <img src="${cover}" class="card-img" style="height:260px; width:100%; object-fit:cover; cursor:pointer;" onclick="openPhotoModal('${cover}')">
                     <div class="card-body">
                         ${editBtnHtml}
-                        ${shareCodeBtnHtml}
+                        ${shareCodeBtnHtml} <!-- 👈 ここに追加します -->
 
                         <h2 style="color:var(--primary); font-size:22px; margin-bottom:4px;">${r.courseName} ${r.visibility === 'private' ? '<span style="font-size:12px; color:var(--text-sub);">🔒 非公開</span>' : ''}</h2>
                         <p style="color:var(--text-sub); font-size:13px; margin-bottom:16px;">プレー日: ${r.playDate}</p>
@@ -4254,6 +4262,73 @@
                 window.location.reload();
             }, 500);
         }
+        // ==========================================
+        // 📥 ラウンドデータの共有コード・取り込み機能
+        // ==========================================
+
+        // 共有コードをクリップボードにコピー
+        function copyRoundCode(roundId) {
+            const tempInput = document.createElement('input');
+            tempInput.value = roundId;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            
+            showToast('📋 共有コードをコピーしました！\n新規ラウンド登録の際にペーストしてください。');
+        }
+
+        // 取り込みモーダルを開く
+        function openImportModal() {
+            document.getElementById('importCodeInput').value = '';
+            document.getElementById('importModal').classList.add('active');
+        }
+
+        // 取り込みモーダルを閉じる
+        function closeImportModal() {
+            document.getElementById('importModal').classList.remove('active');
+        }
+
+        // 共有コードからデータを取り込む処理
+        function executeImportRound() {
+            const code = document.getElementById('importCodeInput').value.trim();
+            if (!code) {
+                alert('共有コードを入力してください。');
+                return;
+            }
+
+            // ラウンドデータから該当するIDを検索
+            const targetRound = rounds.find(r => r.id === code);
+            
+            if (!targetRound) {
+                alert('入力されたコードのラウンドデータが見つかりません。');
+                return;
+            }
+
+            // データの取り込み（写真はコピーしない、プレイヤーはそのまま引き継ぐ）
+            document.getElementById('courseName').value = targetRound.courseName;
+            document.getElementById('playDate').value = targetRound.playDate;
+            
+            if (targetRound.par) {
+                tempParData = JSON.parse(JSON.stringify(targetRound.par));
+            }
+            if (targetRound.players) {
+                tempPlayersData = JSON.parse(JSON.stringify(targetRound.players));
+            }
+
+            // 新規登録の扱いとする（編集モードにはしない）
+            editingRoundId = null;
+            isEditingRound = true; // 画面遷移時の警告用フラグ
+            
+            // UIを更新
+            renderScorecardEditor();
+            document.getElementById('aiUploadSection').style.display = 'none';
+            document.getElementById('parsedResultSection').style.display = 'block';
+            document.getElementById('initialCancelSection').style.display = 'none';
+
+            closeImportModal();
+            showToast('📥 仲間のラウンドデータを取り込みました！\n自分の写真を追加して保存してください。');
+        }
 
         // ==========================================
         // 📥 ラウンドデータの共有コード・取り込み機能
@@ -4267,14 +4342,16 @@
             document.execCommand('copy');
             document.body.removeChild(tempInput);
             
-            showToast('📋 共有コードをコピーしました！\n新規ラウンド登録の際にペーストしてください。');
+            showToast('📋 共有コードをコピーしました！新規登録の際コードをペーストしてください。');
         }
 
+        // 🌟 モーダルを開く処理
         function openImportModal() {
             document.getElementById('importCodeInput').value = '';
             document.getElementById('importModal').classList.add('active');
         }
 
+        // 🌟 モーダルを閉じる処理
         function closeImportModal() {
             document.getElementById('importModal').classList.remove('active');
         }
