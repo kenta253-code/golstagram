@@ -29,10 +29,11 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 20px;
-            height: 20px;
+            padding: 0 4px; /* 追加: 左右に余白 */
+            height: 22px; /* 少し高く */
             font-size: 11px;
             font-weight: 700;
+            white-space: nowrap; /* 追加: 改行を防ぐ */
         }
         .score-eagle {
             border: 2px double #eab308; /* 金色二重枠 */
@@ -2812,27 +2813,32 @@
         // 🌟 スコア記号判定ヘルパー関数
         function formatScoreWithSymbol(score, par) {
             if (!score) return '-';
-            if (!par) return `<span class="score-badge">${score}</span>`; // PAR不明時はそのまま表示
+            if (!par) return `<span class="score-badge">${score}</span>`;
+            
             const diff = score - par;
-            if (diff <= -2) return `<span class="score-badge score-eagle">${score}</span>`; // イーグル以上 (◎)
-            if (diff === -1) return `<span class="score-badge score-birdie">${score}</span>`; // バーディー (〇)
-            if (diff === 0)  return `<span class="score-badge score-par">${score}</span>`;    // パー (緑丸)
-            if (diff === 1)  return `<span class="score-badge score-bogey">${score}</span>`;  // ボギー (□)
-            return `<span class="score-badge score-double">${score}</span>`;                  // ダボ以上 (二重四角)
+            // 差分文字列の生成 (-1, (-), +1, +2 など)
+            let diffStr = '';
+            if (diff === 0) {
+                diffStr = '(-)';
+            } else if (diff > 0) {
+                diffStr = `(+${diff})`;
+            } else {
+                diffStr = `(${diff})`; // -1などはそのままマイナスがつく
+            }
+
+            // HTMLの生成（打数は枠の中、差分は枠の外に配置）
+            let badgeHtml = '';
+            if (diff <= -2) badgeHtml = `<span class="score-badge score-eagle">${score}</span>`;
+            else if (diff === -1) badgeHtml = `<span class="score-badge score-birdie">${score}</span>`;
+            else if (diff === 0)  badgeHtml = `<span class="score-badge score-par">${score}</span>`;
+            else if (diff === 1)  badgeHtml = `<span class="score-badge score-bogey">${score}</span>`;
+            else badgeHtml = `<span class="score-badge score-double">${score}</span>`;
+
+            // バッジの横に小さな文字でプラスマイナスを追加
+            return `${badgeHtml} <span style="font-size:10px; font-weight:normal; margin-left:1px;">${diffStr}</span>`;
         }
 
-　       // 🌟 スコア記号判定ヘルパー関数
-        function formatScoreWithSymbol(score, par) {
-            if (!score) return '-';
-            if (!par) return `<span class="score-badge score-par">${score}</span>`;
-            const diff = score - par;
-            if (diff <= -2) return `<span class="score-badge score-eagle">${score}</span>`; // イーグル以上 (◎)
-            if (diff === -1) return `<span class="score-badge score-birdie">${score}</span>`; // バーディー (〇)
-            if (diff === 0)  return `<span class="score-badge score-par">${score}</span>`;    // パー
-            if (diff === 1)  return `<span class="score-badge score-bogey">${score}</span>`;  // ボギー (□)
-            return `<span class="score-badge score-double">${score}</span>`;                  // ダボ以上 (二重四角)
-        }
-        // ==========================================
+　      // ==========================================
         // スコア登録・AI解析・編集ロジック
         // ==========================================
         function checkScoreButtonState() {
