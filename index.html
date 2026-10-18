@@ -968,6 +968,13 @@
                     <span class="font-golsta">Golsta</span> 登録
                 </h3>
                 <p id="formSubTitle" style="font-size: 12px; color: var(--text-sub); margin-bottom: 14px;">スコアカード画面の写真をセットしてAI解析を行うか、手動で入力してください。</p>
+               
+                <!-- 👇 ここから追加：ラウンドデータ取り込み -->
+                <div style="background:var(--bg); border:1px dashed var(--gold-border); border-radius:8px; padding:12px; margin-bottom:16px; text-align:center;">
+                    <p style="font-size:11px; color:var(--text-sub); margin-bottom:8px;">同伴者がすでに登録済みの場合は、データをコピーできます</p>
+                    <button class="btn-sub" onclick="openImportModal()">📥 仲間のラウンドデータを取り込む</button>
+                </div>
+                <!-- 👆 ここまで追加 -->
                 
                 <div id="aiUploadSection">
                     <div class="form-group">
@@ -1432,6 +1439,24 @@
             <div class="app-modal-buttons">
                 <button id="modalBtnCancel" class="btn-cancel" style="margin-top:0; flex:1;">キャンセル</button>
                 <button id="modalBtnOk" class="btn-main" style="padding:10px; font-size:13px; flex:1;">OK</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 📥 ラウンド取り込みモーダル -->
+    <div id="importModal" class="app-modal-overlay">
+        <div class="app-modal-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                <h3 style="color:var(--primary); font-size:16px;">📥 データ取り込み</h3>
+                <button onclick="closeImportModal()" style="background:none; border:none; font-size:18px; color:var(--text-sub); cursor:pointer;">✕</button>
+            </div>
+            <p style="font-size:12px; color:var(--text-sub); margin-bottom:14px; text-align:center;">
+                仲間から共有された「ラウンド共有コード（round_...）」を貼り付けてください。
+            </p>
+            <input type="text" id="importCodeInput" class="form-control" placeholder="共有コードを貼り付け" style="margin-bottom:16px;">
+            <div class="app-modal-buttons">
+                <button class="btn-cancel" style="margin-top:0; flex:1;" onclick="closeImportModal()">キャンセル</button>
+                <button class="btn-main" style="padding:10px; font-size:13px; flex:1;" onclick="executeImportRound()">取り込む</button>
             </div>
         </div>
     </div>
@@ -4084,6 +4109,7 @@
             
             const isMyPost = (r.authorId && r.authorId === myProfile.id) || (r.authorName === myProfile.name);
             const editBtnHtml = isMyPost ? `<button class="btn-edit" onclick="openEditRegistration('${r.id}')">✏️ このラウンドを編集する</button>` : '';
+            const shareCodeBtnHtml = `<button class="btn-sub" style="margin-bottom:16px; width:100%; border-style:dashed;" onclick="copyRoundCode('${r.id}')">📋 このラウンドの共有コードをコピー</button>`;
 
             const outPars = r.par?.out || [4,5,3,5,4,4,3,4,4];
             const inPars = r.par?.in || [5,4,5,4,3,4,3,4,4];
@@ -4123,6 +4149,7 @@
                     <img src="${cover}" class="card-img" style="height:260px; width:100%; object-fit:cover; cursor:pointer;" onclick="openPhotoModal('${cover}')">
                     <div class="card-body">
                         ${editBtnHtml}
+                        ${shareCodeBtnHtml} <!-- 👈 ここに追加します -->
 
                         <h2 style="color:var(--primary); font-size:22px; margin-bottom:4px;">${r.courseName} ${r.visibility === 'private' ? '<span style="font-size:12px; color:var(--text-sub);">🔒 非公開</span>' : ''}</h2>
                         <p style="color:var(--text-sub); font-size:13px; margin-bottom:16px;">プレー日: ${r.playDate}</p>
@@ -4177,6 +4204,135 @@
             setTimeout(() => {
                 window.location.reload();
             }, 500);
+        }
+        // ==========================================
+        // 📥 ラウンドデータの共有コード・取り込み機能
+        // ==========================================
+
+        // 共有コードをクリップボードにコピー
+        function copyRoundCode(roundId) {
+            const tempInput = document.createElement('input');
+            tempInput.value = roundId;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            
+            showToast('📋 共有コードをコピーしました！LINE等で仲間に送ってください。');
+        }
+
+        // 取り込みモーダルを開く
+        function openImportModal() {
+            document.getElementById('importCodeInput').value = '';
+            document.getElementById('importModal').classList.add('active');
+        }
+
+        // 取り込みモーダルを閉じる
+        function closeImportModal() {
+            document.getElementById('importModal').classList.remove('active');
+        }
+
+        // 共有コードからデータを取り込む処理
+        function executeImportRound() {
+            const code = document.getElementById('importCodeInput').value.trim();
+            if (!code) {
+                alert('共有コードを入力してください。');
+                return;
+            }
+
+            // ラウンドデータから該当するIDを検索
+            const targetRound = rounds.find(r => r.id === code);
+            
+            if (!targetRound) {
+                alert('入力されたコードのラウンドデータが見つかりません。');
+                return;
+            }
+
+            // データの取り込み（写真はコピーしない、プレイヤーはそのまま引き継ぐ）
+            document.getElementById('courseName').value = targetRound.courseName;
+            document.getElementById('playDate').value = targetRound.playDate;
+            
+            if (targetRound.par) {
+                tempParData = JSON.parse(JSON.stringify(targetRound.par));
+            }
+            if (targetRound.players) {
+                tempPlayersData = JSON.parse(JSON.stringify(targetRound.players));
+            }
+
+            // 新規登録の扱いとする（編集モードにはしない）
+            editingRoundId = null;
+            isEditingRound = true; // 画面遷移時の警告用フラグ
+            
+            // UIを更新
+            renderScorecardEditor();
+            document.getElementById('aiUploadSection').style.display = 'none';
+            document.getElementById('parsedResultSection').style.display = 'block';
+            document.getElementById('initialCancelSection').style.display = 'none';
+
+            closeImportModal();
+            showToast('📥 仲間のラウンドデータを取り込みました！\n自分の写真を追加して保存してください。');
+        }
+
+        // ==========================================
+        // 📥 ラウンドデータの共有コード・取り込み機能
+        // ==========================================
+
+        function copyRoundCode(roundId) {
+            const tempInput = document.createElement('input');
+            tempInput.value = roundId;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            
+            showToast('📋 共有コードをコピーしました！LINE等で仲間に送ってください。');
+        }
+
+        // 🌟 モーダルを開く処理
+        function openImportModal() {
+            document.getElementById('importCodeInput').value = '';
+            document.getElementById('importModal').classList.add('active');
+        }
+
+        // 🌟 モーダルを閉じる処理
+        function closeImportModal() {
+            document.getElementById('importModal').classList.remove('active');
+        }
+
+        function executeImportRound() {
+            const code = document.getElementById('importCodeInput').value.trim();
+            if (!code) {
+                showAppAlert('エラー', '共有コードを入力してください。');
+                return;
+            }
+
+            const targetRound = rounds.find(r => r.id === code);
+            
+            if (!targetRound) {
+                showAppAlert('エラー', '入力されたコードのラウンドデータが見つかりません。');
+                return;
+            }
+
+            document.getElementById('courseName').value = targetRound.courseName;
+            document.getElementById('playDate').value = targetRound.playDate;
+            
+            if (targetRound.par) {
+                tempParData = JSON.parse(JSON.stringify(targetRound.par));
+            }
+            if (targetRound.players) {
+                tempPlayersData = JSON.parse(JSON.stringify(targetRound.players));
+            }
+
+            editingRoundId = null;
+            isEditingRound = true; 
+            
+            renderScorecardEditor();
+            document.getElementById('aiUploadSection').style.display = 'none';
+            document.getElementById('parsedResultSection').style.display = 'block';
+            document.getElementById('initialCancelSection').style.display = 'none';
+
+            closeImportModal();
+            showToast('📥 仲間のラウンドデータを取り込みました！\n自分の写真を追加して保存してください。');
         }
         
         // 初期化処理の実行
