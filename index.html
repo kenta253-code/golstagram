@@ -910,14 +910,29 @@
         .app-modal-text { font-size: 13px; color: var(--text-main); line-height: 1.5; margin-bottom: 18px; white-space: pre-wrap; }
         .app-modal-buttons { display: flex; gap: 10px; }
         .app-toast {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
+            position: fixed;
+            top: 50%; /* 画面の縦中央 */
+            left: 50%; /* 画面の横中央 */
+            transform: translate(-50%, -50%) scale(0.9); /* 中心を基準に少し縮小状態で待機 */
             background: linear-gradient(135deg, #23382b 0%, #344d3d 100%);
-            color: #ffffff; border: 1px solid var(--gold); padding: 12px 24px;
-            border-radius: 30px; font-size: 13px; font-weight: 700; box-shadow: var(--shadow-lg);
-            z-index: 1200; opacity: 0; pointer-events: none; transition: all 0.3s ease; text-align: center; white-space: nowrap;
+            color: #ffffff;
+            border: 1px solid var(--gold);
+            padding: 14px 28px;
+            border-radius: 30px;
+            font-size: 15px; /* 少し見やすく大きく */
+            font-weight: 700;
+            box-shadow: var(--shadow-lg);
+            z-index: 2000; /* 他の要素より手前に */
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            white-space: nowrap;
         }
-        .app-toast.active { transform: translateX(-50%) translateY(0); opacity: 1; }
-
+        .app-toast.active {
+            transform: translate(-50%, -50%) scale(1); /* 実寸大で表示 */
+            opacity: 1;
+        }
         /* 紙吹雪Canvas */
         #confettiCanvas {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
