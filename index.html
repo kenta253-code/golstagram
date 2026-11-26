@@ -1376,13 +1376,15 @@
                 <div id="awardStatusMsg" style="font-size:11px; color:var(--primary); font-weight:700; margin-top:6px;"></div>
             </div>
 
-            <!-- Gemini APIキー設定セクション -->
+            <!-- Gemini APIキー設定セクション（Firestore自動共有） -->
             <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 16px;">
-                <label class="form-label" style="font-size:12px; margin-bottom:6px;">🔑 Gemini APIキー設定（この端末に保存）</label>
+                <label class="form-label" style="font-size:12px; margin-bottom:4px;">🔑 Gemini APIキー設定（全員に自動共有）</label>
+                <p style="font-size:11px; color:var(--text-sub); margin-bottom:8px;">ここで1回保存すると、仲間のスマホにも自動で共有されます。</p>
                 <div style="display:flex; gap:8px;">
-                    <input type="password" id="geminiApiKeyInput" class="form-control" placeholder="AIzaSy... を貼り付け" style="padding:8px 10px; font-size:13px; flex:1;">
+                    <input type="password" id="geminiApiKeyInput" class="form-control" placeholder="AIzaSy... / AQ... を貼り付け" style="padding:8px 10px; font-size:13px; flex:1;">
                     <button class="btn-main" onclick="saveGeminiApiKey()" style="width:auto; padding:8px 14px; font-size:12px; white-space:nowrap;">保存</button>
                 </div>
+                <div id="apiKeyStatusMsg" style="font-size:11px; color:var(--text-sub); margin-top:6px;"></div>
             </div>
 
             <!-- テーマ切り替えセクション -->
@@ -1496,19 +1498,62 @@
     <div id="customToast" class="app-toast"></div>
 
     <script>
-        // APIキーはコードに直書きせず、端末（localStorage）から読み込む
+        // APIキーはコードに直書きせず、Firestore（app_settings/config）経由で全員に自動共有する
+        let sharedGeminiApiKey = '';
+
         function getGeminiApiKey() {
-            return (localStorage.getItem('golsta_gemini_api_key') || '').trim();
+            return (sharedGeminiApiKey || localStorage.getItem('golsta_gemini_api_key') || '').trim();
         }
 
-        function saveGeminiApiKey() {
+        async function getGeminiApiKeyAsync() {
+            const cached = getGeminiApiKey();
+            if (cached) return cached;
+            try {
+                const doc = await db.collection("app_settings").doc("config").get();
+                if (doc.exists && doc.data().geminiApiKey) {
+                    sharedGeminiApiKey = doc.data().geminiApiKey.trim();
+                    localStorage.setItem('golsta_gemini_api_key', sharedGeminiApiKey);
+                    updateApiKeyStatusUI();
+                    return sharedGeminiApiKey;
+                }
+            } catch (e) {
+                console.error("共有APIキー取得エラー:", e);
+            }
+            return '';
+        }
+
+        function updateApiKeyStatusUI() {
+            const statusEl = document.getElementById('apiKeyStatusMsg');
+            if (!statusEl) return;
+            const currentKey = getGeminiApiKey();
+            if (currentKey) {
+                statusEl.innerText = '✅ 共有APIキー設定済み（仲間全員がAI解析を利用できます）';
+                statusEl.style.color = 'var(--primary)';
+            } else {
+                statusEl.innerText = '⚠️ 未設定です（管理者の方がAPIキーを保存してください）';
+                statusEl.style.color = 'var(--danger)';
+            }
+        }
+
+        async function saveGeminiApiKey() {
             const key = document.getElementById('geminiApiKeyInput').value.trim();
             if (!key) {
-                showAppAlert('入力確認', 'APIキーを入力してください。');
+                await showAppAlert('入力確認', 'APIキーを入力してください。');
                 return;
             }
-            localStorage.setItem('golsta_gemini_api_key', key);
-            showToast('🔑 APIキーをこの端末に保存しました！');
+            try {
+                await db.collection("app_settings").doc("config").set({
+                    geminiApiKey: key,
+                    updatedBy: myProfile.name || myProfile.id || 'admin',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                sharedGeminiApiKey = key;
+                localStorage.setItem('golsta_gemini_api_key', key);
+                updateApiKeyStatusUI();
+                showToast('🔑 APIキーをクラウドに保存しました！\n仲間全員の端末に自動共有されます。');
+            } catch (err) {
+                await showAppAlert('保存エラー', 'クラウドへの保存に失敗しました: ' + err.message);
+            }
         }
 
         // Firebase 初期化
@@ -1581,6 +1626,7 @@
         function openSettingsModal() {
             const keyInput = document.getElementById('geminiApiKeyInput');
             if (keyInput) keyInput.value = getGeminiApiKey();
+            updateApiKeyStatusUI();
             document.getElementById('settingsModal').classList.add('active');
         }
 
@@ -1730,7 +1776,16 @@
         }
 
         // -------------------------------------------------------------
-        // リアルタイム同期（users, rounds, matches）
+        // リアルタイム同期（app_settings, users, rounds, matches）
+        db.collection("app_settings").doc("config").onSnapshot((doc) => {
+            if (doc.exists && doc.data().geminiApiKey) {
+                sharedGeminiApiKey = doc.data().geminiApiKey.trim();
+                localStorage.setItem('golsta_gemini_api_key', sharedGeminiApiKey);
+                updateApiKeyStatusUI();
+            }
+        }, (err) => {
+            console.error("Firestore同期エラー(app_settings):", err);
+        });
         // -------------------------------------------------------------
         db.collection("users").onSnapshot((snapshot) => {
             globalUsersMap = {};
@@ -3322,7 +3377,7 @@
                     parts.push({ inlineData: { mimeType: "image/jpeg", data: base642 } });
                 }
 
-                const apiKey = getGeminiApiKey();
+                const apiKey = await getGeminiApiKeyAsync();
                 if (!apiKey) {
                     throw new Error('APIキーが未設定です。右上の「⚙️ 設定」からGemini APIキーを保存してください。');
                 }
@@ -3746,7 +3801,7 @@
                     }
                 });
 
-                const apiKey = getGeminiApiKey();
+                const apiKey = await getGeminiApiKeyAsync();
                 if (!apiKey) {
                     throw new Error('APIキーが未設定です。右上の「⚙️ 設定」からGemini APIキーを保存してください。');
                 }
