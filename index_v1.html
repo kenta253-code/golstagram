@@ -940,6 +940,48 @@
             transform: translate(-50%, -50%) scale(1); /* 実寸大で表示 */
             opacity: 1;
         }
+        /* ========= 🏌️‍♂️ AIパーソナルコーチカード ========= */
+        .ai-coach-card {
+            background: var(--gold-light);
+            border: 1.5px solid var(--gold-border);
+            border-left: 4px solid var(--gold);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin: 18px 0 6px;
+            box-shadow: var(--shadow-sm);
+        }
+        .ai-coach-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            gap: 8px;
+        }
+        .ai-coach-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ai-coach-body {
+            font-size: 13px;
+            line-height: 1.65;
+            color: var(--text-main);
+            white-space: pre-wrap;
+        }
+        .ai-coach-empty {
+            text-align: center;
+            padding: 6px 0 2px;
+        }
+        .ai-coach-empty p {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
         /* 紙吹雪Canvas */
         #confettiCanvas {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -1376,13 +1418,15 @@
                 <div id="awardStatusMsg" style="font-size:11px; color:var(--primary); font-weight:700; margin-top:6px;"></div>
             </div>
 
-            <!-- Gemini APIキー設定セクション -->
+            <!-- Gemini APIキー設定セクション（Firestore自動共有） -->
             <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 16px;">
-                <label class="form-label" style="font-size:12px; margin-bottom:6px;">🔑 Gemini APIキー設定（この端末に保存）</label>
+                <label class="form-label" style="font-size:12px; margin-bottom:4px;">🔑 Gemini APIキー設定（全員に自動共有）</label>
+                <p style="font-size:11px; color:var(--text-sub); margin-bottom:8px;">ここで1回保存すると、仲間のスマホにも自動で共有されます。</p>
                 <div style="display:flex; gap:8px;">
-                    <input type="password" id="geminiApiKeyInput" class="form-control" placeholder="AIzaSy... を貼り付け" style="padding:8px 10px; font-size:13px; flex:1;">
+                    <input type="password" id="geminiApiKeyInput" class="form-control" placeholder="AIzaSy... / AQ... を貼り付け" style="padding:8px 10px; font-size:13px; flex:1;">
                     <button class="btn-main" onclick="saveGeminiApiKey()" style="width:auto; padding:8px 14px; font-size:12px; white-space:nowrap;">保存</button>
                 </div>
+                <div id="apiKeyStatusMsg" style="font-size:11px; color:var(--text-sub); margin-top:6px;"></div>
             </div>
 
             <!-- テーマ切り替えセクション -->
@@ -1496,19 +1540,161 @@
     <div id="customToast" class="app-toast"></div>
 
     <script>
-        // APIキーはコードに直書きせず、端末（localStorage）から読み込む
+        // APIキーはコードに直書きせず、Firestore（app_settings/config）経由で全員に自動共有する
+        let sharedGeminiApiKey = '';
+
         function getGeminiApiKey() {
-            return (localStorage.getItem('golsta_gemini_api_key') || '').trim();
+            return (sharedGeminiApiKey || localStorage.getItem('golsta_gemini_api_key') || '').trim();
         }
 
-        function saveGeminiApiKey() {
+        async function getGeminiApiKeyAsync() {
+            const cached = getGeminiApiKey();
+            if (cached) return cached;
+            try {
+                const doc = await db.collection("app_settings").doc("config").get();
+                if (doc.exists && doc.data().geminiApiKey) {
+                    sharedGeminiApiKey = doc.data().geminiApiKey.trim();
+                    localStorage.setItem('golsta_gemini_api_key', sharedGeminiApiKey);
+                    updateApiKeyStatusUI();
+                    return sharedGeminiApiKey;
+                }
+            } catch (e) {
+                console.error("共有APIキー取得エラー:", e);
+            }
+            return '';
+        }
+
+        function updateApiKeyStatusUI() {
+            const statusEl = document.getElementById('apiKeyStatusMsg');
+            if (!statusEl) return;
+            const currentKey = getGeminiApiKey();
+            if (currentKey) {
+                statusEl.innerText = '✅ 共有APIキー設定済み（仲間全員がAI解析を利用できます）';
+                statusEl.style.color = 'var(--primary)';
+            } else {
+                statusEl.innerText = '⚠️ 未設定です（管理者の方がAPIキーを保存してください）';
+                statusEl.style.color = 'var(--danger)';
+            }
+        }
+
+        async function saveGeminiApiKey() {
             const key = document.getElementById('geminiApiKeyInput').value.trim();
             if (!key) {
-                showAppAlert('入力確認', 'APIキーを入力してください。');
+                await showAppAlert('入力確認', 'APIキーを入力してください。');
                 return;
             }
-            localStorage.setItem('golsta_gemini_api_key', key);
-            showToast('🔑 APIキーをこの端末に保存しました！');
+            try {
+                await db.collection("app_settings").doc("config").set({
+                    geminiApiKey: key,
+                    updatedBy: myProfile.name || myProfile.id || 'admin',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                sharedGeminiApiKey = key;
+                localStorage.setItem('golsta_gemini_api_key', key);
+                updateApiKeyStatusUI();
+                showToast('🔑 APIキーをクラウドに保存しました！\n仲間全員の端末に自動共有されます。');
+            } catch (err) {
+                await showAppAlert('保存エラー', 'クラウドへの保存に失敗しました: ' + err.message);
+            }
+        }
+
+        // 混雑時・利用不可時に別の空いているモデルへ自動切替＆リトライする共通関数
+        async function callGeminiWithFallback(apiKey, parts, onStatusUpdate = null) {
+            let candidateModels = [];
+            try {
+                const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+                if (listRes.ok) {
+                    const listData = await listRes.json();
+                    const available = (listData.models || [])
+                        .filter(m =>
+                            (m.supportedGenerationMethods || []).includes('generateContent') &&
+                            m.name &&
+                            m.name.includes('gemini') &&
+                            !/embedding|aqa|tts|imagen|veo|audio|robotics|computer-use|deep-research/i.test(m.name)
+                        )
+                        .map(m => m.name.replace(/^models\//, ''));
+
+                    // 混雑しにくい flash-lite 系・最新 flash 系・その他 flash 系・pro 系の順に優先並び替え
+                    const scoreModel = (name) => {
+                        if (/3\.8.*flash-lite/i.test(name)) return 1;
+                        if (/flash-lite/i.test(name) && !/1\.5|2\.0|2\.5/i.test(name)) return 2;
+                        if (/3\.8.*flash/i.test(name)) return 3;
+                        if (/flash-lite/i.test(name)) return 4;
+                        if (/flash/i.test(name) && !/1\.5|2\.0|2\.5/i.test(name)) return 5;
+                        if (/pro/i.test(name) && !/1\.5|2\.0|2\.5/i.test(name)) return 6;
+                        if (/flash/i.test(name)) return 7;
+                        return 8;
+                    };
+                    available.sort((a, b) => scoreModel(a) - scoreModel(b));
+                    candidateModels = available;
+                }
+            } catch (e) {
+                console.warn('モデル一覧の自動取得に失敗、固定リストを使用します:', e);
+            }
+
+            // フォールバック用の固定候補を後ろに補完（重複排除）
+            const fallbackDefaults = [
+                'gemini-3.8-flash-lite',
+                'gemini-3.8-flash',
+                'gemini-3.8-pro',
+                'gemini-2.5-flash-lite',
+                'gemini-2.5-flash',
+                'gemini-2.5-pro'
+            ];
+            fallbackDefaults.forEach(m => {
+                if (!candidateModels.includes(m)) candidateModels.push(m);
+            });
+
+            let lastErrorMsg = 'API呼び出しに失敗しました';
+            let sawHighDemand = false;
+
+            // 最大2周（1周目で全モデルが混雑だった場合のみ3秒待って再試行）
+            for (let attempt = 0; attempt < 2; attempt++) {
+                if (attempt === 1) {
+                    if (!sawHighDemand) break;
+                    if (onStatusUpdate) {
+                        onStatusUpdate('⏳ サーバー混雑中のため3秒後に再試行しています...');
+                    }
+                    await new Promise(r => setTimeout(r, 3000));
+                }
+
+                for (let i = 0; i < candidateModels.length; i++) {
+                    const model = candidateModels[i];
+                    if (onStatusUpdate && i > 0) {
+                        onStatusUpdate(`🔄 別モデル (${model}) に自動切替して解析中...`);
+                    }
+                    try {
+                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                        const res = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ contents: [{ parts: parts }] })
+                        });
+                        const resData = await res.json().catch(() => ({}));
+                        if (res.ok && resData.candidates?.[0]?.content?.parts?.[0]?.text) {
+                            return { resData, usedModel: model };
+                        }
+
+                        const errMsg = resData.error?.message || `HTTP ${res.status}`;
+                        lastErrorMsg = errMsg;
+
+                        // APIキー自体が無効・停止の場合は別モデルを試しても無駄なので即終了
+                        if (/API key not valid|has been suspended|API_KEY_INVALID|deleted or disabled/i.test(errMsg)) {
+                            throw new Error(errMsg);
+                        }
+                        if (res.status === 503 || res.status === 429 || /high demand|overloaded|quota|rate limit/i.test(errMsg)) {
+                            sawHighDemand = true;
+                        }
+                    } catch (err) {
+                        if (/API key not valid|has been suspended|API_KEY_INVALID|deleted or disabled/i.test(err.message)) {
+                            throw err;
+                        }
+                        lastErrorMsg = err.message || lastErrorMsg;
+                    }
+                }
+            }
+
+            throw new Error(lastErrorMsg);
         }
 
         // Firebase 初期化
@@ -1581,6 +1767,7 @@
         function openSettingsModal() {
             const keyInput = document.getElementById('geminiApiKeyInput');
             if (keyInput) keyInput.value = getGeminiApiKey();
+            updateApiKeyStatusUI();
             document.getElementById('settingsModal').classList.add('active');
         }
 
@@ -1730,7 +1917,16 @@
         }
 
         // -------------------------------------------------------------
-        // リアルタイム同期（users, rounds, matches）
+        // リアルタイム同期（app_settings, users, rounds, matches）
+        db.collection("app_settings").doc("config").onSnapshot((doc) => {
+            if (doc.exists && doc.data().geminiApiKey) {
+                sharedGeminiApiKey = doc.data().geminiApiKey.trim();
+                localStorage.setItem('golsta_gemini_api_key', sharedGeminiApiKey);
+                updateApiKeyStatusUI();
+            }
+        }, (err) => {
+            console.error("Firestore同期エラー(app_settings):", err);
+        });
         // -------------------------------------------------------------
         db.collection("users").onSnapshot((snapshot) => {
             globalUsersMap = {};
@@ -2885,6 +3081,12 @@
             document.getElementById('formTitle').innerHTML = '<span class="font-golsta">Golsta</span> 登録';
             document.getElementById('aiUploadSection').style.display = 'block';
             document.getElementById('parsedResultSection').style.display = 'none';
+            const statusEl = document.getElementById('aiStatus');
+            if (statusEl) {
+                statusEl.innerText = '';
+                statusEl.className = '';
+                statusEl.style.display = '';
+            }
             document.getElementById('initialCancelSection').style.display = 'block';
 
             document.getElementById('courseName').value = '';
@@ -3010,7 +3212,7 @@
             if (status) {
                 status.innerText = '';
                 status.className = '';
-                status.style.display = 'none';
+                status.style.display = '';
             }
             document.getElementById('parsedResultSection').style.display = 'none';
             document.getElementById('initialCancelSection').style.display = 'block';
@@ -3283,6 +3485,7 @@
             isEditingRound = true;
 
             // 🌟 解析中の強調表示
+            status.style.display = 'block';
             status.className = 'status-loading';
             status.innerHTML = '⏳ <strong>AIがスコア画像を解析中です...</strong><br><span style="font-size:12px; font-weight:normal;">数十秒ほどお待ちください🏌️‍♂️</span>';
             btn.disabled = true;
@@ -3322,22 +3525,13 @@
                     parts.push({ inlineData: { mimeType: "image/jpeg", data: base642 } });
                 }
 
-                const apiKey = getGeminiApiKey();
+                const apiKey = await getGeminiApiKeyAsync();
                 if (!apiKey) {
                     throw new Error('APIキーが未設定です。右上の「⚙️ 設定」からGemini APIキーを保存してください。');
                 }
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-                
-                const res = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: parts }] })
+                const { resData } = await callGeminiWithFallback(apiKey, parts, (msg) => {
+                    status.innerHTML = `⏳ <strong>AIがスコア画像を解析中です...</strong><br><span style="font-size:12px; font-weight:normal;">${msg}</span>`;
                 });
-
-                const resData = await res.json();
-                if (!res.ok) {
-                    throw new Error(resData.error?.message || 'API呼び出しに失敗しました');
-                }
 
                 let parsedJSON = null;
                 if (resData.candidates?.[0]?.content?.parts?.[0]?.text) {
@@ -3746,21 +3940,13 @@
                     }
                 });
 
-                const apiKey = getGeminiApiKey();
+                const apiKey = await getGeminiApiKeyAsync();
                 if (!apiKey) {
                     throw new Error('APIキーが未設定です。右上の「⚙️ 設定」からGemini APIキーを保存してください。');
                 }
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-                const res = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: parts }] })
+                const { resData } = await callGeminiWithFallback(apiKey, parts, (msg) => {
+                    statusEl.innerText = msg;
                 });
-
-                const resData = await res.json();
-                if (!res.ok) {
-                    throw new Error(resData.error?.message || 'API呼び出しに失敗しました');
-                }
 
                 let parsedAwardJSON = null;
                 if (resData.candidates?.[0]?.content?.parts?.[0]?.text) {
@@ -4279,6 +4465,22 @@
                             </tbody>
                         </table>
 
+                        <div class="ai-coach-card" id="ai-coach-section-${r.id}">
+                            <div class="ai-coach-header">
+                                <div class="ai-coach-title">🏌️‍♂️ AIパーソナルコーチの講評</div>
+                                ${r.aiCoachComment ? `<button class="btn-sub" id="btn-regen-coach-${r.id}" style="padding:4px 9px; font-size:11px;" onclick="generateAiCoachComment('${r.id}')">🔄 再生成</button>` : ''}
+                            </div>
+                            <div id="ai-coach-content-${r.id}">
+                                ${r.aiCoachComment
+                                    ? `<div class="ai-coach-body">${escapeHtmlForCoach(r.aiCoachComment)}</div>`
+                                    : `<div class="ai-coach-empty">
+                                            <p>18ホールのスコアとPARから、今回のハイライトと次回に向けたワンポイントアドバイスを作成します。</p>
+                                            <button class="btn-main" id="btn-gen-coach-${r.id}" style="padding:10px 14px; font-size:13px;" onclick="generateAiCoachComment('${r.id}')">✨ AIコーチの講評を生成する</button>
+                                       </div>`
+                                }
+                            </div>
+                        </div>
+
                         <h4 style="margin:22px 0 10px; border-left:4px solid var(--gold); padding-left:10px; color:var(--primary);">📷 想い出ギャラリー (${(r.photos || []).length}枚)</h4>
                         <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
                             ${galleryHtml || '<p style="font-size:12px; color:var(--text-sub);">写真はありません</p>'}
@@ -4293,6 +4495,109 @@
             document.querySelectorAll(`[id^="detail-${type}-"]`).forEach(el => {
                 el.classList.toggle('open');
             });
+        }
+
+        function escapeHtmlForCoach(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        async function generateAiCoachComment(roundId) {
+            const r = rounds.find(item => item.id === roundId);
+            if (!r) return;
+
+            const contentEl = document.getElementById(`ai-coach-content-${roundId}`);
+            const genBtn = document.getElementById(`btn-gen-coach-${roundId}`);
+            const regenBtn = document.getElementById(`btn-regen-coach-${roundId}`);
+
+            if (genBtn) genBtn.disabled = true;
+            if (regenBtn) regenBtn.disabled = true;
+
+            if (contentEl) {
+                contentEl.innerHTML = '<div class="ai-coach-body" style="color:var(--primary); font-weight:700;">⏳ AIコーチがスコアカードを分析中です...</div>';
+            }
+
+            try {
+                const apiKey = await getGeminiApiKeyAsync();
+                if (!apiKey) {
+                    throw new Error('APIキーが未設定です。右上の「⚙️ 設定」からGemini APIキーを保存してください。');
+                }
+
+                const outPars = r.par?.out || [4,5,3,5,4,4,3,4,4];
+                const inPars = r.par?.in || [5,4,5,4,3,4,3,4,4];
+                const targetName = r.authorName || myProfile.name || 'プレイヤー';
+
+                const playersSummary = (r.players || []).map(p => {
+                    const outStr = (p.out_scores || []).join(',');
+                    const inStr = (p.in_scores || []).join(',');
+                    return `- ${p.cart_name}: TOTAL ${p.total_score} (OUT ${p.out_total}: [${outStr}] / IN ${p.in_total}: [${inStr}])`;
+                }).join('\n');
+
+                const promptText = `あなたは親しみやすく的確な「ゴルフ専属AIパーソナルコーチ」です。
+以下のラウンドデータをもとに、主役である「${targetName}」さんを中心に、このラウンドの講評とアドバイスを日本語で作成してください。
+
+【ラウンド情報】
+- ゴルフ場: ${r.courseName}
+- プレー日: ${r.playDate}
+- OUT PAR (1-9H): [${outPars.join(',')}]
+- IN PAR (10-18H): [${inPars.join(',')}]
+- 各プレイヤーのスコア:
+${playersSummary}
+
+【出力ルール】
+以下の3つの見出し構成で、スマホ画面で読みやすく簡潔に（全体で250〜350文字程度）まとめてください。マークダウンの「**」や「#」は使わず、絵文字と改行で見やすく整えてください。
+
+🏅 今回のハイライト
+（バーディーやパーの連続、後半の巻き返し、同伴者との接戦など、良かったポイントを具体的に1〜2文で褒める）
+
+📊 スコアメイク分析
+（OUTとINの差、PAR3/4/5の傾向、大叩きしたホール番号など、具体的な数字に触れて分析）
+
+⛳ 次回へのワンポイント
+（次のラウンドでスコアを縮めるための実践的で前向きなアドバイスを1〜2文）`;
+
+                const { resData } = await callGeminiWithFallback(apiKey, [{ text: promptText }], (msg) => {
+                    if (contentEl) {
+                        contentEl.innerHTML = `<div class="ai-coach-body" style="color:var(--primary); font-weight:700;">⏳ AIコーチが分析中です...<br><span style="font-size:11px; font-weight:normal;">${escapeHtmlForCoach(msg)}</span></div>`;
+                    }
+                });
+
+                const coachText = (resData.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+                if (!coachText) {
+                    throw new Error('AIからの講評を取得できませんでした。');
+                }
+
+                // Firestoreに保存して次回からは即表示＆仲間とも共有
+                await db.collection("rounds").doc(roundId).update({
+                    aiCoachComment: coachText,
+                    aiCoachUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                r.aiCoachComment = coachText;
+                if (contentEl) {
+                    contentEl.innerHTML = `<div class="ai-coach-body">${escapeHtmlForCoach(coachText)}</div>`;
+                }
+                const headerEl = document.querySelector(`#ai-coach-section-${roundId} .ai-coach-header`);
+                if (headerEl && !document.getElementById(`btn-regen-coach-${roundId}`)) {
+                    headerEl.insertAdjacentHTML('beforeend', `<button class="btn-sub" id="btn-regen-coach-${roundId}" style="padding:4px 9px; font-size:11px;" onclick="generateAiCoachComment('${roundId}')">🔄 再生成</button>`);
+                }
+                showToast('🏌️‍♂️ AIコーチの講評を保存しました！');
+            } catch (err) {
+                if (contentEl) {
+                    contentEl.innerHTML = `
+                        <div class="ai-coach-empty">
+                            <p style="color:var(--danger); font-weight:700;">❌ 生成エラー: ${escapeHtmlForCoach(err.message)}</p>
+                            <button class="btn-main" id="btn-gen-coach-${roundId}" style="padding:10px 14px; font-size:13px;" onclick="generateAiCoachComment('${roundId}')">✨ もう一度生成する</button>
+                        </div>`;
+                }
+            } finally {
+                if (genBtn) genBtn.disabled = false;
+                if (regenBtn) regenBtn.disabled = false;
+            }
         }
 
         async function executeLogout() {
