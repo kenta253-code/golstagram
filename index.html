@@ -21,10 +21,12 @@
     <!-- Firebase SDK (v9 compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <!-- HEIC画像を自動でJPEGに変換するライブラリ -->
+    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 
     <style>
         
-　　　　/* ========= ⛳ スコア記号表示スタイル ========= */
+        /* ========= ⛳ スコア記号表示スタイル ========= */
         .score-badge {
             display: inline-flex;
             align-items: center;
@@ -1374,6 +1376,15 @@
                 <div id="awardStatusMsg" style="font-size:11px; color:var(--primary); font-weight:700; margin-top:6px;"></div>
             </div>
 
+            <!-- Gemini APIキー設定セクション -->
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 16px;">
+                <label class="form-label" style="font-size:12px; margin-bottom:6px;">🔑 Gemini APIキー設定（この端末に保存）</label>
+                <div style="display:flex; gap:8px;">
+                    <input type="password" id="geminiApiKeyInput" class="form-control" placeholder="AIzaSy... を貼り付け" style="padding:8px 10px; font-size:13px; flex:1;">
+                    <button class="btn-main" onclick="saveGeminiApiKey()" style="width:auto; padding:8px 14px; font-size:12px; white-space:nowrap;">保存</button>
+                </div>
+            </div>
+
             <!-- テーマ切り替えセクション -->
             <label class="form-label" style="font-size:12px; margin-bottom:2px;">🎨 テーマカラー選択</label>
             <div class="theme-select-grid">
@@ -1485,8 +1496,20 @@
     <div id="customToast" class="app-toast"></div>
 
     <script>
-        // 🌟 新しく発行した安全なGemini APIキーを設定してください
-        const GEMINI_API_KEY = 'AQ.Ab8RN6KGAfLk_0Qu3eUtDHylX37CnB3WwOGmHuBQPOTRsyRrkw';
+        // APIキーはコードに直書きせず、端末（localStorage）から読み込む
+        function getGeminiApiKey() {
+            return (localStorage.getItem('golsta_gemini_api_key') || '').trim();
+        }
+
+        function saveGeminiApiKey() {
+            const key = document.getElementById('geminiApiKeyInput').value.trim();
+            if (!key) {
+                showAppAlert('入力確認', 'APIキーを入力してください。');
+                return;
+            }
+            localStorage.setItem('golsta_gemini_api_key', key);
+            showToast('🔑 APIキーをこの端末に保存しました！');
+        }
 
         // Firebase 初期化
         const firebaseConfig = {
@@ -1556,6 +1579,8 @@
         }
 
         function openSettingsModal() {
+            const keyInput = document.getElementById('geminiApiKeyInput');
+            if (keyInput) keyInput.value = getGeminiApiKey();
             document.getElementById('settingsModal').classList.add('active');
         }
 
@@ -2838,7 +2863,7 @@
             return `${badgeHtml} <span style="font-size:10px; font-weight:normal; margin-left:1px;">${diffStr}</span>`;
         }
 
-　      // ==========================================
+        // ==========================================
         // スコア登録・AI解析・編集ロジック
         // ==========================================
         function checkScoreButtonState() {
@@ -3039,7 +3064,18 @@
             renderMemberList();
         }
 
-        function compressImageFile(file, maxWidth = 480, quality = 0.5) {
+        async function compressImageFile(file, maxWidth = 480, quality = 0.5) {
+            // HEIC/HEIF形式ならJPEGに変換してから処理する
+            const isHeic = (file.name && /\.(heic|heif)$/i.test(file.name)) || file.type === 'image/heic' || file.type === 'image/heif';
+            if (isHeic && typeof heic2any !== 'undefined') {
+                try {
+                    const convertedBlob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.8 });
+                    file = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+                } catch (err) {
+                    throw new Error('HEIC画像の変換に失敗しました。JPEG/PNG形式でお試しください。');
+                }
+            }
+
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -3286,8 +3322,11 @@
                     parts.push({ inlineData: { mimeType: "image/jpeg", data: base642 } });
                 }
 
-                // 🌟 直接モデルを指定して高速呼び出し
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`;
+                const apiKey = getGeminiApiKey();
+                if (!apiKey) {
+                    throw new Error('APIキーが未設定です。右上の「⚙️ 設定」からGemini APIキーを保存してください。');
+                }
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
                 
                 const res = await fetch(apiUrl, {
                     method: 'POST',
@@ -3707,7 +3746,11 @@
                     }
                 });
 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`;
+                const apiKey = getGeminiApiKey();
+                if (!apiKey) {
+                    throw new Error('APIキーが未設定です。右上の「⚙️ 設定」からGemini APIキーを保存してください。');
+                }
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
                 const res = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -4272,7 +4315,6 @@
         // 📥 ラウンドデータの共有コード・取り込み機能
         // ==========================================
 
-        // 共有コードをクリップボードにコピー
         function copyRoundCode(roundId) {
             const tempInput = document.createElement('input');
             tempInput.value = roundId;
@@ -4284,80 +4326,11 @@
             showToast('📋 共有コードをコピーしました！\n新規ラウンド登録の際にペーストしてください。');
         }
 
-        // 取り込みモーダルを開く
         function openImportModal() {
             document.getElementById('importCodeInput').value = '';
             document.getElementById('importModal').classList.add('active');
         }
 
-        // 取り込みモーダルを閉じる
-        function closeImportModal() {
-            document.getElementById('importModal').classList.remove('active');
-        }
-
-        // 共有コードからデータを取り込む処理
-        function executeImportRound() {
-            const code = document.getElementById('importCodeInput').value.trim();
-            if (!code) {
-                alert('共有コードを入力してください。');
-                return;
-            }
-
-            // ラウンドデータから該当するIDを検索
-            const targetRound = rounds.find(r => r.id === code);
-            
-            if (!targetRound) {
-                alert('入力されたコードのラウンドデータが見つかりません。');
-                return;
-            }
-
-            // データの取り込み（写真はコピーしない、プレイヤーはそのまま引き継ぐ）
-            document.getElementById('courseName').value = targetRound.courseName;
-            document.getElementById('playDate').value = targetRound.playDate;
-            
-            if (targetRound.par) {
-                tempParData = JSON.parse(JSON.stringify(targetRound.par));
-            }
-            if (targetRound.players) {
-                tempPlayersData = JSON.parse(JSON.stringify(targetRound.players));
-            }
-
-            // 新規登録の扱いとする（編集モードにはしない）
-            editingRoundId = null;
-            isEditingRound = true; // 画面遷移時の警告用フラグ
-            
-            // UIを更新
-            renderScorecardEditor();
-            document.getElementById('aiUploadSection').style.display = 'none';
-            document.getElementById('parsedResultSection').style.display = 'block';
-            document.getElementById('initialCancelSection').style.display = 'none';
-
-            closeImportModal();
-            showToast('📥 仲間のラウンドデータを取り込みました！\n自分の写真を追加して保存してください。');
-        }
-
-        // ==========================================
-        // 📥 ラウンドデータの共有コード・取り込み機能
-        // ==========================================
-
-        function copyRoundCode(roundId) {
-            const tempInput = document.createElement('input');
-            tempInput.value = roundId;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
-            
-            showToast('📋 共有コードをコピーしました！新規登録の際コードをペーストしてください。');
-        }
-
-        // 🌟 モーダルを開く処理
-        function openImportModal() {
-            document.getElementById('importCodeInput').value = '';
-            document.getElementById('importModal').classList.add('active');
-        }
-
-        // 🌟 モーダルを閉じる処理
         function closeImportModal() {
             document.getElementById('importModal').classList.remove('active');
         }
@@ -4370,7 +4343,6 @@
             }
 
             const targetRound = rounds.find(r => r.id === code);
-            
             if (!targetRound) {
                 showAppAlert('エラー', '入力されたコードのラウンドデータが見つかりません。');
                 return;
