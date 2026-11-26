@@ -2940,6 +2940,12 @@
             document.getElementById('formTitle').innerHTML = '<span class="font-golsta">Golsta</span> 登録';
             document.getElementById('aiUploadSection').style.display = 'block';
             document.getElementById('parsedResultSection').style.display = 'none';
+            const statusEl = document.getElementById('aiStatus');
+            if (statusEl) {
+                statusEl.innerText = '';
+                statusEl.className = '';
+                statusEl.style.display = '';
+            }
             document.getElementById('initialCancelSection').style.display = 'block';
 
             document.getElementById('courseName').value = '';
@@ -3065,7 +3071,7 @@
             if (status) {
                 status.innerText = '';
                 status.className = '';
-                status.style.display = 'none';
+                status.style.display = '';
             }
             document.getElementById('parsedResultSection').style.display = 'none';
             document.getElementById('initialCancelSection').style.display = 'block';
@@ -3338,6 +3344,7 @@
             isEditingRound = true;
 
             // 🌟 解析中の強調表示
+            status.style.display = 'block';
             status.className = 'status-loading';
             status.innerHTML = '⏳ <strong>AIがスコア画像を解析中です...</strong><br><span style="font-size:12px; font-weight:normal;">数十秒ほどお待ちください🏌️‍♂️</span>';
             btn.disabled = true;
