@@ -3388,7 +3388,7 @@
                 if (!apiKey) {
                     throw new Error('APIキーが未設定です。右上の「⚙️ 設定」からGemini APIキーを保存してください。');
                 }
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
                 
                 const res = await fetch(apiUrl, {
                     method: 'POST',
@@ -3812,7 +3812,7 @@
                 if (!apiKey) {
                     throw new Error('APIキーが未設定です。右上の「⚙️ 設定」からGemini APIキーを保存してください。');
                 }
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
                 const res = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
