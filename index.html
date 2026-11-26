@@ -1556,6 +1556,105 @@
             }
         }
 
+        // 混雑時・利用不可時に別の空いているモデルへ自動切替＆リトライする共通関数
+        async function callGeminiWithFallback(apiKey, parts, onStatusUpdate = null) {
+            let candidateModels = [];
+            try {
+                const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+                if (listRes.ok) {
+                    const listData = await listRes.json();
+                    const available = (listData.models || [])
+                        .filter(m =>
+                            (m.supportedGenerationMethods || []).includes('generateContent') &&
+                            m.name &&
+                            m.name.includes('gemini') &&
+                            !/embedding|aqa|tts|imagen|veo|audio|robotics|computer-use|deep-research/i.test(m.name)
+                        )
+                        .map(m => m.name.replace(/^models\//, ''));
+
+                    // 混雑しにくい flash-lite 系・最新 flash 系・その他 flash 系・pro 系の順に優先並び替え
+                    const scoreModel = (name) => {
+                        if (/3\.8.*flash-lite/i.test(name)) return 1;
+                        if (/flash-lite/i.test(name) && !/1\.5|2\.0|2\.5/i.test(name)) return 2;
+                        if (/3\.8.*flash/i.test(name)) return 3;
+                        if (/flash-lite/i.test(name)) return 4;
+                        if (/flash/i.test(name) && !/1\.5|2\.0|2\.5/i.test(name)) return 5;
+                        if (/pro/i.test(name) && !/1\.5|2\.0|2\.5/i.test(name)) return 6;
+                        if (/flash/i.test(name)) return 7;
+                        return 8;
+                    };
+                    available.sort((a, b) => scoreModel(a) - scoreModel(b));
+                    candidateModels = available;
+                }
+            } catch (e) {
+                console.warn('モデル一覧の自動取得に失敗、固定リストを使用します:', e);
+            }
+
+            // フォールバック用の固定候補を後ろに補完（重複排除）
+            const fallbackDefaults = [
+                'gemini-3.8-flash-lite',
+                'gemini-3.8-flash',
+                'gemini-3.8-pro',
+                'gemini-2.5-flash-lite',
+                'gemini-2.5-flash',
+                'gemini-2.5-pro'
+            ];
+            fallbackDefaults.forEach(m => {
+                if (!candidateModels.includes(m)) candidateModels.push(m);
+            });
+
+            let lastErrorMsg = 'API呼び出しに失敗しました';
+            let sawHighDemand = false;
+
+            // 最大2周（1周目で全モデルが混雑だった場合のみ3秒待って再試行）
+            for (let attempt = 0; attempt < 2; attempt++) {
+                if (attempt === 1) {
+                    if (!sawHighDemand) break;
+                    if (onStatusUpdate) {
+                        onStatusUpdate('⏳ サーバー混雑中のため3秒後に再試行しています...');
+                    }
+                    await new Promise(r => setTimeout(r, 3000));
+                }
+
+                for (let i = 0; i < candidateModels.length; i++) {
+                    const model = candidateModels[i];
+                    if (onStatusUpdate && i > 0) {
+                        onStatusUpdate(`🔄 別モデル (${model}) に自動切替して解析中...`);
+                    }
+                    try {
+                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                        const res = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ contents: [{ parts: parts }] })
+                        });
+                        const resData = await res.json().catch(() => ({}));
+                        if (res.ok && resData.candidates?.[0]?.content?.parts?.[0]?.text) {
+                            return { resData, usedModel: model };
+                        }
+
+                        const errMsg = resData.error?.message || `HTTP ${res.status}`;
+                        lastErrorMsg = errMsg;
+
+                        // APIキー自体が無効・停止の場合は別モデルを試しても無駄なので即終了
+                        if (/API key not valid|has been suspended|API_KEY_INVALID|deleted or disabled/i.test(errMsg)) {
+                            throw new Error(errMsg);
+                        }
+                        if (res.status === 503 || res.status === 429 || /high demand|overloaded|quota|rate limit/i.test(errMsg)) {
+                            sawHighDemand = true;
+                        }
+                    } catch (err) {
+                        if (/API key not valid|has been suspended|API_KEY_INVALID|deleted or disabled/i.test(err.message)) {
+                            throw err;
+                        }
+                        lastErrorMsg = err.message || lastErrorMsg;
+                    }
+                }
+            }
+
+            throw new Error(lastErrorMsg);
+        }
+
         // Firebase 初期化
         const firebaseConfig = {
             apiKey: "AIzaSyDNcoTrSOG5vVKHW3EU71EET19D367QNIY",
@@ -3388,18 +3487,9 @@
                 if (!apiKey) {
                     throw new Error('APIキーが未設定です。右上の「⚙️ 設定」からGemini APIキーを保存してください。');
                 }
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
-                
-                const res = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: parts }] })
+                const { resData } = await callGeminiWithFallback(apiKey, parts, (msg) => {
+                    status.innerHTML = `⏳ <strong>AIがスコア画像を解析中です...</strong><br><span style="font-size:12px; font-weight:normal;">${msg}</span>`;
                 });
-
-                const resData = await res.json();
-                if (!res.ok) {
-                    throw new Error(resData.error?.message || 'API呼び出しに失敗しました');
-                }
 
                 let parsedJSON = null;
                 if (resData.candidates?.[0]?.content?.parts?.[0]?.text) {
@@ -3812,17 +3902,9 @@
                 if (!apiKey) {
                     throw new Error('APIキーが未設定です。右上の「⚙️ 設定」からGemini APIキーを保存してください。');
                 }
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
-                const res = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: parts }] })
+                const { resData } = await callGeminiWithFallback(apiKey, parts, (msg) => {
+                    statusEl.innerText = msg;
                 });
-
-                const resData = await res.json();
-                if (!res.ok) {
-                    throw new Error(resData.error?.message || 'API呼び出しに失敗しました');
-                }
 
                 let parsedAwardJSON = null;
                 if (resData.candidates?.[0]?.content?.parts?.[0]?.text) {
